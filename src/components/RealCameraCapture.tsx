@@ -28,8 +28,8 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          width: { ideal: 300 },
+          height: { ideal: 400 }
         }
       });
       

@@ -219,10 +219,10 @@ const Index = () => {
               {results.isActuallyFish === false ? (
                 <div className="bg-destructive/10 border border-destructive rounded-xl p-8 text-center">
                   <h3 className="text-2xl font-bold text-destructive mb-2">
-                    This is not a fish
+                    Isda ba yarn???
                   </h3>
                   <p className="text-muted-foreground">
-                    Please capture an image of a fish to analyze its species and freshness.
+                    Are you crazy??????? Please capture an image of a fish to analyze its species and freshness.
                   </p>
                 </div>
               ) : (
@@ -238,7 +238,7 @@ const Index = () => {
                       </h3>
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-bold text-primary">
-                     ₱{results.pricePerKilo.min} - ₱{results.pricePerKilo.max}
+                     ₱{results.pricePerKilo.min*59} - ₱{results.pricePerKilo.max*59}
                         </span>
                         <span className="text-muted-foreground">per kg</span>
                       </div>
