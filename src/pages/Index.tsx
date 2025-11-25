@@ -112,7 +112,7 @@ const Index = () => {
           <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Analyzing Fish</h2>
-            <p className="text-muted-foreground">AI is identifying species and evaluating freshness...</p>
+            <p className="text-muted-foreground">Wait lang mga bro, kami na bahala kung fresh ba yan... eyyy</p>
           </div>
         </div>
       </div>
@@ -238,7 +238,7 @@ const Index = () => {
                       </h3>
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-bold text-primary">
-                          ${results.pricePerKilo.min} - ${results.pricePerKilo.max}
+                     ₱{results.pricePerKilo.min} - ₱{results.pricePerKilo.max}
                         </span>
                         <span className="text-muted-foreground">per kg</span>
                       </div>
