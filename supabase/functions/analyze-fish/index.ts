@@ -36,16 +36,19 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert marine biologist and fish quality inspector. Analyze fish images to:
-1. Identify the fish species (common name and scientific name)
-2. Assess freshness level (fresh/moderate/poor) based on:
+            content: `You are an expert marine biologist and fish quality inspector. Analyze images to:
+1. First, determine if the image contains a fish (isActuallyFish: true/false)
+2. If it's a fish, identify the species (common name and scientific name)
+3. Assess freshness level (fresh/moderate/poor) based on:
    - Eye clarity (clear, cloudy, sunken)
    - Gill color (bright red/pink = fresh, brown/gray = old)
    - Skin texture and appearance (firm, shiny, slimy)
    - Overall condition
+4. Estimate the current market price per kilogram (provide a range)
 
 Return ONLY a valid JSON object with this exact structure:
 {
+  "isActuallyFish": true,
   "species": {
     "name": "Common Name",
     "scientificName": "Scientific name",
@@ -60,7 +63,18 @@ Return ONLY a valid JSON object with this exact structure:
     "eyeClarity": "Clear/Cloudy/Sunken",
     "gillColor": "Bright Red/Pink/Brown/Gray",
     "texture": "Firm/Soft/Slimy"
+  },
+  "pricePerKilo": {
+    "min": 15,
+    "max": 25,
+    "currency": "USD"
   }
+}
+
+If the image is NOT a fish, return:
+{
+  "isActuallyFish": false,
+  "message": "This is not a fish"
 }
 
 Be accurate and professional. Confidence should reflect uncertainty (80-95% for clear fish, 60-79% for unclear images).`
@@ -127,7 +141,18 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     }
 
     // Validate the response structure
-    if (!result.species || !result.freshness || !result.stats) {
+    if (result.isActuallyFish === false) {
+      // Return "not a fish" response
+      return new Response(
+        JSON.stringify(result),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+    
+    if (!result.species || !result.freshness || !result.stats || !result.pricePerKilo) {
       throw new Error('Invalid response structure from AI');
     }
 

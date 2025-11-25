@@ -12,20 +12,27 @@ import heroImage from "@/assets/hero-fish.jpg";
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
 interface AnalysisResult {
-  species: {
+  isActuallyFish: boolean;
+  message?: string;
+  species?: {
     name: string;
     scientificName: string;
     confidence: number;
   };
-  freshness: {
+  freshness?: {
     level: FreshnessLevel;
     score: number;
     reasoning: string;
   };
-  stats: {
+  stats?: {
     eyeClarity: string;
     gillColor: string;
     texture: string;
+  };
+  pricePerKilo?: {
+    min: number;
+    max: number;
+    currency: string;
   };
 }
 
@@ -68,10 +75,18 @@ const Index = () => {
       setResults(data as AnalysisResult);
       setShowResults(true);
       
-      toast({
-        title: "Analysis Complete",
-        description: `Detected ${data.species.name} with ${data.species.confidence}% confidence`,
-      });
+      if (data.isActuallyFish === false) {
+        toast({
+          title: "Not a Fish",
+          description: "This is not a fish. Please capture an image of a fish.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Analysis Complete",
+          description: `Detected ${data.species.name} with ${data.species.confidence}% confidence`,
+        });
+      }
 
     } catch (error) {
       console.error("Error analyzing fish:", error);
@@ -126,7 +141,7 @@ const Index = () => {
             <div className="w-10 h-10 rounded-full bg-ocean-gradient flex items-center justify-center">
               <Camera className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">FreshCatch</h1>
+            <h1 className="text-xl font-bold text-foreground">Fish Buddy</h1>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon">
@@ -201,37 +216,63 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Species Information */}
-              <SpeciesCard {...results.species} />
+              {results.isActuallyFish === false ? (
+                <div className="bg-destructive/10 border border-destructive rounded-xl p-8 text-center">
+                  <h3 className="text-2xl font-bold text-destructive mb-2">
+                    This is not a fish
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Please capture an image of a fish to analyze its species and freshness.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Species Information */}
+                  <SpeciesCard {...results.species!} />
 
-              {/* Freshness Indicator */}
-              <FreshnessIndicator {...results.freshness} />
+                  {/* Price Per Kilo */}
+                  {results.pricePerKilo && (
+                    <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                      <h3 className="text-lg font-semibold text-foreground mb-3">
+                        Current Market Price
+                      </h3>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold text-primary">
+                          ${results.pricePerKilo.min} - ${results.pricePerKilo.max}
+                        </span>
+                        <span className="text-muted-foreground">per kg</span>
+                      </div>
+                    </div>
+                  )}
 
-              {/* Quick Stats */}
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-3">
-                  Quality Indicators
-                </h3>
-                <QuickStats stats={results.stats} />
-              </div>
+                  {/* Freshness Indicator */}
+                  <FreshnessIndicator {...results.freshness!} />
 
-              {/* AI Reasoning */}
-              <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
-                <h3 className="text-lg font-semibold text-foreground mb-3">
-                  AI Analysis
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {results.freshness.reasoning}
-                </p>
-              </div>
+                  {/* Quick Stats */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-3">
+                      Quality Indicators
+                    </h3>
+                    <QuickStats stats={results.stats!} />
+                  </div>
 
-              {/* Recommendations */}
-              <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
-                <h3 className="text-lg font-semibold text-foreground mb-3">
-                  Recommendations
-                </h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {results.freshness.level === "fresh" && (
+                  {/* AI Reasoning */}
+                  <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                    <h3 className="text-lg font-semibold text-foreground mb-3">
+                      AI Analysis
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {results.freshness!.reasoning}
+                    </p>
+                  </div>
+
+                  {/* Recommendations */}
+                  <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                    <h3 className="text-lg font-semibold text-foreground mb-3">
+                      Recommendations
+                    </h3>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      {results.freshness!.level === "fresh" && (
                     <>
                       <li className="flex items-start gap-2">
                         <span className="text-success mt-0.5">✓</span>
@@ -247,7 +288,7 @@ const Index = () => {
                       </li>
                     </>
                   )}
-                  {results.freshness.level === "moderate" && (
+                  {results.freshness!.level === "moderate" && (
                     <>
                       <li className="flex items-start gap-2">
                         <span className="text-warning mt-0.5">⚠</span>
@@ -263,7 +304,7 @@ const Index = () => {
                       </li>
                     </>
                   )}
-                  {results.freshness.level === "poor" && (
+                  {results.freshness!.level === "poor" && (
                     <>
                       <li className="flex items-start gap-2">
                         <span className="text-destructive mt-0.5">✗</span>
@@ -278,9 +319,11 @@ const Index = () => {
                         <span>Check storage conditions</span>
                       </li>
                     </>
-                  )}
-                </ul>
-              </div>
+                      )}
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
           </>
         ) : null}
