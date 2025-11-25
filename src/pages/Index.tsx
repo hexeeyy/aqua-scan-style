@@ -7,7 +7,7 @@ import { SpeciesCard } from "@/components/SpeciesCard";
 import { QuickStats } from "@/components/QuickStats";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import heroImage from "@/assets/hero-fish.jpg";
+import heroImage from "@/assets/1.jpg";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 

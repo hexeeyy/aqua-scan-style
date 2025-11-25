@@ -22,7 +22,7 @@ export const FreshnessIndicator = ({ level, score }: FreshnessIndicatorProps) =>
     },
     poor: {
       icon: XCircle,
-      text: "Not Fresh",
+      text: "bulok na",
       gradient: "bg-poor-gradient",
       description: "Not recommended for consumption"
     }
