@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Camera, History, Info, Loader2, Volume2, VolumeX } from "lucide-react";
+import { Camera, History, Info, Loader2, Volume2, VolumeX, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
@@ -176,42 +176,42 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-card border-b border-border shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-ocean-gradient flex items-center justify-center">
-              <Camera className="w-5 h-5 text-white" />
+      <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
+        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-ocean-gradient flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-300">
+              <Camera className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Fish Buddy</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Fish Buddy</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" aria-label="View scan history">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View scan history">
               <History className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" aria-label="View information">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View information">
               <Info className="w-5 h-5" />
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 pb-20">
+      <main className="max-w-2xl mx-auto px-5 py-8 pb-24">
         {!showResults ? (
           <>
             {/* Hero Section */}
-            <div className="mb-8 rounded-2xl overflow-hidden shadow-lg">
-              <div className="relative h-48">
+            <div className="mb-8 rounded-3xl overflow-hidden shadow-xl hover-lift animate-fade-in">
+              <div className="relative h-56">
                 <img 
                   src={heroImage} 
                   alt="Fresh fish" 
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h2 className="text-2xl font-bold text-white mb-1">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
                     AI-Powered Fish Analysis
                   </h2>
-                  <p className="text-white/90 text-sm">
+                  <p className="text-white/95 text-base font-medium">
                     Instant species detection & freshness evaluation
                   </p>
                 </div>
@@ -219,45 +219,63 @@ const Index = () => {
             </div>
 
             {/* Scan Button */}
-            <div className="mb-6">
+            <div className="mb-8 animate-scale-in">
               <Button
                 variant="scan"
                 size="lg"
-                className="w-full h-16 text-lg"
+                className="w-full h-20 text-lg rounded-2xl"
                 onClick={handleCameraOpen}
                 aria-label="Start camera scan to analyze fish"
               >
-                <Camera className="w-6 h-6 mr-2" aria-hidden="true" />
+                <Camera className="w-7 h-7 mr-3" aria-hidden="true" />
                 Start Camera Scan
               </Button>
             </div>
 
             {/* Instructions */}
-            <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Info className="w-4 h-4 text-primary" />
+            <div className="glass-effect rounded-2xl p-6 space-y-3 shadow-md animate-fade-in">
+              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Info className="w-4 h-4 text-primary" />
+                </div>
                 How to use
               </h3>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-                <li>• Tap "Start Camera Scan" to open camera</li>
-                <li>• Position the fish clearly in the frame</li>
-                <li>• Ensure good lighting conditions</li>
-                <li>• Tap capture to analyze with AI</li>
-                <li>• View instant results and recommendations</li>
+              <ul className="text-sm text-muted-foreground space-y-2.5 ml-2 font-medium">
+                <li className="flex items-start gap-3">
+                  <span className="text-primary font-bold mt-0.5">1.</span>
+                  <span>Tap "Start Camera Scan" to open camera</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-primary font-bold mt-0.5">2.</span>
+                  <span>Position the fish clearly in the frame</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-primary font-bold mt-0.5">3.</span>
+                  <span>Ensure good lighting conditions</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-primary font-bold mt-0.5">4.</span>
+                  <span>Tap capture to analyze with AI</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-primary font-bold mt-0.5">5.</span>
+                  <span>View instant results and recommendations</span>
+                </li>
               </ul>
             </div>
           </>
         ) : results ? (
           <>
             {/* Results Section */}
-            <div className="space-y-6" role="region" aria-label="Analysis results">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-foreground">Scan Results</h2>
+            <div className="space-y-7" role="region" aria-label="Analysis results">
+              <div className="flex items-center justify-between animate-fade-in">
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">Scan Results</h2>
                 <div className="flex gap-2">
                   {results.isActuallyFish !== false && (
                     <Button 
                       variant="outline" 
                       size="icon"
+                      className="rounded-xl"
                       onClick={toggleVoiceNarration}
                       aria-label={isSpeaking ? "Stop voice narration" : "Start voice narration"}
                       aria-pressed={isSpeaking}
@@ -265,7 +283,7 @@ const Index = () => {
                       {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                     </Button>
                   )}
-                  <Button variant="ocean" onClick={handleNewScan} aria-label="Start new scan">
+                  <Button variant="ocean" className="rounded-xl" onClick={handleNewScan} aria-label="Start new scan">
                     New Scan
                   </Button>
                 </div>
@@ -273,14 +291,17 @@ const Index = () => {
 
               {results.isActuallyFish === false ? (
                 <div 
-                  className="bg-destructive/10 border border-destructive rounded-xl p-8 text-center"
+                  className="bg-destructive/10 border-2 border-destructive/50 rounded-2xl p-10 text-center glass-effect animate-scale-in"
                   role="alert"
                   aria-live="polite"
                 >
-                  <h3 className="text-2xl font-bold text-destructive mb-2">
+                  <div className="w-16 h-16 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto mb-4">
+                    <XCircle className="w-9 h-9 text-destructive" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-destructive mb-3 tracking-tight">
                     Isda ba yarn???
                   </h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground font-medium text-base">
                     Are you crazy??????? Please capture an image of a fish to analyze its species and freshness.
                   </p>
                 </div>
@@ -291,15 +312,16 @@ const Index = () => {
 
                   {/* Price Per Kilo */}
                   {results.pricePerKilo && (
-                    <section className="bg-card rounded-xl p-6 border border-border shadow-sm" aria-labelledby="price-heading">
-                      <h3 id="price-heading" className="text-lg font-semibold text-foreground mb-3">
+                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in relative overflow-hidden" aria-labelledby="price-heading">
+                      <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -z-10" />
+                      <h3 id="price-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                         Current Market Price
                       </h3>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-primary" aria-label={`Price range: ${results.pricePerKilo.min*59} to ${results.pricePerKilo.max*59} pesos per kilogram`}>
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-4xl font-bold text-primary tracking-tight" aria-label={`Price range: ${results.pricePerKilo.min*59} to ${results.pricePerKilo.max*59} pesos per kilogram`}>
                      ₱{results.pricePerKilo.min*59} - ₱{results.pricePerKilo.max*59}
                         </span>
-                        <span className="text-muted-foreground">per kg</span>
+                        <span className="text-muted-foreground font-semibold text-lg">per kg</span>
                       </div>
                     </section>
                   )}
@@ -308,29 +330,29 @@ const Index = () => {
                   <FreshnessIndicator {...results.freshness!} />
 
                   {/* Quick Stats */}
-                  <section aria-labelledby="quality-heading">
-                    <h3 id="quality-heading" className="text-lg font-semibold text-foreground mb-3">
+                  <section aria-labelledby="quality-heading" className="animate-fade-in">
+                    <h3 id="quality-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                       Quality Indicators
                     </h3>
                     <QuickStats stats={results.stats!} />
                   </section>
 
                   {/* AI Reasoning */}
-                  <section className="bg-card rounded-xl p-6 border border-border shadow-sm" aria-labelledby="analysis-heading">
-                    <h3 id="analysis-heading" className="text-lg font-semibold text-foreground mb-3">
+                  <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md animate-fade-in" aria-labelledby="analysis-heading">
+                    <h3 id="analysis-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                       AI Analysis
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-base text-muted-foreground leading-relaxed font-medium">
                       {results.freshness!.reasoning}
                     </p>
                   </section>
 
                   {/* Recommendations */}
-                  <section className="bg-card rounded-xl p-6 border border-border shadow-sm" aria-labelledby="recommendations-heading">
-                    <h3 id="recommendations-heading" className="text-lg font-semibold text-foreground mb-3">
+                  <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md animate-fade-in" aria-labelledby="recommendations-heading">
+                    <h3 id="recommendations-heading" className="text-xl font-bold text-foreground mb-5 tracking-tight">
                       Recommendations
                     </h3>
-                    <ul className="space-y-2 text-sm text-muted-foreground" role="list">
+                    <ul className="space-y-3 text-base text-muted-foreground" role="list">
                       {results.freshness!.level === "fresh" && (
                     <>
                       <li className="flex items-start gap-2">
