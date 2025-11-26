@@ -36,7 +36,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert marine biologist and fish quality inspector. Analyze images to:
+            content: `You are an expert marine biologist and fish quality inspector specializing in Philippine seafood markets. Analyze images to:
 1. First, determine if the image contains a fish (isActuallyFish: true/false)
 2. If it's a fish, identify the species (common name and scientific name)
 3. Assess freshness level (fresh/moderate/poor) based on:
@@ -44,7 +44,12 @@ serve(async (req) => {
    - Gill color (bright red/pink = fresh, brown/gray = old)
    - Skin texture and appearance (firm, shiny, slimy)
    - Overall condition
-4. Estimate the current market price per kilogram (provide a range)
+4. Estimate the current Philippine market price per kilogram in PESOS (PHP) based on:
+   - Bureau of Fisheries and Aquatic Resources (BFAR) price bulletins
+   - Department of Agriculture (DA) market monitoring data
+   - Major fish markets (Navotas, Farmers Market, provincial wet markets)
+   - Typical retail prices in the Philippines for 2024-2025
+5. Provide additional data: habitat, nutritional info, and typical collection areas in the Philippines
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -65,10 +70,18 @@ Return ONLY a valid JSON object with this exact structure:
     "texture": "Firm/Soft/Slimy"
   },
   "pricePerKilo": {
-    "min": 15,
-    "max": 25,
-    "currency": "USD"
-  }
+    "min": 250,
+    "max": 450,
+    "currency": "PHP",
+    "source": "BFAR/DA Market Data"
+  },
+  "habitat": "Brief habitat description",
+  "nutritionalInfo": {
+    "protein": 20,
+    "omega3": "High/Medium/Low",
+    "calories": 150
+  },
+  "commonAreas": ["Visayan Sea", "Manila Bay", "Mindanao waters"]
 }
 
 If the image is NOT a fish, return:
@@ -76,6 +89,8 @@ If the image is NOT a fish, return:
   "isActuallyFish": false,
   "message": "This is not a fish"
 }
+
+IMPORTANT: Use realistic Philippine peso prices based on current market rates. Common fish like tilapia: ₱120-180/kg, bangus: ₱160-220/kg, galunggong: ₱180-280/kg, tuna: ₱300-500/kg, lapu-lapu: ₱400-800/kg. Adjust for freshness.
 
 Be accurate and professional. Confidence should reflect uncertainty (80-95% for clear fish, 60-79% for unclear images).`
           },
@@ -152,7 +167,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
       );
     }
     
-    if (!result.species || !result.freshness || !result.stats || !result.pricePerKilo) {
+    if (!result.species || !result.freshness || !result.stats || !result.pricePerKilo || !result.habitat || !result.nutritionalInfo || !result.commonAreas) {
       throw new Error('Invalid response structure from AI');
     }
 
