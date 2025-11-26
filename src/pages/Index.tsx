@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Camera, History, Info, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Camera, History, Info, Loader2, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
@@ -41,7 +41,16 @@ const Index = () => {
   const [showResults, setShowResults] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const handleCameraOpen = () => {
     setShowCamera(true);
@@ -101,8 +110,40 @@ const Index = () => {
   };
 
   const handleNewScan = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
     setShowResults(false);
     setResults(null);
+  };
+
+  const toggleVoiceNarration = () => {
+    if (!results || results.isActuallyFish === false) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const text = `Analysis results for ${results.species?.name}. 
+      Confidence: ${results.species?.confidence}%. 
+      Freshness level: ${results.freshness?.level}. 
+      Score: ${results.freshness?.score} out of 100. 
+      ${results.freshness?.reasoning}. 
+      Current market price: ${results.pricePerKilo?.min ? `${results.pricePerKilo.min * 59} to ${results.pricePerKilo.max * 59} pesos per kilogram` : 'not available'}.`;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
   };
 
   if (isAnalyzing) {
@@ -144,10 +185,10 @@ const Index = () => {
             <h1 className="text-xl font-bold text-foreground">Fish Buddy</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="View scan history">
               <History className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="View information">
               <Info className="w-5 h-5" />
             </Button>
           </div>
@@ -184,8 +225,9 @@ const Index = () => {
                 size="lg"
                 className="w-full h-16 text-lg"
                 onClick={handleCameraOpen}
+                aria-label="Start camera scan to analyze fish"
               >
-                <Camera className="w-6 h-6 mr-2" />
+                <Camera className="w-6 h-6 mr-2" aria-hidden="true" />
                 Start Camera Scan
               </Button>
             </div>
@@ -208,16 +250,33 @@ const Index = () => {
         ) : results ? (
           <>
             {/* Results Section */}
-            <div className="space-y-6">
+            <div className="space-y-6" role="region" aria-label="Analysis results">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-foreground">Scan Results</h2>
-                <Button variant="ocean" onClick={handleNewScan}>
-                  New Scan
-                </Button>
+                <div className="flex gap-2">
+                  {results.isActuallyFish !== false && (
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={toggleVoiceNarration}
+                      aria-label={isSpeaking ? "Stop voice narration" : "Start voice narration"}
+                      aria-pressed={isSpeaking}
+                    >
+                      {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    </Button>
+                  )}
+                  <Button variant="ocean" onClick={handleNewScan} aria-label="Start new scan">
+                    New Scan
+                  </Button>
+                </div>
               </div>
 
               {results.isActuallyFish === false ? (
-                <div className="bg-destructive/10 border border-destructive rounded-xl p-8 text-center">
+                <div 
+                  className="bg-destructive/10 border border-destructive rounded-xl p-8 text-center"
+                  role="alert"
+                  aria-live="polite"
+                >
                   <h3 className="text-2xl font-bold text-destructive mb-2">
                     Isda ba yarn???
                   </h3>
@@ -232,46 +291,46 @@ const Index = () => {
 
                   {/* Price Per Kilo */}
                   {results.pricePerKilo && (
-                    <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
-                      <h3 className="text-lg font-semibold text-foreground mb-3">
+                    <section className="bg-card rounded-xl p-6 border border-border shadow-sm" aria-labelledby="price-heading">
+                      <h3 id="price-heading" className="text-lg font-semibold text-foreground mb-3">
                         Current Market Price
                       </h3>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-primary">
+                        <span className="text-3xl font-bold text-primary" aria-label={`Price range: ${results.pricePerKilo.min*59} to ${results.pricePerKilo.max*59} pesos per kilogram`}>
                      ₱{results.pricePerKilo.min*59} - ₱{results.pricePerKilo.max*59}
                         </span>
                         <span className="text-muted-foreground">per kg</span>
                       </div>
-                    </div>
+                    </section>
                   )}
 
                   {/* Freshness Indicator */}
                   <FreshnessIndicator {...results.freshness!} />
 
                   {/* Quick Stats */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-3">
+                  <section aria-labelledby="quality-heading">
+                    <h3 id="quality-heading" className="text-lg font-semibold text-foreground mb-3">
                       Quality Indicators
                     </h3>
                     <QuickStats stats={results.stats!} />
-                  </div>
+                  </section>
 
                   {/* AI Reasoning */}
-                  <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
-                    <h3 className="text-lg font-semibold text-foreground mb-3">
+                  <section className="bg-card rounded-xl p-6 border border-border shadow-sm" aria-labelledby="analysis-heading">
+                    <h3 id="analysis-heading" className="text-lg font-semibold text-foreground mb-3">
                       AI Analysis
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       {results.freshness!.reasoning}
                     </p>
-                  </div>
+                  </section>
 
                   {/* Recommendations */}
-                  <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
-                    <h3 className="text-lg font-semibold text-foreground mb-3">
+                  <section className="bg-card rounded-xl p-6 border border-border shadow-sm" aria-labelledby="recommendations-heading">
+                    <h3 id="recommendations-heading" className="text-lg font-semibold text-foreground mb-3">
                       Recommendations
                     </h3>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
+                    <ul className="space-y-2 text-sm text-muted-foreground" role="list">
                       {results.freshness!.level === "fresh" && (
                     <>
                       <li className="flex items-start gap-2">
@@ -321,7 +380,7 @@ const Index = () => {
                     </>
                       )}
                     </ul>
-                  </div>
+                  </section>
                 </>
               )}
             </div>
