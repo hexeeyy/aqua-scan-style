@@ -77,13 +77,14 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   };
 
   return (
-    <Card className="relative overflow-hidden bg-card border-none shadow-lg">
+    <Card className="relative overflow-hidden bg-card border-none shadow-lg" role="region" aria-label="Camera capture interface">
       <div className="relative aspect-[4/3] bg-black">
         <video
           ref={videoRef}
           autoPlay
           playsInline
           className="w-full h-full object-cover"
+          aria-label="Live camera feed"
         />
         <canvas ref={canvasRef} className="hidden" />
         
@@ -94,8 +95,9 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
             size="icon"
             className="bg-black/50 text-white hover:bg-black/70"
             onClick={onCancel}
+            aria-label="Cancel camera capture"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </Button>
           
           <Button
@@ -103,8 +105,9 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
             size="icon"
             className="bg-black/50 text-white hover:bg-black/70"
             onClick={switchCamera}
+            aria-label="Switch between front and back camera"
           >
-            <RotateCw className="w-5 h-5" />
+            <RotateCw className="w-5 h-5" aria-hidden="true" />
           </Button>
         </div>
 
@@ -120,8 +123,9 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           size="lg" 
           className="rounded-full w-16 h-16"
           onClick={captureImage}
+          aria-label="Capture image for fish analysis"
         >
-          <Camera className="w-6 h-6" />
+          <Camera className="w-6 h-6" aria-hidden="true" />
         </Button>
       </div>
     </Card>
