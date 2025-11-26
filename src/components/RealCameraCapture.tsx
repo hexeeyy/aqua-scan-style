@@ -77,8 +77,8 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   };
 
   return (
-    <Card className="relative overflow-hidden bg-card border-none shadow-lg" role="region" aria-label="Camera capture interface">
-      <div className="relative aspect-[4/3] bg-black">
+    <div className="fixed inset-0 z-50 bg-black md:relative md:rounded-lg md:overflow-hidden" role="region" aria-label="Camera capture interface">
+      <div className="relative w-full h-full md:aspect-[4/3] bg-black">
         <video
           ref={videoRef}
           autoPlay
@@ -112,22 +112,33 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
         </div>
 
         {/* Capture guide overlay */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="w-full h-full border-4 border-dashed border-white/30 m-4" />
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+          <div className="w-[85%] h-[70%] border-4 border-dashed border-primary/50 rounded-2xl relative animate-pulse">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-lg backdrop-blur-sm">
+              <p className="text-white text-sm font-medium text-center">
+                Position fish clearly in frame
+              </p>
+            </div>
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-lg backdrop-blur-sm">
+              <p className="text-white text-xs text-center">
+                Ensure good lighting and full fish visibility
+              </p>
+            </div>
+          </div>
         </div>
       </div>
       
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+      <div className="absolute bottom-8 md:bottom-6 left-0 right-0 flex justify-center">
         <Button 
           variant="scan" 
           size="lg" 
-          className="rounded-full w-16 h-16"
+          className="rounded-full w-16 h-16 shadow-glow"
           onClick={captureImage}
           aria-label="Capture image for fish analysis"
         >
           <Camera className="w-6 h-6" aria-hidden="true" />
         </Button>
       </div>
-    </Card>
+    </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Camera, History, Info, Loader2, Volume2, VolumeX, XCircle } from "lucide-react";
+import { Camera, History, Info, Loader2, Volume2, VolumeX, XCircle, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
@@ -8,6 +8,8 @@ import { QuickStats } from "@/components/QuickStats";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/1.jpg";
+import fishBuddyLogo from "@/assets/fish-buddy-logo.png";
+import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -33,7 +35,21 @@ interface AnalysisResult {
     min: number;
     max: number;
     currency: string;
+    source?: string;
   };
+  habitat?: string;
+  nutritionalInfo?: {
+    protein: number;
+    omega3: string;
+    calories: number;
+  };
+  commonAreas?: string[];
+}
+
+interface LocationData {
+  latitude: number;
+  longitude: number;
+  timestamp: number;
 }
 
 const Index = () => {
@@ -42,6 +58,7 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [location, setLocation] = useState<LocationData | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -63,6 +80,22 @@ const Index = () => {
   const handleCapture = async (imageData: string) => {
     setShowCamera(false);
     setIsAnalyzing(true);
+
+    // Get user's location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            timestamp: Date.now()
+          });
+        },
+        (error) => {
+          console.log('Location access denied:', error);
+        }
+      );
+    }
 
     try {
       console.log("Sending image for analysis...");
@@ -132,7 +165,7 @@ const Index = () => {
       Freshness level: ${results.freshness?.level}. 
       Score: ${results.freshness?.score} out of 100. 
       ${results.freshness?.reasoning}. 
-      Current market price: ${results.pricePerKilo?.min ? `${results.pricePerKilo.min * 59} to ${results.pricePerKilo.max * 59} pesos per kilogram` : 'not available'}.`;
+      Current market price: ${results.pricePerKilo?.min ? `${results.pricePerKilo.min} to ${results.pricePerKilo.max} pesos per kilogram` : 'not available'}.`;
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
@@ -179,9 +212,7 @@ const Index = () => {
       <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-ocean-gradient flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-300">
-              <Camera className="w-6 h-6 text-white" />
-            </div>
+            <img src={fishBuddyLogo} alt="Fish Buddy Logo" className="w-11 h-11 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300" />
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Fish Buddy</h1>
           </div>
           <div className="flex gap-2">
@@ -315,13 +346,141 @@ const Index = () => {
                     <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in relative overflow-hidden" aria-labelledby="price-heading">
                       <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -z-10" />
                       <h3 id="price-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
-                        Current Market Price
+                        Current Market Price (Philippines)
                       </h3>
                       <div className="flex items-baseline gap-3">
-                        <span className="text-4xl font-bold text-primary tracking-tight" aria-label={`Price range: ${results.pricePerKilo.min*59} to ${results.pricePerKilo.max*59} pesos per kilogram`}>
-                     ₱{results.pricePerKilo.min*59} - ₱{results.pricePerKilo.max*59}
+                        <span className="text-4xl font-bold text-primary tracking-tight" aria-label={`Price range: ${results.pricePerKilo.min} to ${results.pricePerKilo.max} pesos per kilogram`}>
+                          ₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}
                         </span>
                         <span className="text-muted-foreground font-semibold text-lg">per kg</span>
+                      </div>
+                      {results.pricePerKilo.source && (
+                        <p className="text-xs text-muted-foreground mt-3">Source: {results.pricePerKilo.source}</p>
+                      )}
+                    </section>
+                  )}
+
+                  {/* Freshness Score Chart */}
+                  {results.freshness && (
+                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="freshness-chart-heading">
+                      <h3 id="freshness-chart-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
+                        Freshness Score
+                      </h3>
+                      <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadialBarChart 
+                            cx="50%" 
+                            cy="50%" 
+                            innerRadius="60%" 
+                            outerRadius="100%" 
+                            data={[{ name: 'Freshness', value: results.freshness.score, fill: 'hsl(var(--primary))' }]}
+                            startAngle={90}
+                            endAngle={-270}
+                          >
+                            <RadialBar
+                              background
+                              dataKey="value"
+                              cornerRadius={10}
+                            />
+                            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-primary">
+                              {results.freshness.score}%
+                            </text>
+                          </RadialBarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Nutritional Information Chart */}
+                  {results.nutritionalInfo && (
+                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="nutrition-heading">
+                      <h3 id="nutrition-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
+                        Nutritional Profile (per 100g)
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2 border-b border-border/30">
+                          <span className="text-sm text-muted-foreground">Protein</span>
+                          <span className="text-lg font-bold text-primary">{results.nutritionalInfo.protein}g</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-border/30">
+                          <span className="text-sm text-muted-foreground">Omega-3</span>
+                          <span className="text-lg font-bold text-primary">{results.nutritionalInfo.omega3}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-sm text-muted-foreground">Calories</span>
+                          <span className="text-lg font-bold text-primary">{results.nutritionalInfo.calories} kcal</span>
+                        </div>
+                        <div className="h-40 mt-4">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[
+                              { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
+                              { name: 'Calories (kcal/10)', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--chart-2))' }
+                            ]}>
+                              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                              <YAxis tick={{ fontSize: 11 }} />
+                              <Tooltip />
+                              <Bar dataKey="value" radius={[8, 8, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Habitat and Collection Areas */}
+                  {results.habitat && results.commonAreas && (
+                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="habitat-heading">
+                      <h3 id="habitat-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
+                        Habitat & Collection Areas
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{results.habitat}</p>
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-foreground">Common fishing areas in the Philippines:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {results.commonAreas.map((area, index) => (
+                            <span key={index} className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
+                              {area}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Location Map */}
+                  {location && (
+                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="location-heading">
+                      <h3 id="location-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        Scan Location
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="aspect-video bg-muted rounded-lg overflow-hidden border border-border/30">
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            style={{ border: 0 }}
+                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.01},${location.latitude - 0.01},${location.longitude + 0.01},${location.latitude + 0.01}&layer=mapnik&marker=${location.latitude},${location.longitude}`}
+                            allowFullScreen
+                            title="Scan location map"
+                          />
+                        </div>
+                        <div className="flex justify-between items-center text-sm py-2 border-t border-border/30">
+                          <span className="text-muted-foreground">Coordinates:</span>
+                          <span className="font-mono text-primary">
+                            {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                          </span>
+                        </div>
+                        <a
+                          href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-center text-sm text-primary hover:underline py-2"
+                        >
+                          Open in Google Maps →
+                        </a>
                       </div>
                     </section>
                   )}
