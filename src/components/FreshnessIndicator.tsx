@@ -10,19 +10,19 @@ export const FreshnessIndicator = ({ level, score }: FreshnessIndicatorProps) =>
   const config = {
     fresh: {
       icon: CheckCircle2,
-      text: "Fresh na fresh!",
+      text: "Fresh",
       gradient: "bg-fresh-gradient",
       description: "Excellent quality for consumption"
     },
     moderate: {
       icon: AlertCircle,
-      text: "Goods pa yan tol, medj",
+      text: "Moderate",
       gradient: "bg-moderate-gradient",
       description: "Should be consumed soon"
     },
     poor: {
       icon: XCircle,
-      text: "bulok na",
+      text: "Poor",
       gradient: "bg-poor-gradient",
       description: "Not recommended for consumption"
     }

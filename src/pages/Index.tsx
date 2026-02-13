@@ -7,7 +7,7 @@ import { SpeciesCard } from "@/components/SpeciesCard";
 import { QuickStats } from "@/components/QuickStats";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import heroImage from "@/assets/1.jpg";
+import heroImage from "@/assets/hero.png";
 import Logo from "@/assets/logo.png";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ScanHistory, saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
@@ -210,7 +210,7 @@ const Index = () => {
           <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Analyzing Fish</h2>
-            <p className="text-muted-foreground">Wait lang mga bro, kami na bahala kung fresh ba yan... eyyy</p>
+            <p className="text-muted-foreground">Please wait while we analyze the fish image...</p>
           </div>
         </div>
       </div>
@@ -236,7 +236,7 @@ const Index = () => {
       <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="SARI-ONE Logo" className="w-11 h-11 hover:shadow-lg transition-shadow duration-300" />
+            <img src={Logo} alt="SARI-ONE Logo" className="w-11 h-11" />
             <h1 className="text-2xl font-bold text-foreground tracking-tight">SARI-ONE</h1>
           </div>
           <div className="flex gap-2">
@@ -264,10 +264,10 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
-                    AI-Powered Fish Analysis
+                    Artificial Intelligence for Fish Analysis
                   </h2>
                   <p className="text-white/95 text-base font-medium">
-                    Instant species detection & freshness evaluation
+                    Know the Species. Check the Freshness. All in One Scan.
                   </p>
                 </div>
               </div>
@@ -354,10 +354,10 @@ const Index = () => {
                     <XCircle className="w-9 h-9 text-destructive" />
                   </div>
                   <h3 className="text-3xl font-bold text-destructive mb-3 tracking-tight">
-                    Isda ba yarn???
+                    Not a Fish!
                   </h3>
                   <p className="text-muted-foreground font-medium text-base">
-                    Are you crazy??????? Please capture an image of a fish to analyze its species and freshness.
+                    {results.message || "The captured image does not appear to be a fish. Please try again with a different image."}
                   </p>
                 </div>
               ) : (
