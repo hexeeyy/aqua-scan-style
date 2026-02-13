@@ -8,7 +8,7 @@ import { QuickStats } from "@/components/QuickStats";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/1.jpg";
-import fishBuddyLogo from "@/assets/fish-buddy-logo.png";
+import Logo from "@/assets/logo.png";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ScanHistory, saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 
@@ -236,8 +236,8 @@ const Index = () => {
       <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={fishBuddyLogo} alt="Fish Buddy Logo" className="w-11 h-11 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300" />
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Fish Buddy</h1>
+            <img src={Logo} alt="SARI-ONE Logo" className="w-11 h-11 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300" />
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">SARI-ONE</h1>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View scan history" onClick={() => setShowHistory(true)}>
