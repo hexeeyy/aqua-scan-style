@@ -357,7 +357,7 @@ const Index = () => {
                     Not a Fish!
                   </h3>
                   <p className="text-muted-foreground font-medium text-base">
-                    {results.message || "The captured image does not appear to be a fish. Please try again with a different image."}
+                     The image you captured does not appear to be a fish. Please try again with a clear image of a fish for analysis.
                   </p>
                 </div>
               ) : (
