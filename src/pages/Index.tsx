@@ -236,7 +236,7 @@ const Index = () => {
       <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="SARI-ONE Logo" className="w-11 h-11 hover:shadow-lg transition-shadow duration-300" />
+            <img src={Logo} alt="SARI-ONE Logo" className="w-13 h-13" />
             <h1 className="text-2xl font-bold text-foreground tracking-tight">SARI-ONE</h1>
           </div>
           <div className="flex gap-2">
