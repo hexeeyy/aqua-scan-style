@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Camera, History, Info, Loader2, Volume2, VolumeX, XCircle, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/1.jpg";
 import fishBuddyLogo from "@/assets/fish-buddy-logo.png";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ScanHistory, saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -55,8 +56,10 @@ interface LocationData {
 const Index = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [location, setLocation] = useState<LocationData | null>(null);
   const { toast } = useToast();
@@ -79,6 +82,7 @@ const Index = () => {
 
   const handleCapture = async (imageData: string) => {
     setShowCamera(false);
+    setCapturedImage(imageData);
     setIsAnalyzing(true);
 
     // Get user's location
@@ -114,19 +118,34 @@ const Index = () => {
       }
 
       console.log("Analysis result:", data);
-      setResults(data as AnalysisResult);
+      const analysisData = data as AnalysisResult;
+      setResults(analysisData);
       setShowResults(true);
       
-      if (data.isActuallyFish === false) {
+      if (analysisData.isActuallyFish === false) {
         toast({
           title: "Not a Fish",
           description: "This is not a fish. Please capture an image of a fish.",
           variant: "destructive",
         });
       } else {
+        // Save to scan history
+        if (analysisData.species && analysisData.freshness) {
+          const record: ScanRecord = {
+            id: crypto.randomUUID(),
+            timestamp: Date.now(),
+            thumbnail: imageData,
+            species: analysisData.species,
+            freshness: analysisData.freshness,
+            pricePerKilo: analysisData.pricePerKilo,
+            nutritionalInfo: analysisData.nutritionalInfo,
+            stats: analysisData.stats,
+          };
+          saveScanToHistory(record);
+        }
         toast({
           title: "Analysis Complete",
-          description: `Detected ${data.species.name} with ${data.species.confidence}% confidence`,
+          description: `Detected ${analysisData.species?.name} with ${analysisData.species?.confidence}% confidence`,
         });
       }
 
@@ -149,7 +168,12 @@ const Index = () => {
     setIsSpeaking(false);
     setShowResults(false);
     setResults(null);
+    setCapturedImage(null);
   };
+
+  if (showHistory) {
+    return <ScanHistory onBack={() => setShowHistory(false)} />;
+  }
 
   const toggleVoiceNarration = () => {
     if (!results || results.isActuallyFish === false) return;
@@ -216,7 +240,7 @@ const Index = () => {
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Fish Buddy</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View scan history">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View scan history" onClick={() => setShowHistory(true)}>
               <History className="w-5 h-5" />
             </Button>
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View information">
