@@ -261,15 +261,11 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Dashboard Panels */}
-            <div className="grid grid-cols-3 gap-2 mb-2">
+            {/* Dashboard Panels + Charts - single flowing grid */}
+            <div className="grid grid-cols-3 gap-2">
               <div className="gsap-panel"><LiveStats /></div>
               <div className="gsap-panel"><SystemOverview /></div>
               <div className="gsap-panel"><FreshnessDistribution /></div>
-            </div>
-
-            {/* Charts Row */}
-            <div className="grid grid-cols-3 gap-2">
               <div className="gsap-chart"><ScanActivityChart /></div>
               <div className="gsap-chart"><SpectrumAnalysis /></div>
               <div className="gsap-chart"><QualityRadar /></div>
