@@ -30,9 +30,30 @@ serve(async (req) => {
     }
 
     const { image } = await req.json();
-    
-    if (!image) {
-      throw new Error('No image provided');
+
+    // Input validation
+    if (!image || typeof image !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid image data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const dataUrlPattern = /^data:image\/(jpeg|jpg|png|webp);base64,/;
+    if (!dataUrlPattern.test(image)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid image format. Only JPEG, PNG, and WebP are supported.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const base64Data = image.split(',')[1];
+    const imageSizeBytes = (base64Data.length * 3) / 4;
+    if (imageSizeBytes > 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: 'Image too large. Maximum size is 5MB.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -104,7 +125,7 @@ Rules:
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error(`AI API error: ${response.status}`);
+      throw new Error('AI service error');
     }
 
     const data = await response.json();
