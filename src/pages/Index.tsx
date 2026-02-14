@@ -223,11 +223,11 @@ const Index = () => {
 
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} onScanClick={handleCameraOpen} />
 
-      <main ref={gsapRef} className="max-w-5xl mx-auto px-3 py-2 pb-4 flex-1">
+      <main ref={gsapRef} className="max-w-5xl mx-auto px-3 py-1.5 pb-2 flex-1">
         {!showResults ? (
           <>
             {/* Hero + Scan */}
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <div className="gsap-hero rounded-2xl overflow-hidden shadow-xl hover-lift">
                 <div className="relative h-full min-h-[120px]">
                   <img src={heroImage} alt="Fresh fish" className="w-full h-full object-cover" />
@@ -239,12 +239,12 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="gsap-scan-area flex flex-col gap-2">
-                <Button variant="scan" size="lg" className="w-full h-12 text-sm rounded-2xl flex-shrink-0" onClick={handleCameraOpen}>
+              <div className="gsap-scan-area flex flex-col gap-1.5">
+                <Button variant="scan" size="lg" className="w-full h-11 text-sm rounded-2xl flex-shrink-0" onClick={handleCameraOpen}>
                   <Camera className="w-5 h-5 mr-2" />
                   Start Camera Scan
                 </Button>
-                <div className="glass-effect rounded-2xl p-2.5 space-y-1 shadow-md flex-1 overflow-auto">
+                <div className="glass-effect rounded-2xl p-2 space-y-1 shadow-md flex-1 overflow-auto">
                   <h3 className="font-bold text-[11px] text-foreground flex items-center gap-1.5">
                     <div className="w-4 h-4 rounded-md bg-primary/20 flex items-center justify-center">
                       <Info className="w-2.5 h-2.5 text-primary" />
@@ -262,14 +262,14 @@ const Index = () => {
             </div>
 
             {/* Dashboard Panels */}
-            <div className="grid grid-cols-3 gap-2.5 mb-3">
+            <div className="grid grid-cols-3 gap-2 mb-2">
               <div className="gsap-panel"><LiveStats /></div>
               <div className="gsap-panel"><SystemOverview /></div>
               <div className="gsap-panel"><FreshnessDistribution /></div>
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-3 gap-2.5 mb-3">
+            <div className="grid grid-cols-3 gap-2">
               <div className="gsap-chart"><ScanActivityChart /></div>
               <div className="gsap-chart"><SpectrumAnalysis /></div>
               <div className="gsap-chart"><QualityRadar /></div>
@@ -299,8 +299,8 @@ const Index = () => {
                   <p className="text-muted-foreground font-medium text-sm">The image does not appear to be a fish. Please try again.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
                     <SpeciesCard {...results.species!} />
                     {results.pricePerKilo && (
                       <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
@@ -327,7 +327,7 @@ const Index = () => {
                     <FreshnessIndicator {...results.freshness!} />
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {results.nutritionalInfo && (
                       <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
                         <h3 className="text-sm font-bold text-foreground mb-2">Nutrition (per 100g)</h3>
