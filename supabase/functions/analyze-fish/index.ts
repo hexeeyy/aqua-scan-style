@@ -30,9 +30,30 @@ serve(async (req) => {
     }
 
     const { image } = await req.json();
-    
-    if (!image) {
-      throw new Error('No image provided');
+
+    // Input validation
+    if (!image || typeof image !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid image data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const dataUrlPattern = /^data:image\/(jpeg|jpg|png|webp);base64,/;
+    if (!dataUrlPattern.test(image)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid image format. Only JPEG, PNG, and WebP are supported.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const base64Data = image.split(',')[1];
+    const imageSizeBytes = (base64Data.length * 3) / 4;
+    if (imageSizeBytes > 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: 'Image too large. Maximum size is 5MB.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -137,21 +158,14 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
       const errorText = await response.text();
       console.error('AI API error:', response.status, errorText);
       
-      if (response.status === 429) {
+      if (response.status === 429 || response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Service temporarily unavailable. Please try again later.' }),
+          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits exhausted. Please add credits to continue.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      throw new Error(`AI API error: ${response.status} ${errorText}`);
+      throw new Error('AI service error');
     }
 
     const data = await response.json();
@@ -202,13 +216,8 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
   } catch (error) {
     console.error('Error in analyze-fish function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: 'An error occurred processing your request.' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
