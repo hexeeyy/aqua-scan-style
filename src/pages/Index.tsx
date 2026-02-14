@@ -12,6 +12,8 @@ import Logo from "@/assets/logo.png";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ScanHistory, saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { SplashScreen } from "@/components/SplashScreen";
+import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats } from "@/components/DashboardPanels";
+import { ResearcherCards } from "@/components/ResearcherCards";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -303,7 +305,7 @@ const Index = () => {
             <div className="grid grid-cols-2 gap-3 mb-3 animate-fade-in">
               {/* Hero Section */}
               <div className="rounded-2xl overflow-hidden shadow-xl hover-lift">
-                <div className="relative h-full min-h-[140px]">
+                <div className="relative h-full min-h-[120px]">
                   <img 
                     src={heroImage} 
                     alt="Fresh fish" 
@@ -326,7 +328,7 @@ const Index = () => {
                 <Button
                   variant="scan"
                   size="lg"
-                  className="w-full h-14 text-sm rounded-2xl flex-shrink-0"
+                  className="w-full h-12 text-sm rounded-2xl flex-shrink-0"
                   onClick={handleCameraOpen}
                   aria-label="Start camera scan to analyze fish"
                 >
@@ -334,33 +336,40 @@ const Index = () => {
                   Start Camera Scan
                 </Button>
 
-                <div className="glass-effect rounded-2xl p-3 space-y-1.5 shadow-md flex-1 overflow-auto">
-                  <h3 className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-                      <Info className="w-3 h-3 text-primary" />
+                <div className="glass-effect rounded-2xl p-2.5 space-y-1 shadow-md flex-1 overflow-auto">
+                  <h3 className="font-bold text-[11px] text-foreground flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-md bg-primary/20 flex items-center justify-center">
+                      <Info className="w-2.5 h-2.5 text-primary" />
                     </div>
                     How to use
                   </h3>
-                  <ul className="text-[11px] text-muted-foreground space-y-0.5 ml-1 font-medium">
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-primary font-bold">1.</span>
-                      <span>Tap "Start Camera Scan"</span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-primary font-bold">2.</span>
-                      <span>Position fish clearly in frame</span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-primary font-bold">3.</span>
-                      <span>Ensure good lighting</span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-primary font-bold">4.</span>
-                      <span>Capture & view AI results</span>
-                    </li>
+                  <ul className="text-[10px] text-muted-foreground space-y-0.5 ml-1 font-medium">
+                    <li className="flex items-start gap-1"><span className="text-primary font-bold">1.</span><span>Tap "Start Camera Scan"</span></li>
+                    <li className="flex items-start gap-1"><span className="text-primary font-bold">2.</span><span>Position fish clearly in frame</span></li>
+                    <li className="flex items-start gap-1"><span className="text-primary font-bold">3.</span><span>Ensure good lighting</span></li>
+                    <li className="flex items-start gap-1"><span className="text-primary font-bold">4.</span><span>Capture & view AI results</span></li>
                   </ul>
                 </div>
               </div>
+            </div>
+
+            {/* Dashboard Panels - 3-column dense grid */}
+            <div className="grid grid-cols-3 gap-2.5 mb-3 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              <LiveStats />
+              <SystemOverview />
+              <FreshnessDistribution />
+            </div>
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-3 gap-2.5 mb-3 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              <ScanActivityChart />
+              <SpectrumAnalysis />
+              <QualityRadar />
+            </div>
+
+            {/* Research Team */}
+            <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              <ResearcherCards />
             </div>
           </>
         ) : results ? (
