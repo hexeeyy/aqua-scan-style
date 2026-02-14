@@ -28,7 +28,7 @@ export const FreshnessIndicator = ({ level, score }: FreshnessIndicatorProps) =>
     }
   };
 
-  const { icon: Icon, text, gradient, description } = config[level];
+  const { icon: Icon, text, gradient, description } = config[level] ?? config.moderate;
 
   return (
     <Card className="border-none shadow-lg overflow-hidden hover-lift animate-scale-in">
