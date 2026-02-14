@@ -52,7 +52,7 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
 
         {/* Actions */}
         <div className="flex gap-1">
-          {onScanClick && location.pathname === "/" && (
+          {/* {onScanClick && location.pathname === "/" && (
             <Button
               variant="ghost"
               size="sm"
@@ -62,7 +62,7 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
               <Camera className="w-3.5 h-3.5" />
               Scan
             </Button>
-          )}
+          )} */}
           <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/20 text-white w-8 h-8" onClick={toggleFullscreen}>
             {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
           </Button>

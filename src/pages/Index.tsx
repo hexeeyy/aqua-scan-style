@@ -233,8 +233,8 @@ const Index = () => {
                   <img src={heroImage} alt="Fresh fish" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
-                    <h2 className="text-lg font-bold text-white mb-0.5 tracking-tight">AI Fish Analysis</h2>
-                    <p className="text-white/95 text-xs font-medium">Know the Species. Check the Freshness.</p>
+                    <h2 className="text-lg font-bold text-white mb-0.5 tracking-tight">Artificial Intelligence System</h2>
+                    <p className="text-white/95 text-xs font-medium">Know the Species. Check the Freshness. All in One.</p>
                   </div>
                 </div>
               </div>
