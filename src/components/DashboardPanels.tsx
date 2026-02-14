@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
+import { getScanHistory } from "@/components/ScanHistory";
 
 const spectrumData = [
   { nm: "380", r: 12, g: 8, b: 45 },
@@ -13,21 +15,38 @@ const spectrumData = [
   { nm: "700", r: 68, g: 12, b: 5 },
 ];
 
-const scanActivityData = [
-  { day: "Mon", scans: 12 },
-  { day: "Tue", scans: 19 },
-  { day: "Wed", scans: 8 },
-  { day: "Thu", scans: 24 },
-  { day: "Fri", scans: 31 },
-  { day: "Sat", scans: 15 },
-  { day: "Sun", scans: 22 },
-];
+const useHistoryStats = () => {
+  return useMemo(() => {
+    const history = getScanHistory();
+    const total = history.length;
 
-const freshnessDistribution = [
-  { label: "Fresh", count: 64, fill: "hsl(142, 76%, 45%)" },
-  { label: "Moderate", count: 23, fill: "hsl(45, 93%, 55%)" },
-  { label: "Poor", count: 13, fill: "hsl(0, 84%, 60%)" },
-];
+    const speciesSet = new Set(history.map((s) => s.species.name));
+    const avgScore = total > 0 ? Math.round(history.reduce((sum, s) => sum + s.freshness.score, 0) / total * 10) / 10 : 0;
+
+    const fresh = history.filter((s) => s.freshness.level === "fresh").length;
+    const moderate = history.filter((s) => s.freshness.level === "moderate").length;
+    const poor = history.filter((s) => s.freshness.level === "poor").length;
+    const freshPct = total > 0 ? Math.round((fresh / total) * 100) : 0;
+    const modPct = total > 0 ? Math.round((moderate / total) * 100) : 0;
+    const poorPct = total > 0 ? 100 - freshPct - modPct : 0;
+
+    // Weekly scan activity from real timestamps
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const dayCounts: Record<string, number> = {};
+    dayNames.forEach((d) => (dayCounts[d] = 0));
+    const now = Date.now();
+    const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+    history.filter((s) => s.timestamp >= weekAgo).forEach((s) => {
+      const day = dayNames[new Date(s.timestamp).getDay()];
+      dayCounts[day]++;
+    });
+    const scanActivity = dayNames.map((day) => ({ day, scans: dayCounts[day] }));
+
+    return { total, species: speciesSet.size, avgScore, freshPct, modPct, poorPct, scanActivity };
+  }, []);
+};
+
+
 
 const radarData = [
   { metric: "Eye Clarity", value: 88 },
@@ -76,27 +95,30 @@ export const SystemOverview = () => (
   </section>
 );
 
-export const ScanActivityChart = () => (
-  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
-    <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
-      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-        <BarChart3 className="w-3 h-3 text-primary" />
+export const ScanActivityChart = () => {
+  const { scanActivity } = useHistoryStats();
+  return (
+    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
+      <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
+        <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+          <BarChart3 className="w-3 h-3 text-primary" />
+        </div>
+        Weekly Scan Activity
+      </h3>
+      <div className="h-24">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={scanActivity}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+            <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={20} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+            <Bar dataKey="scans" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
-      Weekly Scan Activity
-    </h3>
-    <div className="h-24">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={scanActivityData}>
-          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-          <XAxis dataKey="day" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={20} />
-          <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-          <Bar dataKey="scans" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export const SpectrumAnalysis = () => (
   <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
@@ -140,30 +162,38 @@ export const SpectrumAnalysis = () => (
   </section>
 );
 
-export const FreshnessDistribution = () => (
-  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
-    <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
-      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-        <TrendingUp className="w-3 h-3 text-primary" />
-      </div>
-      Freshness Distribution
-    </h3>
-    <div className="space-y-1.5">
-      {freshnessDistribution.map((item) => (
-        <div key={item.label} className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground w-14">{item.label}</span>
-          <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{ width: `${item.count}%`, backgroundColor: item.fill }}
-            />
-          </div>
-          <span className="text-[10px] font-bold text-foreground w-7 text-right">{item.count}%</span>
+export const FreshnessDistribution = () => {
+  const { freshPct, modPct, poorPct } = useHistoryStats();
+  const distribution = [
+    { label: "Fresh", count: freshPct, fill: "hsl(142, 76%, 45%)" },
+    { label: "Moderate", count: modPct, fill: "hsl(45, 93%, 55%)" },
+    { label: "Poor", count: poorPct, fill: "hsl(0, 84%, 60%)" },
+  ];
+  return (
+    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
+      <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
+        <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+          <TrendingUp className="w-3 h-3 text-primary" />
         </div>
-      ))}
-    </div>
-  </section>
-);
+        Freshness Distribution
+      </h3>
+      <div className="space-y-1.5">
+        {distribution.map((item) => (
+          <div key={item.label} className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground w-14">{item.label}</span>
+            <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{ width: `${item.count}%`, backgroundColor: item.fill }}
+              />
+            </div>
+            <span className="text-[10px] font-bold text-foreground w-7 text-right">{item.count}%</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
 
 export const QualityRadar = () => (
   <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
@@ -191,26 +221,28 @@ export const QualityRadar = () => (
   </section>
 );
 
-export const LiveStats = () => (
-  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
-    <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
-      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-        <Database className="w-3 h-3 text-primary" />
-      </div>
-      Live Statistics
-    </h3>
-    <div className="grid grid-cols-3 gap-2">
-      {[
-        { label: "Total Scans", value: "1,247", trend: "+12%" },
-        { label: "Species Found", value: "84", trend: "+3" },
-        { label: "Avg Score", value: "78.4", trend: "+2.1" },
-      ].map((stat) => (
-        <div key={stat.label} className="text-center p-1.5 rounded-lg bg-muted/30">
-          <p className="text-lg font-bold text-primary leading-none">{stat.value}</p>
-          <p className="text-[9px] text-muted-foreground mt-0.5">{stat.label}</p>
-          <p className="text-[9px] text-emerald-400 font-semibold">{stat.trend}</p>
+export const LiveStats = () => {
+  const { total, species, avgScore } = useHistoryStats();
+  return (
+    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in">
+      <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
+        <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+          <Database className="w-3 h-3 text-primary" />
         </div>
-      ))}
-    </div>
-  </section>
-);
+        Live Statistics
+      </h3>
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: "Total Scans", value: total.toLocaleString() },
+          { label: "Species Found", value: String(species) },
+          { label: "Avg Score", value: String(avgScore) },
+        ].map((stat) => (
+          <div key={stat.label} className="text-center p-1.5 rounded-lg bg-muted/30">
+            <p className="text-lg font-bold text-primary leading-none">{stat.value}</p>
+            <p className="text-[9px] text-muted-foreground mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
