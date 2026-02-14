@@ -29,12 +29,21 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
       <div className="relative flex flex-col items-center gap-5 animate-scale-in">
         {/* Logo icon */}
-        <div className="w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M24 4C24 4 10 10 10 24C10 38 24 44 24 44C24 44 38 38 38 24C38 10 24 4 24 4Z" fill="white" fillOpacity="0.9"/>
-            <path d="M24 8C24 8 14 13 14 24C14 35 24 40 24 40" stroke="white" strokeWidth="2" strokeLinecap="round" fillOpacity="0"/>
-            <path d="M24 8C24 8 34 13 34 24C34 35 24 40 24 40" stroke="white" strokeWidth="2" strokeLinecap="round" fillOpacity="0"/>
-            <path d="M12 20H36M12 28H36" stroke="hsl(204, 100%, 61%)" strokeWidth="2" strokeLinecap="round"/>
+        <div className="w-20 h-20 flex items-center justify-center">
+          <svg width="72" height="72" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Outer rounded square shield */}
+            <rect x="5" y="5" width="90" height="90" rx="22" fill="white" fillOpacity="0.15" stroke="white" strokeWidth="4" strokeOpacity="0.5"/>
+            {/* Inner pinched star/cushion shape */}
+            <path 
+              d="M50 12 C60 30, 88 30, 88 50 C88 70, 60 70, 50 88 C40 70, 12 70, 12 50 C12 30, 40 30, 50 12Z" 
+              fill="white" 
+              fillOpacity="0.9"
+            />
+            {/* Inner cutout to create the hollow effect */}
+            <path 
+              d="M50 28 C56 38, 72 38, 72 50 C72 62, 56 62, 50 72 C44 62, 28 62, 28 50 C28 38, 44 38, 50 28Z" 
+              fill="hsl(204, 100%, 61%)"
+            />
           </svg>
         </div>
 
