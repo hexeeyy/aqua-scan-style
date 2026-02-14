@@ -67,17 +67,17 @@ export const deleteScanFromHistory = (id: string) => {
 
 const freshnessColor = (level: FreshnessLevel) => {
   switch (level) {
-    case "fresh": return "text-green-500";
-    case "moderate": return "text-yellow-500";
-    case "poor": return "text-red-500";
+    case "fresh": return "text-success";
+    case "moderate": return "text-warning";
+    case "poor": return "text-destructive";
   }
 };
 
 const freshnessBg = (level: FreshnessLevel) => {
   switch (level) {
-    case "fresh": return "bg-green-500/10 border-green-500/30";
-    case "moderate": return "bg-yellow-500/10 border-yellow-500/30";
-    case "poor": return "bg-red-500/10 border-red-500/30";
+    case "fresh": return "bg-success/10 border-success/30";
+    case "moderate": return "bg-warning/10 border-warning/30";
+    case "poor": return "bg-destructive/10 border-destructive/30";
   }
 };
 
@@ -136,23 +136,23 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 border-b border-white/10 shadow-md backdrop-blur-xl" style={{ background: 'linear-gradient(135deg, hsl(204, 100%, 61%) 0%, hsl(214, 100%, 50%) 100%)' }}>
+        <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="rounded-xl" onClick={onBack}>
+            <Button variant="ghost" size="icon" className="rounded-xl text-white hover:bg-white/20" onClick={onBack}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">Scan History</h1>
+            <h1 className="text-lg font-bold text-white tracking-tight">Scan History</h1>
           </div>
           <div className="flex gap-2">
             {compareIds.length >= 2 && (
-              <Button variant="ocean" size="sm" className="rounded-xl text-xs" onClick={() => setShowCompare(true)}>
+              <Button variant="secondary" size="sm" className="rounded-xl text-xs bg-white/20 text-white border-none hover:bg-white/30" onClick={() => setShowCompare(true)}>
                 <GitCompare className="w-4 h-4 mr-1" />
                 Compare ({compareIds.length})
               </Button>
             )}
             {history.length > 0 && (
-              <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={handleExportAll}>
+              <Button variant="secondary" size="sm" className="rounded-xl text-xs bg-white/20 text-white border-none hover:bg-white/30" onClick={handleExportAll}>
                 <Download className="w-4 h-4 mr-1" />
                 Export All
               </Button>

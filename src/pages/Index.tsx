@@ -11,6 +11,7 @@ import heroImage from "@/assets/hero.png";
 import Logo from "@/assets/logo.png";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ScanHistory, saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
+import { SplashScreen } from "@/components/SplashScreen";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -57,6 +58,7 @@ const Index = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -247,21 +249,24 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Splash Screen */}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+
       {/* Header - compact for landscape 7" tablet */}
-      <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
+      <header className="sticky top-0 z-10 border-b border-border/50 shadow-md backdrop-blur-xl" style={{ background: 'linear-gradient(135deg, hsl(204, 100%, 61%) 0%, hsl(214, 100%, 50%) 100%)' }}>
         <div className="max-w-5xl mx-auto px-3 py-1.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={Logo} alt="SARI-ONE Logo" className="w-7 h-7" />
-            <h1 className="text-base font-bold text-foreground tracking-tight">SARI-ONE</h1>
+            <h1 className="text-base font-bold text-white tracking-tight">SARI-ONE</h1>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50 w-8 h-8" aria-label="Toggle fullscreen" onClick={toggleFullscreen}>
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/20 text-white w-8 h-8" aria-label="Toggle fullscreen" onClick={toggleFullscreen}>
               {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50 w-8 h-8" aria-label="View scan history" onClick={() => setShowHistory(true)}>
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/20 text-white w-8 h-8" aria-label="View scan history" onClick={() => setShowHistory(true)}>
               <History className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50 w-8 h-8" aria-label="View information">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/20 text-white w-8 h-8" aria-label="View information">
               <Info className="w-4 h-4" />
             </Button>
           </div>
