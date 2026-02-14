@@ -81,6 +81,29 @@ const Index = () => {
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
 
+  // Kiosk mode: auto-launch fullscreen after splash screen completes
+  useEffect(() => {
+    if (!showSplash && !document.fullscreenElement) {
+      // Small delay to ensure DOM is ready after splash transition
+      const timer = setTimeout(() => {
+        document.documentElement.requestFullscreen()
+          .then(() => setIsFullscreen(true))
+          .catch(() => {
+            // Fullscreen requires user gesture on some browsers; 
+            // add a one-time click listener as fallback
+            const enterFullscreen = () => {
+              document.documentElement.requestFullscreen()
+                .then(() => setIsFullscreen(true))
+                .catch(() => {});
+              document.removeEventListener('click', enterFullscreen);
+            };
+            document.addEventListener('click', enterFullscreen, { once: true });
+          });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash]);
+
   useEffect(() => {
     return () => {
       if (window.speechSynthesis) {
