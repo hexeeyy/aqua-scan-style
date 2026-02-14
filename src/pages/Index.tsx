@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Camera, History, Info, Loader2, Volume2, VolumeX, XCircle, MapPin } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Camera, History, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
@@ -62,7 +62,22 @@ const Index = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [location, setLocation] = useState<LocationData | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -232,41 +247,44 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - compact for 7" displays */}
       <header className="sticky top-0 z-10 glass-effect border-b border-border/50 shadow-md backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={Logo} alt="SARI-ONE Logo" className="w-11 h-11" />
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">SARI-ONE</h1>
+        <div className="max-w-2xl mx-auto px-3 py-2 sm:px-5 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img src={Logo} alt="SARI-ONE Logo" className="w-8 h-8 sm:w-11 sm:h-11" />
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">SARI-ONE</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View scan history" onClick={() => setShowHistory(true)}>
-              <History className="w-5 h-5" />
+          <div className="flex gap-1 sm:gap-2">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50 w-8 h-8 sm:w-10 sm:h-10" aria-label="Toggle fullscreen" onClick={toggleFullscreen}>
+              {isFullscreen ? <Minimize className="w-4 h-4 sm:w-5 sm:h-5" /> : <Maximize className="w-4 h-4 sm:w-5 sm:h-5" />}
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50" aria-label="View information">
-              <Info className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50 w-8 h-8 sm:w-10 sm:h-10" aria-label="View scan history" onClick={() => setShowHistory(true)}>
+              <History className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-accent/50 w-8 h-8 sm:w-10 sm:h-10" aria-label="View information">
+              <Info className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 py-8 pb-24">
+      <main className="max-w-2xl mx-auto px-3 py-4 pb-16 sm:px-5 sm:py-8 sm:pb-24">
         {!showResults ? (
           <>
-            {/* Hero Section */}
-            <div className="mb-8 rounded-3xl overflow-hidden shadow-xl hover-lift animate-fade-in">
-              <div className="relative h-56">
+            {/* Hero Section - compact for 7" */}
+            <div className="mb-4 sm:mb-8 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl hover-lift animate-fade-in">
+              <div className="relative h-36 sm:h-56">
                 <img 
                   src={heroImage} 
                   alt="Fresh fish" 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
+                  <h2 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 tracking-tight">
                     Artificial Intelligence for Fish Analysis
                   </h2>
-                  <p className="text-white/95 text-base font-medium">
+                  <p className="text-white/95 text-xs sm:text-base font-medium">
                     Know the Species. Check the Freshness. All in One Scan.
                   </p>
                 </div>
@@ -274,22 +292,22 @@ const Index = () => {
             </div>
 
             {/* Scan Button */}
-            <div className="mb-8 animate-scale-in">
+            <div className="mb-4 sm:mb-8 animate-scale-in">
               <Button
                 variant="scan"
                 size="lg"
-                className="w-full h-20 text-lg rounded-2xl"
+                className="w-full h-14 sm:h-20 text-base sm:text-lg rounded-2xl"
                 onClick={handleCameraOpen}
                 aria-label="Start camera scan to analyze fish"
               >
-                <Camera className="w-7 h-7 mr-3" aria-hidden="true" />
+                <Camera className="w-6 h-6 mr-2 sm:mr-3" aria-hidden="true" />
                 Start Camera Scan
               </Button>
             </div>
 
             {/* Instructions */}
-            <div className="glass-effect rounded-2xl p-6 space-y-3 shadow-md animate-fade-in">
-              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+            <div className="glass-effect rounded-2xl p-4 sm:p-6 space-y-2 sm:space-y-3 shadow-md animate-fade-in">
+              <h3 className="font-bold text-base sm:text-lg text-foreground flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                   <Info className="w-4 h-4 text-primary" />
                 </div>
@@ -322,9 +340,9 @@ const Index = () => {
         ) : results ? (
           <>
             {/* Results Section */}
-            <div className="space-y-7" role="region" aria-label="Analysis results">
+            <div className="space-y-4 sm:space-y-7" role="region" aria-label="Analysis results">
               <div className="flex items-center justify-between animate-fade-in">
-                <h2 className="text-3xl font-bold text-foreground tracking-tight">Scan Results</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Scan Results</h2>
                 <div className="flex gap-2">
                   {results.isActuallyFish !== false && (
                     <Button 
@@ -367,13 +385,13 @@ const Index = () => {
 
                   {/* Price Per Kilo */}
                   {results.pricePerKilo && (
-                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in relative overflow-hidden" aria-labelledby="price-heading">
+                    <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md hover-lift animate-fade-in relative overflow-hidden" aria-labelledby="price-heading">
                       <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -z-10" />
                       <h3 id="price-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                         Current Market Price (Philippines)
                       </h3>
                       <div className="flex items-baseline gap-3">
-                        <span className="text-4xl font-bold text-primary tracking-tight" aria-label={`Price range: ${results.pricePerKilo.min} to ${results.pricePerKilo.max} pesos per kilogram`}>
+                        <span className="text-2xl sm:text-4xl font-bold text-primary tracking-tight" aria-label={`Price range: ${results.pricePerKilo.min} to ${results.pricePerKilo.max} pesos per kilogram`}>
                           ₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}
                         </span>
                         <span className="text-muted-foreground font-semibold text-lg">per kg</span>
@@ -386,11 +404,11 @@ const Index = () => {
 
                   {/* Freshness Score Chart */}
                   {results.freshness && (
-                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="freshness-chart-heading">
-                      <h3 id="freshness-chart-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
+                    <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="freshness-chart-heading">
+                      <h3 id="freshness-chart-heading" className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 tracking-tight">
                         Freshness Score
                       </h3>
-                      <div className="h-48">
+                      <div className="h-36 sm:h-48">
                         <ResponsiveContainer width="100%" height="100%">
                           <RadialBarChart 
                             cx="50%" 
@@ -417,7 +435,7 @@ const Index = () => {
 
                   {/* Nutritional Information Chart */}
                   {results.nutritionalInfo && (
-                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="nutrition-heading">
+                    <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="nutrition-heading">
                       <h3 id="nutrition-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                         Nutritional Profile (per 100g)
                       </h3>
@@ -454,7 +472,7 @@ const Index = () => {
 
                   {/* Habitat and Collection Areas */}
                   {results.habitat && results.commonAreas && (
-                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="habitat-heading">
+                    <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="habitat-heading">
                       <h3 id="habitat-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                         Habitat & Collection Areas
                       </h3>
@@ -474,7 +492,7 @@ const Index = () => {
 
                   {/* Location Map */}
                   {location && (
-                    <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="location-heading">
+                    <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md hover-lift animate-fade-in" aria-labelledby="location-heading">
                       <h3 id="location-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-primary" />
                         Scan Location
@@ -521,7 +539,7 @@ const Index = () => {
                   </section>
 
                   {/* AI Reasoning */}
-                  <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md animate-fade-in" aria-labelledby="analysis-heading">
+                  <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md animate-fade-in" aria-labelledby="analysis-heading">
                     <h3 id="analysis-heading" className="text-xl font-bold text-foreground mb-4 tracking-tight">
                       AI Analysis
                     </h3>
@@ -531,7 +549,7 @@ const Index = () => {
                   </section>
 
                   {/* Recommendations */}
-                  <section className="glass-effect rounded-2xl p-7 border border-border/50 shadow-md animate-fade-in" aria-labelledby="recommendations-heading">
+                  <section className="glass-effect rounded-2xl p-4 sm:p-7 border border-border/50 shadow-md animate-fade-in" aria-labelledby="recommendations-heading">
                     <h3 id="recommendations-heading" className="text-xl font-bold text-foreground mb-5 tracking-tight">
                       Recommendations
                     </h3>
