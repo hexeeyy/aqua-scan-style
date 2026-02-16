@@ -167,6 +167,7 @@ const Index = () => {
             pricePerKilo: analysisData.pricePerKilo,
             nutritionalInfo: analysisData.nutritionalInfo,
             stats: analysisData.stats,
+            spoilagePrediction: analysisData.spoilagePrediction,
           };
           saveScanToHistory(record);
         }
