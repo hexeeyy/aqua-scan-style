@@ -147,8 +147,13 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
             <Button variant="ghost" size="sm" className="bg-black/50 text-white hover:bg-black/70 text-[10px] px-2.5 backdrop-blur-sm" onClick={() => setAutoCapture(!autoCapture)}>
               {autoCapture ? "Auto" : "Manual"}
             </Button>
-            <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={rotateCamera} aria-label={`Rotate camera (${rotation}°)`}>
+            <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm relative" onClick={rotateCamera} aria-label={`Rotate camera (${rotation}°)`}>
               <RotateCcw className="w-4 h-4" />
+              {rotation !== 0 && (
+                <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] font-bold px-1 py-0.5 rounded-full min-w-[20px] text-center leading-none">
+                  {rotation}°
+                </span>
+              )}
             </Button>
             <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={switchCamera}>
               <RotateCw className="w-4 h-4" />
