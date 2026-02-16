@@ -46,8 +46,16 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   }, []);
 
   useEffect(() => {
-    startCamera();
+    // Stop any existing stream before starting a new one
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      if (videoRef.current) videoRef.current.srcObject = null;
+      setStream(null);
+    }
+    // Small delay to ensure device is released
+    const timer = setTimeout(() => startCamera(), 150);
     return () => {
+      clearTimeout(timer);
       stopCamera();
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     };
@@ -61,6 +69,15 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     };
   }, [stream]);
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -76,10 +93,6 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
       console.error("Error accessing camera:", error);
       toast({ title: "Camera Error", description: "Unable to access camera. Please check permissions.", variant: "destructive" });
     }
-  };
-
-  const stopCamera = () => {
-    if (stream) stream.getTracks().forEach(track => track.stop());
   };
 
   const switchCamera = () => {
