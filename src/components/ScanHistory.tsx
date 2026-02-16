@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X } from "lucide-react";
+import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 
@@ -34,6 +34,12 @@ export interface ScanRecord {
     eyeClarity: string;
     gillColor: string;
     texture: string;
+  };
+  spoilagePrediction?: {
+    hoursAtRoomTemp: number;
+    storage: Array<{ method: string; shelfLife: string; tempRange: string }>;
+    riskLevel: string;
+    recommendation: string;
   };
 }
 
@@ -111,6 +117,12 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
       date: new Date(record.timestamp).toLocaleString(),
       nutrition: record.nutritionalInfo,
       qualityIndicators: record.stats,
+      spoilagePrediction: record.spoilagePrediction ? {
+        hoursAtRoomTemp: record.spoilagePrediction.hoursAtRoomTemp,
+        riskLevel: record.spoilagePrediction.riskLevel,
+        storage: record.spoilagePrediction.storage,
+        recommendation: record.spoilagePrediction.recommendation,
+      } : undefined,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -219,6 +231,20 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                         ₱{record.pricePerKilo.min.toLocaleString()} - ₱{record.pricePerKilo.max.toLocaleString()}/kg
                       </p>
                     )}
+
+                    {record.spoilagePrediction && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <span className={`text-xs font-semibold ${
+                          record.spoilagePrediction.riskLevel === "low" ? "text-success" :
+                          record.spoilagePrediction.riskLevel === "moderate" ? "text-warning" : "text-destructive"
+                        }`}>
+                          {record.spoilagePrediction.hoursAtRoomTemp > 0
+                            ? `~${record.spoilagePrediction.hoursAtRoomTemp}h at room temp`
+                            : "Unsafe"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -234,6 +260,24 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                             <p className="text-xs font-semibold text-foreground">{val}</p>
                           </div>
                         ))}
+                      </div>
+                    )}
+                    {record.spoilagePrediction && (
+                      <div className="bg-muted/30 rounded-xl p-3 space-y-2">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Spoilage Prediction
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {record.spoilagePrediction.storage.map((s, i) => (
+                            <div key={i} className="bg-background/50 rounded-lg p-2 text-center">
+                              <Snowflake className="w-3 h-3 text-primary/60 mx-auto mb-0.5" />
+                              <p className="text-[10px] text-muted-foreground">{s.method}</p>
+                              <p className="text-xs font-bold text-foreground">{s.shelfLife}</p>
+                              <p className="text-[8px] text-muted-foreground">{s.tempRange}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{record.spoilagePrediction.recommendation}</p>
                       </div>
                     )}
                   </div>
@@ -374,6 +418,19 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                           ))}
                         </tr>
                       </>
+                    )}
+                    {compareRecords.some((r) => r.spoilagePrediction) && (
+                      <tr>
+                        <td className="p-3 text-xs text-muted-foreground">Room Temp Safe</td>
+                        {compareRecords.map((r) => (
+                          <td key={r.id} className={`p-3 text-center text-xs font-bold ${
+                            r.spoilagePrediction?.riskLevel === "low" ? "text-success" :
+                            r.spoilagePrediction?.riskLevel === "moderate" ? "text-warning" : "text-destructive"
+                          }`}>
+                            {r.spoilagePrediction ? `${r.spoilagePrediction.hoursAtRoomTemp}h` : "—"}
+                          </td>
+                        ))}
+                      </tr>
                     )}
                   </tbody>
                 </table>
