@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, History, Info, Maximize, Minimize, Camera } from "lucide-react";
+import { Home, Users, History, Maximize, Minimize, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/assets/logo.png";
 
 interface NavbarProps {
@@ -17,6 +17,7 @@ const navItems = [
 ];
 
 export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarProps) => {
+  const { signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -52,19 +53,17 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
 
         {/* Actions */}
         <div className="flex gap-1">
-          {/* {onScanClick && location.pathname === "/" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-xl hover:bg-white/20 text-white h-8 text-xs gap-1.5 font-semibold"
-              onClick={onScanClick}
-            >
-              <Camera className="w-3.5 h-3.5" />
-              Scan
-            </Button>
-          )} */}
           <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white/20 text-white w-8 h-8" onClick={toggleFullscreen}>
             {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl hover:bg-red-500/20 text-white/70 hover:text-red-200 w-8 h-8"
+            onClick={signOut}
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </div>
