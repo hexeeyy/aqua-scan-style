@@ -23,17 +23,26 @@ const About = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    const el = document.fullscreenElement || (document as any).mozFullScreenElement || (document as any).webkitFullscreenElement;
+    if (!el) {
+      const rfs = document.documentElement.requestFullscreen || (document.documentElement as any).mozRequestFullScreen || (document.documentElement as any).webkitRequestFullscreen;
+      rfs?.call(document.documentElement).then(() => setIsFullscreen(true)).catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      const efs = document.exitFullscreen || (document as any).mozCancelFullScreen || (document as any).webkitExitFullscreen;
+      efs?.call(document).then(() => setIsFullscreen(false)).catch(() => {});
     }
   }, []);
 
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).mozFullScreenElement || (document as any).webkitFullscreenElement));
     document.addEventListener('fullscreenchange', handler);
-    return () => document.removeEventListener('fullscreenchange', handler);
+    document.addEventListener('mozfullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('mozfullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+    };
   }, []);
 
   useEffect(() => {
