@@ -80,7 +80,7 @@ export const SystemOverview = () => (
         { label: "AI Engine", value: "Active", icon: Activity, status: "online" as const },
         { label: "Camera Module", value: "Ready", icon: Fish, status: "online" as const },
         { label: "Database", value: "Connected", icon: Database, status: "online" as const },
-        { label: "Temp Sensor", value: "26.4°C", icon: Thermometer, status: "warning" as const },
+        { label: "Temp Sensor", value: "Not Available", icon: Thermometer, status: "warning" as const },
       ].map((item) => (
         <div key={item.label} className="flex items-center gap-2 p-1.5 rounded-lg bg-muted/30">
           <item.icon className="w-3 h-3 text-primary flex-shrink-0" />
