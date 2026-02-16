@@ -61,7 +61,7 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    console.log('Analyzing fish image with AI...');
+    // Processing image analysis
 
     // Call Lovable AI with image analysis
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -176,7 +176,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('AI API error:', response.status);
       
       if (response.status === 429 || response.status === 402) {
         return new Response(
@@ -189,7 +189,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     }
 
     const data = await response.json();
-    console.log('AI Response:', JSON.stringify(data));
+    // AI response received
 
     const content = data.choices?.[0]?.message?.content;
     if (!content) {
@@ -203,7 +203,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       result = JSON.parse(cleanContent);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
+      console.error('Failed to parse AI response');
       throw new Error('Failed to parse AI response as JSON');
     }
 
@@ -223,7 +223,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
       throw new Error('Invalid response structure from AI');
     }
 
-    console.log('Analysis complete:', result);
+    // Analysis complete
 
     return new Response(
       JSON.stringify(result),
@@ -234,7 +234,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     );
 
   } catch (error) {
-    console.error('Error in analyze-fish function:', error);
+    console.error('Analysis error:', { type: (error as Error)?.name, timestamp: new Date().toISOString() });
     return new Response(
       JSON.stringify({ error: 'An error occurred processing your request.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
