@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line, Area, AreaChart } from "recharts";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -185,6 +185,89 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
             <p className="text-xs text-muted-foreground font-medium">
               {history.length} scan{history.length !== 1 ? "s" : ""} • Tap to select for comparison (max 3)
             </p>
+
+            {/* Freshness Trend Chart */}
+            {history.length >= 2 && (
+              <div className="glass-effect rounded-2xl border border-border/50 p-4 shadow-md animate-fade-in">
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                    <Fish className="w-3 h-3 text-primary" />
+                  </div>
+                  Freshness Trend
+                </h3>
+                <div className="h-44">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={[...history].reverse().map((r) => ({
+                        date: new Date(r.timestamp).toLocaleDateString("en-PH", { month: "short", day: "numeric" }),
+                        species: r.species.name.split(" ")[0],
+                        freshness: r.freshness.score,
+                        confidence: r.species.confidence,
+                        spoilageHours: r.spoilagePrediction?.hoursAtRoomTemp ?? null,
+                      }))}
+                      margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient id="freshnessGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="spoilageGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--warning))" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="hsl(var(--warning))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          fontSize: 11,
+                          borderRadius: 12,
+                          border: "1px solid hsl(var(--border))",
+                          background: "hsl(var(--card))",
+                          boxShadow: "0 4px 12px hsl(var(--foreground) / 0.1)",
+                        }}
+                        formatter={(value: number, name: string) => {
+                          if (name === "freshness") return [`${value}%`, "Freshness"];
+                          if (name === "spoilageHours") return [value !== null ? `${value}h` : "N/A", "Room Temp Safe"];
+                          return [value, name];
+                        }}
+                        labelFormatter={(label, payload) => {
+                          const item = payload?.[0]?.payload;
+                          return item ? `${label} — ${item.species}` : label;
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="freshness"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2.5}
+                        fill="url(#freshnessGradient)"
+                        dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                        activeDot={{ r: 6, strokeWidth: 2 }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="spoilageHours"
+                        stroke="hsl(var(--warning))"
+                        strokeWidth={1.5}
+                        strokeDasharray="4 3"
+                        fill="url(#spoilageGradient)"
+                        dot={{ r: 3, fill: "hsl(var(--warning))", strokeWidth: 1.5, stroke: "hsl(var(--background))" }}
+                        connectNulls
+                      />
+                      <Legend
+                        formatter={(value) => value === "freshness" ? "Freshness %" : value === "spoilageHours" ? "Room Temp (h)" : value}
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
             {history.map((record, index) => (
               <div
                 key={record.id}
