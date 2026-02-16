@@ -109,7 +109,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-border/30 pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-[7px] text-muted-foreground">
           <p className="order-2 md:order-1">© {currentYear} SARI-ONE. All rights reserved.</p>
-          <p className="order-1 md:order-2">Developed for Undergraduate Thesis Requirements </p>
+          <p className="order-1 md:order-2">Developed by Computer Engineering Students</p>
         </div>
       </div>
     </footer>

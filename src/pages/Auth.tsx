@@ -66,7 +66,7 @@ const Auth = () => {
           <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-3">
             <Fish className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">SariOne Fish Scanner</h1>
+          <h1 className="text-xl font-bold text-foreground">SARI-ONE AI SYSTEM</h1>
           <p className="text-xs text-muted-foreground mt-1">
             {isLogin ? "Sign in to continue" : "Create your account"}
           </p>
