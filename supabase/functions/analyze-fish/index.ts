@@ -89,6 +89,10 @@ serve(async (req) => {
    - Major fish markets (Navotas, Farmers Market, provincial wet markets)
    - Typical retail prices in the Philippines for 2024-2025
 5. Provide additional data: habitat, nutritional info, and typical collection areas in the Philippines
+6. Predict spoilage timeline based on freshness level:
+   - Estimate hours remaining before the fish becomes unsafe at room temperature (~30°C in PH)
+   - Provide storage recommendations with expected shelf life for each method (ice, refrigerator, freezer)
+   - Consider the current freshness state when estimating remaining time
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -120,7 +124,17 @@ Return ONLY a valid JSON object with this exact structure:
     "omega3": "High/Medium/Low",
     "calories": 150
   },
-  "commonAreas": ["Visayan Sea", "Manila Bay", "Mindanao waters"]
+  "commonAreas": ["Visayan Sea", "Manila Bay", "Mindanao waters"],
+  "spoilagePrediction": {
+    "hoursAtRoomTemp": 6,
+    "storage": [
+      { "method": "Ice/Crushed Ice", "shelfLife": "2-3 days", "tempRange": "0-2°C" },
+      { "method": "Refrigerator", "shelfLife": "3-5 days", "tempRange": "0-4°C" },
+      { "method": "Freezer", "shelfLife": "3-6 months", "tempRange": "-18°C or below" }
+    ],
+    "riskLevel": "low",
+    "recommendation": "Brief actionable recommendation based on current freshness"
+  }
 }
 
 If the image is NOT a fish, return:
@@ -130,6 +144,12 @@ If the image is NOT a fish, return:
 }
 
 IMPORTANT: Use realistic Philippine peso prices based on current market rates. Common fish like tilapia: ₱120-180/kg, bangus: ₱160-220/kg, galunggong: ₱180-280/kg, tuna: ₱300-500/kg, lapu-lapu: ₱400-800/kg. Adjust for freshness.
+
+Spoilage prediction guidelines:
+- Fresh fish at room temp (~30°C PH climate): 4-8 hours safe
+- Moderate freshness at room temp: 1-3 hours safe
+- Poor freshness: already unsafe, 0 hours
+- riskLevel: "low" for fresh, "moderate" for moderate, "high" for poor
 
 Be accurate and professional. Confidence should reflect uncertainty (80-95% for clear fish, 60-79% for unclear images).`
           },
