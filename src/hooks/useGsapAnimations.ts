@@ -7,7 +7,6 @@ export const useGsapDashboard = () => {
   useEffect(() => {
     if (!ref.current) return;
     const ctx = gsap.context(() => {
-      // Hero section
       gsap.from(".gsap-hero", {
         x: -60,
         opacity: 0,
@@ -20,8 +19,6 @@ export const useGsapDashboard = () => {
         duration: 0.7,
         ease: "power3.out",
       });
-
-      // Dashboard panels - staggered entrance
       gsap.from(".gsap-panel", {
         y: 30,
         opacity: 0,
@@ -30,8 +27,6 @@ export const useGsapDashboard = () => {
         delay: 0.3,
         ease: "power2.out",
       });
-
-      // Charts row
       gsap.from(".gsap-chart", {
         scale: 0.9,
         opacity: 0,
@@ -43,6 +38,27 @@ export const useGsapDashboard = () => {
     }, ref);
     return () => ctx.revert();
   }, []);
+
+  return ref;
+};
+
+export const useGsapResults = (active: boolean) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!active || !ref.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(".gsap-result", {
+        y: 40,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.07,
+        ease: "power3.out",
+        clearProps: "all",
+      });
+    }, ref);
+    return () => ctx.revert();
+  }, [active]);
 
   return ref;
 };

@@ -18,7 +18,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats } from "@/components/DashboardPanels";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { useGsapDashboard } from "@/hooks/useGsapAnimations";
+import { useGsapDashboard, useGsapResults } from "@/hooks/useGsapAnimations";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -73,6 +73,7 @@ const Index = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
   const gsapRef = useGsapDashboard();
+  const resultsRef = useGsapResults(showResults);
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -277,8 +278,8 @@ const Index = () => {
           </>
         ) : results ? (
           <>
-            <div role="region" aria-label="Analysis results">
-              <div className="flex items-center justify-between mb-3">
+            <div role="region" aria-label="Analysis results" ref={resultsRef}>
+              <div className="flex items-center justify-between mb-3 gsap-result">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-ocean-gradient flex items-center justify-center shadow-md">
                     <Camera className="w-4 h-4 text-primary-foreground" />
@@ -324,7 +325,7 @@ const Index = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
                         {/* Species ID */}
-                        <ResultPanel title="Species Identified" icon={Fish} variant="primary">
+                        <ResultPanel title="Species Identified" icon={Fish} variant="primary" className="gsap-result">
                           <div className="flex items-center gap-3">
                             <div className="flex-1 min-w-0">
                               <h4 className="text-sm font-bold text-foreground truncate">{results.species?.name}</h4>
@@ -349,6 +350,7 @@ const Index = () => {
                             title="Freshness Score"
                             icon={Thermometer}
                             variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"}
+                            className="gsap-result"
                           >
                             <div className="flex items-center gap-3">
                               <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={88} />
@@ -362,7 +364,7 @@ const Index = () => {
 
                         {/* Market Price */}
                         {results.pricePerKilo && (
-                          <ResultPanel title="Market Price (PH)" icon={DollarSign} variant="primary">
+                          <ResultPanel title="Market Price (PH)" icon={DollarSign} variant="primary" className="gsap-result">
                             <div className="flex items-baseline gap-2">
                               <span className="text-2xl font-bold text-foreground">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
                               <span className="text-muted-foreground font-semibold text-[10px]">per kg</span>
@@ -374,7 +376,7 @@ const Index = () => {
                         )}
 
                         {/* Quality Indicators */}
-                        <ResultPanel title="Quality Indicators" icon={Eye} variant="info">
+                        <ResultPanel title="Quality Indicators" icon={Eye} variant="info" className="gsap-result">
                           <QuickStats stats={results.stats!} />
                         </ResultPanel>
                       </div>
@@ -382,7 +384,7 @@ const Index = () => {
                       <div className="space-y-2">
                         {/* Nutrition */}
                         {results.nutritionalInfo && (
-                          <ResultPanel title="Nutrition (per 100g)" icon={Apple} variant="success">
+                          <ResultPanel title="Nutrition (per 100g)" icon={Apple} variant="success" className="gsap-result">
                             <div className="space-y-1.5">
                               {[
                                 { label: "Protein", value: `${results.nutritionalInfo.protein}g`, icon: "💪" },
@@ -415,7 +417,7 @@ const Index = () => {
                         )}
 
                         {/* Recommendations */}
-                        <ResultPanel title="Recommendations" icon={Shield} variant={results.freshness!.level === "fresh" ? "success" : results.freshness!.level === "moderate" ? "warning" : "danger"}>
+                        <ResultPanel title="Recommendations" icon={Shield} variant={results.freshness!.level === "fresh" ? "success" : results.freshness!.level === "moderate" ? "warning" : "danger"} className="gsap-result">
                           <ul className="space-y-1.5 text-xs text-muted-foreground">
                             {results.freshness!.level === "fresh" && (
                               <>
@@ -446,7 +448,7 @@ const Index = () => {
 
                       {/* Habitat - full width */}
                       {results.habitat && results.commonAreas && (
-                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-2">
+                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-2 gsap-result">
                           <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {results.commonAreas.map((area, i) => (
@@ -458,7 +460,7 @@ const Index = () => {
 
                       {/* Location */}
                       {location && (
-                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-2">
+                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-2 gsap-result">
                           <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
                             <iframe
                               width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
@@ -477,26 +479,26 @@ const Index = () => {
 
                   {/* ===== RESEARCHERS & EXPERTS TAB ===== */}
                   <TabsContent value="researcher" className="mt-0">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2 auto-rows-min">
+                      <div className="gsap-result">
                         <SpeciesCard {...results.species!} />
-
-                        {results.freshness && (
-                          <ResultPanel title="Freshness Analysis Detail" icon={Thermometer} variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"}>
-                            <div className="flex items-center gap-3">
-                              <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={80} />
-                              <div className="flex-1">
-                                <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
-                              </div>
-                            </div>
-                            <div className="mt-2">
-                              <QuickStats stats={results.stats!} />
-                            </div>
-                          </ResultPanel>
-                        )}
                       </div>
 
-                      <div>
+                      {results.freshness && (
+                        <ResultPanel title="Freshness Analysis Detail" icon={Thermometer} variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"} className="gsap-result">
+                          <div className="flex items-center gap-3">
+                            <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={80} />
+                            <div className="flex-1">
+                              <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <QuickStats stats={results.stats!} />
+                          </div>
+                        </ResultPanel>
+                      )}
+
+                      <div className="col-span-2">
                         <ModelMetrics
                           confidence={results.species?.confidence ?? 0}
                           freshnessScore={results.freshness?.score ?? 0}

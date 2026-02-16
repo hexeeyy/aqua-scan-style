@@ -42,8 +42,8 @@ export const ModelMetrics = ({ confidence, freshnessScore }: ModelMetricsProps) 
   ];
 
   return (
-    <div className="space-y-2">
-      <ResultPanel title="Classification Metrics" icon={Target} variant="primary">
+    <div className="grid grid-cols-2 gap-2">
+      <ResultPanel title="Classification Metrics" icon={Target} variant="primary" className="gsap-result">
         <div className="grid grid-cols-5 gap-1.5 mb-3">
           {classificationMetrics.map((m) => {
             const Icon = m.icon;
@@ -71,7 +71,7 @@ export const ModelMetrics = ({ confidence, freshnessScore }: ModelMetricsProps) 
         </div>
       </ResultPanel>
 
-      <ResultPanel title="Performance Radar" icon={Activity} variant="info">
+      <ResultPanel title="Performance Radar" icon={Activity} variant="info" className="gsap-result">
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
@@ -83,7 +83,7 @@ export const ModelMetrics = ({ confidence, freshnessScore }: ModelMetricsProps) 
         </div>
       </ResultPanel>
 
-      <ResultPanel title="Regression Metrics (Freshness)" icon={BarChart3} variant="warning">
+      <ResultPanel title="Regression Metrics (Freshness)" icon={BarChart3} variant="warning" className="gsap-result">
         <div className="space-y-2">
           {regressionMetrics.map((m) => (
             <div key={m.metric} className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/20">
@@ -104,7 +104,7 @@ export const ModelMetrics = ({ confidence, freshnessScore }: ModelMetricsProps) 
         </div>
       </ResultPanel>
 
-      <ResultPanel title="Model Notes" icon={Brain} variant="primary">
+      <ResultPanel title="Model Notes" icon={Brain} variant="primary" className="gsap-result">
         <div className="space-y-1.5 text-[10px] text-muted-foreground leading-relaxed">
           <p>• <strong className="text-foreground">Species Classification:</strong> Multi-class CNN with transfer learning (MobileNetV2 backbone). Trained on 15,000+ labeled fish images across 120 Philippine species.</p>
           <p>• <strong className="text-foreground">Freshness Regression:</strong> Gradient-boosted ensemble combining visual features (eye clarity, gill hue, skin reflectance) with texture analysis.</p>
