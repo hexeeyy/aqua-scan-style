@@ -50,12 +50,10 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       if (videoRef.current) videoRef.current.srcObject = null;
-      setStream(null);
     }
-    // Small delay to ensure device is released
-    const timer = setTimeout(() => startCamera(), 150);
+    // Start camera directly — no setTimeout, preserves gesture context in Firefox on RPi
+    startCamera();
     return () => {
-      clearTimeout(timer);
       stopCamera();
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     };
