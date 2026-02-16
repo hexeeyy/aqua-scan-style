@@ -281,9 +281,11 @@ const Index = () => {
             <div role="region" aria-label="Analysis results" ref={resultsRef}>
               <div className="flex items-center justify-between mb-3 gsap-result">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-ocean-gradient flex items-center justify-center shadow-md">
-                    <Camera className="w-4 h-4 text-primary-foreground" />
-                  </div>
+                  {capturedImage && (
+                    <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md flex-shrink-0">
+                      <img src={capturedImage} alt="Scanned fish" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                   <div>
                     <h2 className="text-lg font-bold text-foreground tracking-tight leading-tight">Scan Results</h2>
                     <p className="text-[10px] text-muted-foreground font-medium">AI-powered analysis complete</p>
