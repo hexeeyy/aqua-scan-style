@@ -82,28 +82,57 @@ const Index = () => {
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
 
+  const requestFullscreen = useCallback((el: HTMLElement) => {
+    const rfs = el.requestFullscreen
+      || (el as any).mozRequestFullScreen
+      || (el as any).webkitRequestFullscreen
+      || (el as any).msRequestFullscreen;
+    return rfs?.call(el) ?? Promise.reject();
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    const efs = document.exitFullscreen
+      || (document as any).mozCancelFullScreen
+      || (document as any).webkitExitFullscreen
+      || (document as any).msExitFullscreen;
+    return efs?.call(document) ?? Promise.reject();
+  }, []);
+
+  const getFullscreenElement = useCallback(() => {
+    return document.fullscreenElement
+      || (document as any).mozFullScreenElement
+      || (document as any).webkitFullscreenElement
+      || (document as any).msFullscreenElement;
+  }, []);
+
   const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    if (!getFullscreenElement()) {
+      requestFullscreen(document.documentElement).then(() => setIsFullscreen(true)).catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
     }
-  }, []);
+  }, [requestFullscreen, exitFullscreen, getFullscreenElement]);
 
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    const handler = () => setIsFullscreen(!!getFullscreenElement());
     document.addEventListener('fullscreenchange', handler);
-    return () => document.removeEventListener('fullscreenchange', handler);
-  }, []);
+    document.addEventListener('mozfullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('mozfullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+    };
+  }, [getFullscreenElement]);
 
   useEffect(() => {
-    if (!showSplash && !document.fullscreenElement) {
+    if (!showSplash && !getFullscreenElement()) {
       const timer = setTimeout(() => {
-        document.documentElement.requestFullscreen()
+        requestFullscreen(document.documentElement)
           .then(() => setIsFullscreen(true))
           .catch(() => {
             const enterFullscreen = () => {
-              document.documentElement.requestFullscreen()
+              requestFullscreen(document.documentElement)
                 .then(() => setIsFullscreen(true))
                 .catch(() => {});
               document.removeEventListener('click', enterFullscreen);
@@ -113,7 +142,7 @@ const Index = () => {
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [showSplash]);
+  }, [showSplash, requestFullscreen, getFullscreenElement]);
 
   useEffect(() => {
     return () => {
@@ -159,7 +188,7 @@ const Index = () => {
       } else {
         if (analysisData.species && analysisData.freshness) {
           const record: ScanRecord = {
-            id: crypto.randomUUID(),
+            id: (typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
             timestamp: Date.now(),
             thumbnail: imageData,
             species: analysisData.species,

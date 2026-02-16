@@ -132,6 +132,7 @@ All colors MUST be HSL.
   }
 
   .glass-effect {
+    -webkit-backdrop-filter: blur(24px);
     @apply backdrop-blur-xl bg-card/80 border border-border/50;
   }
 }
