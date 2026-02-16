@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Camera, X, RotateCw, Scan, Fish, Droplets, Target } from "lucide-react";
+import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const [rotation, setRotation] = useState(0);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionStatus, setDetectionStatus] = useState<DetectionResult | null>(null);
   const [autoCapture, setAutoCapture] = useState(false);
@@ -65,16 +66,22 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   };
 
   const switchCamera = () => setFacingMode(prev => prev === "user" ? "environment" : "user");
+  const rotateCamera = () => setRotation(prev => (prev + 90) % 360);
 
   const captureFrameData = (): string | null => {
     if (!videoRef.current || !canvasRef.current) return null;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const isRotated90 = rotation === 90 || rotation === 270;
+    canvas.width = isRotated90 ? video.videoHeight : video.videoWidth;
+    canvas.height = isRotated90 ? video.videoWidth : video.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    ctx.drawImage(video, 0, 0);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.drawImage(video, -video.videoWidth / 2, -video.videoHeight / 2);
+    ctx.restore();
     return canvas.toDataURL("image/jpeg", 0.6);
   };
 
@@ -127,7 +134,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   return (
     <div className="fixed inset-0 z-50 bg-black" role="region" aria-label="Camera capture interface">
       <div className="relative w-full h-full bg-black">
-        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover transition-transform duration-300" style={{ transform: `rotate(${rotation}deg)` }} />
         <canvas ref={canvasRef} className="hidden" />
         
         {/* Top controls */}
@@ -139,6 +146,9 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           <div className="flex gap-1.5">
             <Button variant="ghost" size="sm" className="bg-black/50 text-white hover:bg-black/70 text-[10px] px-2.5 backdrop-blur-sm" onClick={() => setAutoCapture(!autoCapture)}>
               {autoCapture ? "Auto" : "Manual"}
+            </Button>
+            <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={rotateCamera} aria-label={`Rotate camera (${rotation}°)`}>
+              <RotateCcw className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={switchCamera}>
               <RotateCw className="w-4 h-4" />
