@@ -31,13 +31,24 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
+  // Enumerate available video devices for robust switching
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [activeDeviceIdx, setActiveDeviceIdx] = useState(0);
+
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(all => {
+      const cams = all.filter(d => d.kind === "videoinput");
+      setDevices(cams);
+    });
+  }, []);
+
   useEffect(() => {
     startCamera();
     return () => {
       stopCamera();
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     };
-  }, [facingMode]);
+  }, [facingMode, activeDeviceIdx]);
 
   useEffect(() => {
     if (stream) {
@@ -50,9 +61,12 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } }
-      });
+      // Prefer exact deviceId when available, fall back to facingMode
+      const constraints: MediaStreamConstraints = devices.length > 0
+        ? { video: { deviceId: { exact: devices[activeDeviceIdx]?.deviceId }, width: { ideal: 640 }, height: { ideal: 480 } } }
+        : { video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } } };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setStream(mediaStream);
     } catch (error) {
@@ -65,7 +79,16 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
     if (stream) stream.getTracks().forEach(track => track.stop());
   };
 
-  const switchCamera = () => setFacingMode(prev => prev === "user" ? "environment" : "user");
+  const switchCamera = () => {
+    if (devices.length > 1) {
+      setActiveDeviceIdx(prev => (prev + 1) % devices.length);
+    } else {
+      setFacingMode(prev => prev === "user" ? "environment" : "user");
+    }
+    // Reset rotation when switching cameras
+    setRotation(0);
+  };
+
   const rotateCamera = () => setRotation(prev => (prev + 90) % 360);
 
   const captureFrameData = (): string | null => {
@@ -134,7 +157,20 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   return (
     <div className="fixed inset-0 z-50 bg-black" role="region" aria-label="Camera capture interface">
       <div className="relative w-full h-full bg-black">
-        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover transition-transform duration-300" style={{ transform: `rotate(${rotation}deg)` }} />
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+          style={{
+            transform: `rotate(${rotation}deg) translateZ(0)`,
+            // Scale up at 90/270 so rotated video still fills the viewport
+            ...(rotation === 90 || rotation === 270
+              ? { transformOrigin: 'center center', scale: `${Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth)}` }
+              : {}),
+            transition: 'transform 0.3s ease',
+          }}
+        />
         <canvas ref={canvasRef} className="hidden" />
         
         {/* Top controls */}
