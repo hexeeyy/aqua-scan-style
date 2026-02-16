@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw } from "lucide-react";
+import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +24,10 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
-  const [rotation, setRotation] = useState(0);
+  // Default to 270° for Firefox
+  const isFirefox = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
+  const [rotation, setRotation] = useState(isFirefox ? 270 : 0);
+  const [zoom, setZoom] = useState(1);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionStatus, setDetectionStatus] = useState<DetectionResult | null>(null);
   const [autoCapture, setAutoCapture] = useState(false);
@@ -86,10 +89,13 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
       setFacingMode(prev => prev === "user" ? "environment" : "user");
     }
     // Reset rotation when switching cameras
-    setRotation(0);
+    setRotation(isFirefox ? 270 : 0);
+    setZoom(1);
   };
 
   const rotateCamera = () => setRotation(prev => (prev + 90) % 360);
+  const zoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
+  const zoomOut = () => setZoom(prev => Math.max(prev - 0.25, 1));
 
   const captureFrameData = (): string | null => {
     if (!videoRef.current || !canvasRef.current) return null;
@@ -163,7 +169,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           playsInline
           className="w-full h-full object-cover"
           style={{
-            transform: `rotate(${rotation}deg) translateZ(0)`,
+            transform: `rotate(${rotation}deg) scale(${zoom}) translateZ(0)`,
             // Scale up at 90/270 so rotated video still fills the viewport
             ...(rotation === 90 || rotation === 270
               ? { transformOrigin: 'center center', scale: `${Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth)}` }
@@ -195,6 +201,19 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
               <RotateCw className="w-4 h-4" />
             </Button>
           </div>
+        </div>
+
+        {/* Zoom controls - right side */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20">
+          <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={zoomIn} disabled={zoom >= 3}>
+            <ZoomIn className="w-4 h-4" />
+          </Button>
+          <div className="bg-black/50 backdrop-blur-sm rounded-full px-1.5 py-1 text-center">
+            <span className="text-white text-[10px] font-bold">{zoom.toFixed(1)}x</span>
+          </div>
+          <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={zoomOut} disabled={zoom <= 1}>
+            <ZoomOut className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Live species overlay - top center */}
