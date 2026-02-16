@@ -50,10 +50,12 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       if (videoRef.current) videoRef.current.srcObject = null;
+      setStream(null);
     }
-    // Start camera directly — no setTimeout, preserves gesture context in Firefox on RPi
-    startCamera();
+    // Small delay to ensure device is released
+    const timer = setTimeout(() => startCamera(), 150);
     return () => {
+      clearTimeout(timer);
       stopCamera();
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     };
@@ -80,15 +82,9 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const startCamera = async () => {
     try {
       // Prefer exact deviceId when available, fall back to facingMode
-      const videoConstraints: MediaTrackConstraints = {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        frameRate: { ideal: 120, min: 30 },
-      };
-
       const constraints: MediaStreamConstraints = devices.length > 0
-        ? { video: { ...videoConstraints, deviceId: { exact: devices[activeDeviceIdx]?.deviceId } } }
-        : { video: { ...videoConstraints, facingMode } };
+        ? { video: { deviceId: { exact: devices[activeDeviceIdx]?.deviceId }, width: { ideal: 640 }, height: { ideal: 480 } } }
+        : { video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } } };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
