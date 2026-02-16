@@ -274,8 +274,16 @@ const Index = () => {
         ) : results ? (
           <>
             <div role="region" aria-label="Analysis results">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-bold text-foreground tracking-tight">Scan Results</h2>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-ocean-gradient flex items-center justify-center shadow-md">
+                    <Camera className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground tracking-tight leading-tight">Scan Results</h2>
+                    <p className="text-[10px] text-muted-foreground font-medium">AI-powered analysis complete</p>
+                  </div>
+                </div>
                 <div className="flex gap-1.5">
                   {results.isActuallyFish !== false && (
                     <Button variant="outline" size="icon" className="rounded-xl w-8 h-8" onClick={toggleVoiceNarration}>
@@ -288,8 +296,8 @@ const Index = () => {
 
               {results.isActuallyFish === false ? (
                 <div className="bg-destructive/10 border-2 border-destructive/50 rounded-2xl p-6 text-center glass-effect animate-scale-in" role="alert">
-                  <div className="w-12 h-12 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto mb-3">
-                    <XCircle className="w-7 h-7 text-destructive" />
+                  <div className="w-14 h-14 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto mb-3">
+                    <XCircle className="w-8 h-8 text-destructive" />
                   </div>
                   <h3 className="text-xl font-bold text-destructive mb-2">Not a Fish!</h3>
                   <p className="text-muted-foreground font-medium text-sm">The image does not appear to be a fish. Please try again.</p>
@@ -298,25 +306,38 @@ const Index = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
                     <SpeciesCard {...results.species!} />
+
                     {results.pricePerKilo && (
-                      <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                        <h3 className="text-sm font-bold text-foreground mb-2">Market Price (PH)</h3>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-primary">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
-                          <span className="text-muted-foreground font-semibold text-xs">per kg</span>
+                      <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                        <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
+                          <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Market Price (PH)</h3>
+                        </div>
+                        <div className="p-3">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-xl font-bold text-primary">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
+                            <span className="text-muted-foreground font-semibold text-[10px]">per kg</span>
+                          </div>
+                          {results.pricePerKilo.source && (
+                            <p className="text-[9px] text-muted-foreground mt-1">Source: {results.pricePerKilo.source}</p>
+                          )}
                         </div>
                       </section>
                     )}
+
                     {results.freshness && (
-                      <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                        <h3 className="text-sm font-bold text-foreground mb-1">Freshness Score</h3>
-                        <div className="h-28">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="100%" data={[{ name: 'Freshness', value: results.freshness.score, fill: 'hsl(var(--primary))' }]} startAngle={90} endAngle={-270}>
-                              <RadialBar background dataKey="value" cornerRadius={10} />
-                              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-primary">{results.freshness.score}%</text>
-                            </RadialBarChart>
-                          </ResponsiveContainer>
+                      <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                        <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
+                          <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Freshness Score</h3>
+                        </div>
+                        <div className="p-3">
+                          <div className="h-28">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="100%" data={[{ name: 'Freshness', value: results.freshness.score, fill: 'hsl(var(--primary))' }]} startAngle={90} endAngle={-270}>
+                                <RadialBar background dataKey="value" cornerRadius={10} />
+                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-primary">{results.freshness.score}%</text>
+                              </RadialBarChart>
+                            </ResponsiveContainer>
+                          </div>
                         </div>
                       </section>
                     )}
@@ -325,100 +346,127 @@ const Index = () => {
 
                   <div className="space-y-2">
                     {results.nutritionalInfo && (
-                      <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                        <h3 className="text-sm font-bold text-foreground mb-2">Nutrition (per 100g)</h3>
-                        <div className="space-y-1.5">
+                      <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                        <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
+                          <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Nutrition (per 100g)</h3>
+                        </div>
+                        <div className="p-3 space-y-1.5">
                           {[
-                            { label: "Protein", value: `${results.nutritionalInfo.protein}g` },
-                            { label: "Omega-3", value: results.nutritionalInfo.omega3 },
-                            { label: "Calories", value: `${results.nutritionalInfo.calories} kcal` },
+                            { label: "Protein", value: `${results.nutritionalInfo.protein}g`, icon: "💪" },
+                            { label: "Omega-3", value: results.nutritionalInfo.omega3, icon: "🐟" },
+                            { label: "Calories", value: `${results.nutritionalInfo.calories} kcal`, icon: "🔥" },
                           ].map((n, i) => (
-                            <div key={n.label} className={`flex justify-between items-center py-1 ${i < 2 ? 'border-b border-border/30' : ''}`}>
-                              <span className="text-xs text-muted-foreground">{n.label}</span>
+                            <div key={n.label} className={`flex justify-between items-center py-1.5 ${i < 2 ? 'border-b border-border/20' : ''}`}>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <span className="text-xs">{n.icon}</span>
+                                {n.label}
+                              </span>
                               <span className="text-sm font-bold text-primary">{n.value}</span>
                             </div>
                           ))}
                         </div>
-                        <div className="h-28 mt-2">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[
-                              { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
-                              { name: 'Cal/10', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--chart-2))' }
-                            ]}>
-                              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                              <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                              <YAxis tick={{ fontSize: 9 }} />
-                              <Tooltip />
-                              <Bar dataKey="value" radius={[6, 6, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
+                        <div className="px-3 pb-3">
+                          <div className="h-28">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={[
+                                { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
+                                { name: 'Cal/10', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--chart-2))' }
+                              ]}>
+                                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                                <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+                                <YAxis tick={{ fontSize: 9 }} />
+                                <Tooltip />
+                                <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
                         </div>
                       </section>
                     )}
+
                     <section>
-                      <h3 className="text-sm font-bold text-foreground mb-2">Quality Indicators</h3>
+                      <div className="mb-1.5 flex items-center gap-1.5">
+                        <div className="w-1 h-4 bg-ocean-gradient rounded-full" />
+                        <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Quality Indicators</h3>
+                      </div>
                       <QuickStats stats={results.stats!} />
                     </section>
-                    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                      <h3 className="text-sm font-bold text-foreground mb-1.5">AI Analysis</h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed font-medium">{results.freshness!.reasoning}</p>
+
+                    <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                      <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
+                        <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">AI Analysis</h3>
+                      </div>
+                      <div className="p-3">
+                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">{results.freshness!.reasoning}</p>
+                      </div>
                     </section>
-                    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                      <h3 className="text-sm font-bold text-foreground mb-2">Recommendations</h3>
-                      <ul className="space-y-1 text-xs text-muted-foreground">
-                        {results.freshness!.level === "fresh" && (
-                          <>
-                            <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Suitable for raw consumption (sushi/sashimi)</span></li>
-                            <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Best consumed within 24-48 hours</span></li>
-                            <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Store at 32-39°F (0-4°C)</span></li>
-                          </>
-                        )}
-                        {results.freshness!.level === "moderate" && (
-                          <>
-                            <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Cook thoroughly before consumption</span></li>
-                            <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Consume within 12-24 hours</span></li>
-                            <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Keep refrigerated at all times</span></li>
-                          </>
-                        )}
-                        {results.freshness!.level === "poor" && (
-                          <>
-                            <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Not recommended for consumption</span></li>
-                            <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Dispose of safely</span></li>
-                            <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Check storage conditions</span></li>
-                          </>
-                        )}
-                      </ul>
+
+                    <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                      <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
+                        <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Recommendations</h3>
+                      </div>
+                      <div className="p-3">
+                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                          {results.freshness!.level === "fresh" && (
+                            <>
+                              <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Suitable for raw consumption (sushi/sashimi)</span></li>
+                              <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Best consumed within 24-48 hours</span></li>
+                              <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Store at 32-39°F (0-4°C)</span></li>
+                            </>
+                          )}
+                          {results.freshness!.level === "moderate" && (
+                            <>
+                              <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Cook thoroughly before consumption</span></li>
+                              <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Consume within 12-24 hours</span></li>
+                              <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Keep refrigerated at all times</span></li>
+                            </>
+                          )}
+                          {results.freshness!.level === "poor" && (
+                            <>
+                              <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Not recommended for consumption</span></li>
+                              <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Dispose of safely</span></li>
+                              <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Check storage conditions</span></li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
                     </section>
                   </div>
 
                   {results.habitat && results.commonAreas && (
-                    <section className="col-span-2 glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                      <h3 className="text-sm font-bold text-foreground mb-2">Habitat & Collection Areas</h3>
-                      <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {results.commonAreas.map((area, i) => (
-                          <span key={i} className="px-2 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-medium">{area}</span>
-                        ))}
+                    <section className="col-span-2 glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                      <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
+                        <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Habitat & Collection Areas</h3>
+                      </div>
+                      <div className="p-3">
+                        <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {results.commonAreas.map((area, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-semibold border border-primary/20">{area}</span>
+                          ))}
+                        </div>
                       </div>
                     </section>
                   )}
 
                   {location && (
-                    <section className="col-span-2 glass-effect rounded-xl p-3 border border-border/50 shadow-md">
-                      <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-primary" />
-                        Scan Location
-                      </h3>
-                      <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
-                        <iframe
-                          width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
-                          src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.01},${location.latitude - 0.01},${location.longitude + 0.01},${location.latitude + 0.01}&layer=mapnik&marker=${location.latitude},${location.longitude}`}
-                          allowFullScreen title="Scan location map"
-                        />
+                    <section className="col-span-2 glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
+                      <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30 flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-primary" />
+                        <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Scan Location</h3>
                       </div>
-                      <div className="flex justify-between items-center text-xs py-1.5 mt-1">
-                        <span className="text-muted-foreground">Coords:</span>
-                        <span className="font-mono text-primary text-[11px]">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</span>
+                      <div className="p-3">
+                        <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
+                          <iframe
+                            width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
+                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.01},${location.latitude - 0.01},${location.longitude + 0.01},${location.latitude + 0.01}&layer=mapnik&marker=${location.latitude},${location.longitude}`}
+                            allowFullScreen title="Scan location map"
+                          />
+                        </div>
+                        <div className="flex justify-between items-center text-xs py-1.5 mt-1">
+                          <span className="text-muted-foreground">Coords:</span>
+                          <span className="font-mono text-primary text-[11px]">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</span>
+                        </div>
                       </div>
                     </section>
                   )}

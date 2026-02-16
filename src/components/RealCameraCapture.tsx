@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Camera, X, RotateCw, Scan, Fish, Droplets } from "lucide-react";
+import { Camera, X, RotateCw, Scan, Fish, Droplets, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,7 +94,6 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
         if (error) throw error;
         setDetectionStatus(data);
 
-        // Auto-capture if enabled and high confidence
         if (data.fishDetected && data.confidence >= 80 && data.quality === "good" && autoCapture) {
           if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
           captureImage();
@@ -122,6 +121,9 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
     return "text-muted-foreground";
   };
 
+  const fishDetected = detectionStatus?.fishDetected;
+  const confidence = detectionStatus?.confidence ?? 0;
+
   return (
     <div className="fixed inset-0 z-50 bg-black" role="region" aria-label="Camera capture interface">
       <div className="relative w-full h-full bg-black">
@@ -148,7 +150,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
         {detectionStatus && (
           <div className="absolute top-14 left-3 right-3 z-20">
             <div className={`rounded-xl backdrop-blur-md border p-2.5 transition-all duration-300 ${
-              detectionStatus.fishDetected 
+              fishDetected 
                 ? 'bg-primary/20 border-primary/40' 
                 : 'bg-black/40 border-white/10'
             }`}>
@@ -156,7 +158,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
                 <div className="flex items-center gap-2">
                   {isDetecting ? (
                     <Scan className="w-4 h-4 text-primary animate-pulse" />
-                  ) : detectionStatus.fishDetected ? (
+                  ) : fishDetected ? (
                     <Fish className="w-4 h-4 text-primary" />
                   ) : (
                     <Scan className="w-4 h-4 text-white/50" />
@@ -171,9 +173,8 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
                   </div>
                 </div>
 
-                {detectionStatus.fishDetected && (
+                {fishDetected && (
                   <div className="flex items-center gap-2">
-                    {/* Freshness badge */}
                     {detectionStatus.freshness && detectionStatus.freshness !== "unknown" && (
                       <div className="flex items-center gap-1">
                         <Droplets className={`w-3 h-3 ${freshnessColor(detectionStatus.freshness)}`} />
@@ -182,20 +183,18 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
                         </span>
                       </div>
                     )}
-                    {/* Confidence */}
                     <div className="bg-white/20 px-2 py-0.5 rounded-full">
-                      <span className="text-white text-[10px] font-bold">{detectionStatus.confidence}%</span>
+                      <span className="text-white text-[10px] font-bold">{confidence}%</span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Confidence bar */}
-              {detectionStatus.fishDetected && (
+              {fishDetected && (
                 <div className="mt-1.5 h-1 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500 bg-primary"
-                    style={{ width: `${detectionStatus.confidence}%` }}
+                    style={{ width: `${confidence}%` }}
                   />
                 </div>
               )}
@@ -203,25 +202,68 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           </div>
         )}
 
-        {/* Scan frame overlay */}
+        {/* ===== BOUNDING BOX OVERLAY ===== */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className={`w-[85%] h-[65%] relative transition-all duration-500 ${
-            detectionStatus?.fishDetected ? '' : ''
+          <div className={`relative transition-all duration-500 ease-out ${
+            fishDetected 
+              ? 'w-[70%] h-[60%]' 
+              : 'w-[85%] h-[65%]'
           }`}>
-            {/* Corner brackets */}
-            {['top-0 left-0 border-t-2 border-l-2', 'top-0 right-0 border-t-2 border-r-2', 'bottom-0 left-0 border-b-2 border-l-2', 'bottom-0 right-0 border-b-2 border-r-2'].map((pos, i) => (
+            {/* Animated bounding box border when fish detected */}
+            {fishDetected && (
+              <>
+                {/* Main bounding box */}
+                <div className="absolute inset-0 border-2 border-primary rounded-lg animate-bbox-pulse" />
+
+                {/* Scanning line */}
+                <div className="absolute left-1 right-1 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line opacity-60" />
+
+                {/* Detection label */}
+                <div className="absolute -top-7 left-0 flex items-center gap-1.5">
+                  <div className="bg-primary px-2 py-0.5 rounded-md flex items-center gap-1">
+                    <Target className="w-3 h-3 text-primary-foreground" />
+                    <span className="text-[10px] font-bold text-primary-foreground tracking-wide uppercase">
+                      {detectionStatus?.species || "Fish Detected"}
+                    </span>
+                  </div>
+                  <span className="text-primary text-[10px] font-bold">{confidence}%</span>
+                </div>
+
+                {/* Confidence bar under bbox */}
+                <div className="absolute -bottom-4 left-0 right-0 h-1.5 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-700"
+                    style={{ width: `${confidence}%` }} 
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Corner brackets (always visible, color changes) */}
+            {[
+              'top-0 left-0 border-t-2 border-l-2 rounded-tl-lg',
+              'top-0 right-0 border-t-2 border-r-2 rounded-tr-lg',
+              'bottom-0 left-0 border-b-2 border-l-2 rounded-bl-lg',
+              'bottom-0 right-0 border-b-2 border-r-2 rounded-br-lg'
+            ].map((pos, i) => (
               <div
                 key={i}
-                className={`absolute w-8 h-8 ${pos} rounded-sm transition-colors duration-300 ${
-                  detectionStatus?.fishDetected ? 'border-primary' : 'border-white/30'
+                className={`absolute w-10 h-10 ${pos} transition-all duration-500 ${
+                  fishDetected 
+                    ? 'border-primary shadow-[0_0_10px_hsla(204,100%,61%,0.5)]' 
+                    : 'border-white/30'
                 }`}
               />
             ))}
 
-            {/* Center guidance when no fish */}
-            {!detectionStatus?.fishDetected && (
+            {/* Crosshair in center when no fish */}
+            {!fishDetected && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                <div className="relative">
+                  <div className="w-6 h-[1px] bg-white/20 absolute top-1/2 left-1/2 -translate-x-1/2" />
+                  <div className="w-[1px] h-6 bg-white/20 absolute top-1/2 left-1/2 -translate-y-1/2" />
+                </div>
+                <div className="absolute bottom-4 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm">
                   <p className="text-white/70 text-[10px] font-medium text-center">
                     Position fish within frame
                   </p>
@@ -233,19 +275,23 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
 
         {/* Bottom capture button */}
         <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-2 z-20">
-          {detectionStatus?.fishDetected && !detectionStatus.species && (
+          {fishDetected && !detectionStatus?.species && (
             <p className="text-white/60 text-[10px]">Identifying species...</p>
           )}
           <Button 
             variant="scan" 
             size="lg" 
-            className="rounded-full w-16 h-16 shadow-glow"
+            className={`rounded-full w-16 h-16 transition-all duration-300 ${
+              fishDetected ? 'shadow-glow ring-2 ring-primary/50 ring-offset-2 ring-offset-black' : ''
+            }`}
             onClick={captureImage}
             aria-label="Capture image for full analysis"
           >
             <Camera className="w-6 h-6" />
           </Button>
-          <p className="text-white/50 text-[9px]">Tap to capture for detailed analysis</p>
+          <p className="text-white/50 text-[9px]">
+            {fishDetected ? "Fish detected — tap to analyze" : "Tap to capture for detailed analysis"}
+          </p>
         </div>
       </div>
     </div>
