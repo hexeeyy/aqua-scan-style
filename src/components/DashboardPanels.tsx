@@ -64,11 +64,11 @@ const StatusDot = ({ status }: { status: "online" | "warning" | "idle" }) => {
     warning: "bg-amber-400 shadow-amber-400/50",
     idle: "bg-slate-400 shadow-slate-400/50",
   };
-  return <span className={`inline-block w-1.5 h-1.5 rounded-full shadow-sm ${colors[status]} animate-pulse`} />;
+  return <span className={`inline-block w-1.5 h-1.5 rounded-full ${colors[status]}`} />;
 };
 
 export const SystemOverview = () => (
-  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in h-full">
+  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
     <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
       <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
         <Cpu className="w-3 h-3 text-primary" />
@@ -99,7 +99,7 @@ export const SystemOverview = () => (
 export const ScanActivityChart = () => {
   const { scanActivity } = useHistoryStats();
   return (
-     <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in h-full">
+     <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
       <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
         <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
           <BarChart3 className="w-3 h-3 text-primary" />
@@ -122,7 +122,7 @@ export const ScanActivityChart = () => {
 };
 
 export const SpectrumAnalysis = () => (
-  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in h-full">
+  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
     <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
       <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
         <Waves className="w-3 h-3 text-primary" />
@@ -171,7 +171,7 @@ export const FreshnessDistribution = () => {
     { label: "Poor", count: poorPct, fill: "hsl(0, 84%, 60%)" },
   ];
   return (
-    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in h-full">
+    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
       <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
         <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
           <TrendingUp className="w-3 h-3 text-primary" />
@@ -197,7 +197,7 @@ export const FreshnessDistribution = () => {
 };
 
 export const QualityRadar = () => (
-  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in h-full">
+  <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
     <h3 className="text-xs font-bold text-foreground mb-1 flex items-center gap-1.5 tracking-tight">
       <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
         <Activity className="w-3 h-3 text-primary" />
@@ -225,7 +225,7 @@ export const QualityRadar = () => (
 export const LiveStats = () => {
   const { total, species, avgScore } = useHistoryStats();
   return (
-    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md animate-fade-in h-full">
+    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
       <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
         <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
           <Database className="w-3 h-3 text-primary" />
