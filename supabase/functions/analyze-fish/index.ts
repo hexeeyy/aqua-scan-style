@@ -25,8 +25,8 @@ serve(async (req) => {
     );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data, error: authError } = await supabaseClient.auth.getClaims(token);
-    if (authError || !data?.claims) {
+    const { data: authData, error: authError } = await supabaseClient.auth.getClaims(token);
+    if (authError || !authData?.claims) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
