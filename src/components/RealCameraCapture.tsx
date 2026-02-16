@@ -82,9 +82,15 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const startCamera = async () => {
     try {
       // Prefer exact deviceId when available, fall back to facingMode
+      const videoConstraints: MediaTrackConstraints = {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 120, min: 30 },
+      };
+
       const constraints: MediaStreamConstraints = devices.length > 0
-        ? { video: { deviceId: { exact: devices[activeDeviceIdx]?.deviceId }, width: { ideal: 640 }, height: { ideal: 480 } } }
-        : { video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } } };
+        ? { video: { ...videoConstraints, deviceId: { exact: devices[activeDeviceIdx]?.deviceId } } }
+        : { video: { ...videoConstraints, facingMode } };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
