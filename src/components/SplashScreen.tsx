@@ -19,10 +19,13 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-600 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center gpu-accelerated ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
-      style={{ background: "hsl(204, 100%, 61%)" }}
+      style={{
+        background: "hsl(204, 100%, 61%)",
+        transition: "opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+      }}
     >
       {/* Subtle radial glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12)_0%,_transparent_70%)]" />
