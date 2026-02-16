@@ -8,6 +8,7 @@ import { QuickStats } from "@/components/QuickStats";
 import { ModelMetrics } from "@/components/ModelMetrics";
 import { ResultPanel } from "@/components/ResultPanel";
 import { FreshnessGauge } from "@/components/FreshnessGauge";
+import { SpoilageCountdown } from "@/components/SpoilageCountdown";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero.png";
@@ -433,12 +434,10 @@ const Index = () => {
                             className="gsap-result"
                           >
                             <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-muted-foreground font-medium">Time left at room temp (~30°C)</span>
-                                <span className={`text-sm font-bold ${results.spoilagePrediction.riskLevel === "low" ? "text-success" : results.spoilagePrediction.riskLevel === "moderate" ? "text-warning" : "text-destructive"}`}>
-                                  {results.spoilagePrediction.hoursAtRoomTemp > 0 ? `~${results.spoilagePrediction.hoursAtRoomTemp}h` : "Unsafe"}
-                                </span>
-                              </div>
+                              <SpoilageCountdown
+                                hoursAtRoomTemp={results.spoilagePrediction.hoursAtRoomTemp}
+                                riskLevel={results.spoilagePrediction.riskLevel}
+                              />
                               <div className="space-y-1">
                                 {results.spoilagePrediction.storage.map((s, i) => (
                                   <div key={i} className="flex items-center justify-between py-1 border-b border-border/15 last:border-0">
