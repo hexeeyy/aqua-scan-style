@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain } from "lucide-react";
+import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
@@ -53,6 +53,12 @@ interface AnalysisResult {
     calories: number;
   };
   commonAreas?: string[];
+  spoilagePrediction?: {
+    hoursAtRoomTemp: number;
+    storage: Array<{ method: string; shelfLife: string; tempRange: string }>;
+    riskLevel: string;
+    recommendation: string;
+  };
 }
 
 interface LocationData {
@@ -414,6 +420,40 @@ const Index = () => {
                                   <Bar dataKey="value" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                               </ResponsiveContainer>
+                            </div>
+                          </ResultPanel>
+                        )}
+
+                        {/* Spoilage Prediction */}
+                        {results.spoilagePrediction && (
+                          <ResultPanel
+                            title="Spoilage Prediction"
+                            icon={Clock}
+                            variant={results.spoilagePrediction.riskLevel === "low" ? "success" : results.spoilagePrediction.riskLevel === "moderate" ? "warning" : "danger"}
+                            className="gsap-result"
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] text-muted-foreground font-medium">Time left at room temp (~30°C)</span>
+                                <span className={`text-sm font-bold ${results.spoilagePrediction.riskLevel === "low" ? "text-success" : results.spoilagePrediction.riskLevel === "moderate" ? "text-warning" : "text-destructive"}`}>
+                                  {results.spoilagePrediction.hoursAtRoomTemp > 0 ? `~${results.spoilagePrediction.hoursAtRoomTemp}h` : "Unsafe"}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {results.spoilagePrediction.storage.map((s, i) => (
+                                  <div key={i} className="flex items-center justify-between py-1 border-b border-border/15 last:border-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <Snowflake className="w-2.5 h-2.5 text-primary/70" />
+                                      <span className="text-[10px] text-muted-foreground">{s.method}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <span className="text-[11px] font-bold text-foreground">{s.shelfLife}</span>
+                                      <span className="text-[8px] text-muted-foreground ml-1">({s.tempRange})</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-[9px] text-muted-foreground bg-muted/50 rounded-lg px-2 py-1.5 leading-relaxed">{results.spoilagePrediction.recommendation}</p>
                             </div>
                           </ResultPanel>
                         )}
