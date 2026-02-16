@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,18 +17,23 @@ serve(async (req) => {
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !user) {
+    
+    // Verify JWT via Supabase Auth REST API directly
+    const authResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'apikey': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      },
+    });
+    
+    if (!authResponse.ok) {
+      const authBody = await authResponse.text();
+      console.error('Auth failed:', authResponse.status, authBody, 'token length:', token.length);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
+    console.log('Auth success');
 
     const { image } = await req.json();
 
