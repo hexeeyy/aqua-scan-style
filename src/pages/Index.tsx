@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
-import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical } from "lucide-react";
+import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
 import { SpeciesCard } from "@/components/SpeciesCard";
 import { QuickStats } from "@/components/QuickStats";
 import { ModelMetrics } from "@/components/ModelMetrics";
+import { ResultPanel } from "@/components/ResultPanel";
+import { FreshnessGauge } from "@/components/FreshnessGauge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats } from "@/components/DashboardPanels";
@@ -321,59 +323,67 @@ const Index = () => {
                   <TabsContent value="consumer" className="mt-0">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
-                        <SpeciesCard {...results.species!} />
+                        {/* Species ID */}
+                        <ResultPanel title="Species Identified" icon={Fish} variant="primary">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-bold text-foreground truncate">{results.species?.name}</h4>
+                              <p className="text-[10px] text-muted-foreground italic truncate">{results.species?.scientificName}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <span className="text-xl font-bold text-primary">{results.species?.confidence}%</span>
+                              <p className="text-[8px] text-muted-foreground font-semibold">CONFIDENCE</p>
+                            </div>
+                          </div>
+                          <div className="mt-2 w-full bg-muted rounded-full h-2 overflow-hidden">
+                            <div
+                              className="bg-ocean-gradient rounded-full h-2 transition-all duration-1000"
+                              style={{ width: `${results.species?.confidence}%` }}
+                            />
+                          </div>
+                        </ResultPanel>
 
+                        {/* Freshness Score */}
                         {results.freshness && (
-                          <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                            <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
-                              <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Freshness Score</h3>
-                            </div>
-                            <div className="p-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-24 h-24 flex-shrink-0">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <RadialBarChart cx="50%" cy="50%" innerRadius="65%" outerRadius="100%" data={[{ name: 'Freshness', value: results.freshness.score, fill: results.freshness.level === 'fresh' ? 'hsl(var(--success))' : results.freshness.level === 'moderate' ? 'hsl(var(--warning))' : 'hsl(var(--destructive))' }]} startAngle={90} endAngle={-270}>
-                                      <RadialBar background dataKey="value" cornerRadius={10} />
-                                      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-xl font-bold" fill="hsl(var(--foreground))">{results.freshness.score}%</text>
-                                    </RadialBarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                                <div className="flex-1 space-y-1">
-                                  <p className="text-xs font-bold text-foreground capitalize">{results.freshness.level} Quality</p>
-                                  <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
-                                </div>
+                          <ResultPanel
+                            title="Freshness Score"
+                            icon={Thermometer}
+                            variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"}
+                          >
+                            <div className="flex items-center gap-3">
+                              <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={88} />
+                              <div className="flex-1 space-y-1.5">
+                                <p className="text-xs font-bold text-foreground capitalize">{results.freshness.level} Quality</p>
+                                <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
                               </div>
                             </div>
-                          </section>
+                          </ResultPanel>
                         )}
 
-                        <FreshnessIndicator {...results.freshness!} />
-
+                        {/* Market Price */}
                         {results.pricePerKilo && (
-                          <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                            <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
-                              <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Market Price (PH)</h3>
+                          <ResultPanel title="Market Price (PH)" icon={DollarSign} variant="primary">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-bold text-foreground">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
+                              <span className="text-muted-foreground font-semibold text-[10px]">per kg</span>
                             </div>
-                            <div className="p-3">
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-primary">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
-                                <span className="text-muted-foreground font-semibold text-[10px]">per kg</span>
-                              </div>
-                              {results.pricePerKilo.source && (
-                                <p className="text-[9px] text-muted-foreground mt-1">Source: {results.pricePerKilo.source}</p>
-                              )}
-                            </div>
-                          </section>
+                            {results.pricePerKilo.source && (
+                              <p className="text-[9px] text-muted-foreground mt-1.5">Source: {results.pricePerKilo.source}</p>
+                            )}
+                          </ResultPanel>
                         )}
+
+                        {/* Quality Indicators */}
+                        <ResultPanel title="Quality Indicators" icon={Eye} variant="info">
+                          <QuickStats stats={results.stats!} />
+                        </ResultPanel>
                       </div>
 
                       <div className="space-y-2">
+                        {/* Nutrition */}
                         {results.nutritionalInfo && (
-                          <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                            <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
-                              <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Nutrition (per 100g)</h3>
-                            </div>
-                            <div className="p-3 space-y-1.5">
+                          <ResultPanel title="Nutrition (per 100g)" icon={Apple} variant="success">
+                            <div className="space-y-1.5">
                               {[
                                 { label: "Protein", value: `${results.nutritionalInfo.protein}g`, icon: "💪" },
                                 { label: "Omega-3", value: results.nutritionalInfo.omega3, icon: "🐟" },
@@ -381,108 +391,86 @@ const Index = () => {
                               ].map((n, i) => (
                                 <div key={n.label} className={`flex justify-between items-center py-1.5 ${i < 2 ? 'border-b border-border/20' : ''}`}>
                                   <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                    <span className="text-xs">{n.icon}</span>
-                                    {n.label}
+                                    <span>{n.icon}</span>{n.label}
                                   </span>
-                                  <span className="text-sm font-bold text-primary">{n.value}</span>
+                                  <span className="text-sm font-bold text-foreground">{n.value}</span>
                                 </div>
                               ))}
                             </div>
-                            <div className="px-3 pb-3">
-                              <div className="h-24">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <BarChart data={[
-                                    { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
-                                    { name: 'Cal/10', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--chart-2))' }
-                                  ]}>
-                                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                                    <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                                    <YAxis tick={{ fontSize: 9 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} />
-                                  </BarChart>
-                                </ResponsiveContainer>
-                              </div>
+                            <div className="h-24 mt-2">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={[
+                                  { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
+                                  { name: 'Cal/10', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--success))' }
+                                ]}>
+                                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                                  <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+                                  <YAxis tick={{ fontSize: 9 }} />
+                                  <Tooltip contentStyle={{ fontSize: 10, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+                                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                              </ResponsiveContainer>
                             </div>
-                          </section>
+                          </ResultPanel>
                         )}
 
-                        <section>
-                          <div className="mb-1.5 flex items-center gap-1.5">
-                            <div className="w-1 h-4 bg-ocean-gradient rounded-full" />
-                            <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Quality Indicators</h3>
-                          </div>
-                          <QuickStats stats={results.stats!} />
-                        </section>
+                        {/* Recommendations */}
+                        <ResultPanel title="Recommendations" icon={Shield} variant={results.freshness!.level === "fresh" ? "success" : results.freshness!.level === "moderate" ? "warning" : "danger"}>
+                          <ul className="space-y-1.5 text-xs text-muted-foreground">
+                            {results.freshness!.level === "fresh" && (
+                              <>
+                                <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Suitable for raw consumption (sushi/sashimi)</span></li>
+                                <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Best consumed within 24-48 hours</span></li>
+                                <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Store at 32-39°F (0-4°C)</span></li>
+                              </>
+                            )}
+                            {results.freshness!.level === "moderate" && (
+                              <>
+                                <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Cook thoroughly before consumption</span></li>
+                                <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Consume within 12-24 hours</span></li>
+                                <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Keep refrigerated at all times</span></li>
+                              </>
+                            )}
+                            {results.freshness!.level === "poor" && (
+                              <>
+                                <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Not recommended for consumption</span></li>
+                                <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Dispose of safely</span></li>
+                                <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Check storage conditions</span></li>
+                              </>
+                            )}
+                          </ul>
+                        </ResultPanel>
 
-                        <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                          <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
-                            <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Recommendations</h3>
-                          </div>
-                          <div className="p-3">
-                            <ul className="space-y-1.5 text-xs text-muted-foreground">
-                              {results.freshness!.level === "fresh" && (
-                                <>
-                                  <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Suitable for raw consumption (sushi/sashimi)</span></li>
-                                  <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Best consumed within 24-48 hours</span></li>
-                                  <li className="flex items-start gap-1.5"><span className="text-success mt-0.5">✓</span><span>Store at 32-39°F (0-4°C)</span></li>
-                                </>
-                              )}
-                              {results.freshness!.level === "moderate" && (
-                                <>
-                                  <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Cook thoroughly before consumption</span></li>
-                                  <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Consume within 12-24 hours</span></li>
-                                  <li className="flex items-start gap-1.5"><span className="text-warning mt-0.5">⚠</span><span>Keep refrigerated at all times</span></li>
-                                </>
-                              )}
-                              {results.freshness!.level === "poor" && (
-                                <>
-                                  <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Not recommended for consumption</span></li>
-                                  <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Dispose of safely</span></li>
-                                  <li className="flex items-start gap-1.5"><span className="text-destructive mt-0.5">✗</span><span>Check storage conditions</span></li>
-                                </>
-                              )}
-                            </ul>
-                          </div>
-                        </section>
+                        <FreshnessIndicator {...results.freshness!} />
                       </div>
 
+                      {/* Habitat - full width */}
                       {results.habitat && results.commonAreas && (
-                        <section className="col-span-2 glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                          <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
-                            <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Habitat & Collection Areas</h3>
+                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-2">
+                          <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {results.commonAreas.map((area, i) => (
+                              <span key={i} className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-semibold border border-primary/20">{area}</span>
+                            ))}
                           </div>
-                          <div className="p-3">
-                            <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {results.commonAreas.map((area, i) => (
-                                <span key={i} className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-semibold border border-primary/20">{area}</span>
-                              ))}
-                            </div>
-                          </div>
-                        </section>
+                        </ResultPanel>
                       )}
 
+                      {/* Location */}
                       {location && (
-                        <section className="col-span-2 glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                          <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30 flex items-center gap-1.5">
-                            <MapPin className="w-3 h-3 text-primary" />
-                            <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Scan Location</h3>
+                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-2">
+                          <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
+                            <iframe
+                              width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
+                              src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.01},${location.latitude - 0.01},${location.longitude + 0.01},${location.latitude + 0.01}&layer=mapnik&marker=${location.latitude},${location.longitude}`}
+                              allowFullScreen title="Scan location map"
+                            />
                           </div>
-                          <div className="p-3">
-                            <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
-                              <iframe
-                                width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
-                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.01},${location.latitude - 0.01},${location.longitude + 0.01},${location.latitude + 0.01}&layer=mapnik&marker=${location.latitude},${location.longitude}`}
-                                allowFullScreen title="Scan location map"
-                              />
-                            </div>
-                            <div className="flex justify-between items-center text-xs py-1.5 mt-1">
-                              <span className="text-muted-foreground">Coords:</span>
-                              <span className="font-mono text-primary text-[11px]">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</span>
-                            </div>
+                          <div className="flex justify-between items-center text-xs py-1.5 mt-1">
+                            <span className="text-muted-foreground">Coords:</span>
+                            <span className="font-mono text-primary text-[11px]">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</span>
                           </div>
-                        </section>
+                        </ResultPanel>
                       )}
                     </div>
                   </TabsContent>
@@ -491,31 +479,20 @@ const Index = () => {
                   <TabsContent value="researcher" className="mt-0">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
-                        {/* Species + Confidence summary */}
                         <SpeciesCard {...results.species!} />
 
                         {results.freshness && (
-                          <section className="glass-effect rounded-xl overflow-hidden shadow-md animate-fade-in">
-                            <div className="px-3 py-1.5 bg-primary/10 border-b border-border/30">
-                              <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Freshness Analysis Detail</h3>
-                            </div>
-                            <div className="p-3 space-y-2">
-                              <div className="flex items-center gap-3">
-                                <div className="w-20 h-20 flex-shrink-0">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <RadialBarChart cx="50%" cy="50%" innerRadius="65%" outerRadius="100%" data={[{ name: 'Freshness', value: results.freshness.score, fill: results.freshness.level === 'fresh' ? 'hsl(var(--success))' : results.freshness.level === 'moderate' ? 'hsl(var(--warning))' : 'hsl(var(--destructive))' }]} startAngle={90} endAngle={-270}>
-                                      <RadialBar background dataKey="value" cornerRadius={10} />
-                                      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-lg font-bold" fill="hsl(var(--foreground))">{results.freshness.score}%</text>
-                                    </RadialBarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
-                                </div>
+                          <ResultPanel title="Freshness Analysis Detail" icon={Thermometer} variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"}>
+                            <div className="flex items-center gap-3">
+                              <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={80} />
+                              <div className="flex-1">
+                                <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
                               </div>
+                            </div>
+                            <div className="mt-2">
                               <QuickStats stats={results.stats!} />
                             </div>
-                          </section>
+                          </ResultPanel>
                         )}
                       </div>
 
