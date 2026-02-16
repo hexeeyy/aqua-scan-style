@@ -1,1 +1,7 @@
 project_id = "bhxqsukosirqzyubhzns"
+
+[functions.detect-fish]
+verify_jwt = false
+
+[functions.analyze-fish]
+verify_jwt = false
