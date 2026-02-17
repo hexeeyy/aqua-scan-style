@@ -100,6 +100,15 @@ serve(async (req) => {
    - Estimate hours remaining before the fish becomes unsafe at room temperature (~30°C in PH)
    - Provide storage recommendations with expected shelf life for each method (ice, refrigerator, freezer)
    - Consider the current freshness state when estimating remaining time
+7. Estimate how long the fish has been sitting at the market/display based on visual cues:
+   - Assess deterioration signs (skin dullness, eye cloudiness progression, gill discoloration rate)
+   - Estimate hours since the fish was likely placed on display
+   - Factor in typical Philippine wet market conditions (~30°C, high humidity)
+8. Provide comprehensive consumer recommendations based on the estimated market duration:
+   - Buy/Don't Buy verdict with reasoning
+   - Fair price assessment (should price be lower given time on display?)
+   - Handling and cooking tips appropriate for the freshness level
+   - Safety warnings if applicable
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -141,6 +150,28 @@ Return ONLY a valid JSON object with this exact structure:
     ],
     "riskLevel": "low",
     "recommendation": "Brief actionable recommendation based on current freshness"
+  },
+  "marketDuration": {
+    "estimatedHours": 4,
+    "confidence": "medium",
+    "visualCues": ["Slight skin dullness", "Eyes beginning to cloud"],
+    "displayCondition": "Open-air wet market, ~30°C"
+  },
+  "consumerRecommendation": {
+    "verdict": "buy",
+    "verdictReason": "Fish is still fresh enough for safe consumption within the next few hours.",
+    "priceFairness": {
+      "isFair": true,
+      "adjustedPriceMin": 200,
+      "adjustedPriceMax": 350,
+      "reason": "Price is fair given the freshness level."
+    },
+    "handlingTips": [
+      "Cook within 4 hours or refrigerate immediately",
+      "Best prepared as grilled or fried — avoid raw preparations"
+    ],
+    "cookingMethods": ["Grilled (inihaw)", "Fried (prito)", "Sinigang"],
+    "safetyWarnings": []
   }
 }
 
@@ -157,6 +188,18 @@ Spoilage prediction guidelines:
 - Moderate freshness at room temp: 1-3 hours safe
 - Poor freshness: already unsafe, 0 hours
 - riskLevel: "low" for fresh, "moderate" for moderate, "high" for poor
+
+Market duration estimation guidelines:
+- Fresh (clear eyes, bright gills, firm): 0-3 hours on display
+- Moderate (slight cloudiness, fading gills): 3-8 hours on display
+- Poor (sunken eyes, brown gills, soft): 8+ hours on display
+- confidence: "high" if visual cues are very clear, "medium" for typical, "low" if uncertain
+
+Consumer recommendation guidelines:
+- verdict: "buy" (fresh, good value), "buy_with_caution" (moderate, cook soon), "dont_buy" (poor, unsafe)
+- Adjust price fairness based on freshness — fish that's been sitting longer should cost less
+- Include Filipino cooking method names where applicable (inihaw, sinigang, paksiw, etc.)
+- Safety warnings only for moderate-to-poor freshness
 
 Be accurate and professional. Confidence should reflect uncertainty (80-95% for clear fish, 60-79% for unclear images).`
           },
@@ -177,7 +220,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
           }
         ],
         temperature: 0.3,
-        max_tokens: 1000
+        max_tokens: 1500
       })
     });
 
