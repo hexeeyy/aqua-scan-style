@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
 import { SpeciesCard } from "@/components/SpeciesCard";
@@ -9,6 +10,7 @@ import { ModelMetrics } from "@/components/ModelMetrics";
 import { ResultPanel } from "@/components/ResultPanel";
 import { FreshnessGauge } from "@/components/FreshnessGauge";
 import { SpoilageCountdown } from "@/components/SpoilageCountdown";
+import { MarketDurationCard, type MarketDuration, type ConsumerRecommendation } from "@/components/MarketDurationCard";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero.png";
@@ -60,6 +62,8 @@ interface AnalysisResult {
     riskLevel: string;
     recommendation: string;
   };
+  marketDuration?: MarketDuration;
+  consumerRecommendation?: ConsumerRecommendation;
 }
 
 interface LocationData {
@@ -79,6 +83,7 @@ const Index = () => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
 
@@ -487,8 +492,26 @@ const Index = () => {
                           </ResultPanel>
                         )}
 
+                        {/* Market Duration & Consumer Advice */}
+                        {results.marketDuration && results.consumerRecommendation && (
+                          <MarketDurationCard
+                            marketDuration={results.marketDuration}
+                            consumerRecommendation={results.consumerRecommendation}
+                            onViewDetails={() => navigate("/recommendations", {
+                              state: {
+                                marketDuration: results.marketDuration,
+                                consumerRecommendation: results.consumerRecommendation,
+                                species: results.species?.name,
+                                freshnessLevel: results.freshness?.level,
+                                freshnessScore: results.freshness?.score,
+                                capturedImage,
+                              },
+                            })}
+                          />
+                        )}
+
                         {/* Recommendations */}
-                        <ResultPanel title="Recommendations" icon={Shield} variant={results.freshness!.level === "fresh" ? "success" : results.freshness!.level === "moderate" ? "warning" : "danger"} className="gsap-result">
+                        <ResultPanel title="General Tips" icon={Shield} variant={results.freshness!.level === "fresh" ? "success" : results.freshness!.level === "moderate" ? "warning" : "danger"} className="gsap-result">
                           <ul className="space-y-1.5 text-xs text-muted-foreground">
                             {results.freshness!.level === "fresh" && (
                               <>
