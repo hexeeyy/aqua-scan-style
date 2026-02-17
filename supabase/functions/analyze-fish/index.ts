@@ -220,7 +220,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
           }
         ],
         temperature: 0.3,
-        max_tokens: 1500
+        max_tokens: 2500
       })
     });
 
@@ -239,52 +239,102 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     }
 
     const data = await response.json();
-    // AI response received
-
     const content = data.choices?.[0]?.message?.content;
     if (!content) {
       throw new Error('No content in AI response');
     }
 
+    // Log raw content length for debugging
+    console.log('AI response length:', content.length);
+    const finishReason = data.choices?.[0]?.finish_reason;
+    console.log('Finish reason:', finishReason);
+
     // Parse the JSON response
     let result;
     try {
       // Remove markdown code blocks if present
-      const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      let cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Detect and attempt to fix truncation
+      if (finishReason === 'length') {
+        console.warn('Response was truncated by token limit');
+        // Try to close open braces/brackets
+        const openBraces = (cleanContent.match(/{/g) || []).length;
+        const closeBraces = (cleanContent.match(/}/g) || []).length;
+        const openBrackets = (cleanContent.match(/\[/g) || []).length;
+        const closeBrackets = (cleanContent.match(/\]/g) || []).length;
+        
+        // Remove trailing comma if present
+        cleanContent = cleanContent.replace(/,\s*$/, '');
+        
+        for (let i = 0; i < openBrackets - closeBrackets; i++) cleanContent += ']';
+        for (let i = 0; i < openBraces - closeBraces; i++) cleanContent += '}';
+      }
+      
       result = JSON.parse(cleanContent);
     } catch (parseError) {
-      console.error('Failed to parse AI response');
+      console.error('Failed to parse AI response. Content preview:', content.substring(0, 200));
       throw new Error('Failed to parse AI response as JSON');
     }
 
+    // Log which keys were returned
+    console.log('Response keys:', Object.keys(result).join(', '));
+
     // Validate the response structure
     if (result.isActuallyFish === false) {
-      // Return "not a fish" response
       return new Response(
         JSON.stringify(result),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
     
     if (!result.species || !result.freshness || !result.stats || !result.pricePerKilo || !result.habitat || !result.nutritionalInfo || !result.commonAreas) {
+      console.error('Missing required fields. Got:', Object.keys(result).join(', '));
       throw new Error('Invalid response structure from AI');
     }
 
-    // Analysis complete
+    // Ensure new fields have defaults if AI didn't return them (graceful degradation)
+    if (!result.marketDuration) {
+      console.warn('marketDuration not in AI response, adding defaults');
+      result.marketDuration = {
+        estimatedHours: result.freshness.level === 'fresh' ? 2 : result.freshness.level === 'moderate' ? 5 : 10,
+        confidence: 'low',
+        visualCues: [result.stats.eyeClarity, result.stats.gillColor, result.stats.texture],
+        displayCondition: 'Open-air wet market, ~30°C, high humidity'
+      };
+    }
+
+    if (!result.consumerRecommendation) {
+      console.warn('consumerRecommendation not in AI response, adding defaults');
+      const level = result.freshness.level;
+      result.consumerRecommendation = {
+        verdict: level === 'fresh' ? 'buy' : level === 'moderate' ? 'buy_with_caution' : 'dont_buy',
+        verdictReason: level === 'fresh' 
+          ? 'Fish appears fresh and safe for consumption.' 
+          : level === 'moderate' 
+            ? 'Fish shows signs of aging. Cook thoroughly before eating.' 
+            : 'Fish shows significant deterioration. Not recommended for consumption.',
+        priceFairness: {
+          isFair: level === 'fresh',
+          adjustedPriceMin: result.pricePerKilo.min,
+          adjustedPriceMax: result.pricePerKilo.max,
+          reason: level === 'fresh' ? 'Price is fair for this freshness level.' : 'Price should be lower given the freshness level.'
+        },
+        handlingTips: level === 'fresh' 
+          ? ['Store on ice immediately', 'Cook within 24 hours for best quality'] 
+          : ['Refrigerate immediately', 'Cook thoroughly before eating'],
+        cookingMethods: level === 'poor' ? ['Not recommended'] : ['Grilled (inihaw)', 'Sinigang', 'Fried (prito)'],
+        safetyWarnings: level === 'poor' ? ['Fish may be unsafe for consumption', 'Check for off odors before handling'] : []
+      };
+    }
 
     return new Response(
       JSON.stringify(result),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
-    console.error('Analysis error:', { type: (error as Error)?.name, timestamp: new Date().toISOString() });
+    console.error('Analysis error:', { type: (error as Error)?.name, msg: (error as Error)?.message, timestamp: new Date().toISOString() });
     return new Response(
       JSON.stringify({ error: 'An error occurred processing your request.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
