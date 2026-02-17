@@ -63,8 +63,8 @@ export const MarketDurationCard = ({
   const [manualHours, setManualHours] = useState<string>("");
   const [useManual, setUseManual] = useState(false);
 
-  const displayHours = useManual && manualHours ? parseFloat(manualHours) : marketDuration.estimatedHours;
-  const verdict = verdictConfig[consumerRecommendation.verdict];
+  const displayHours = useManual && manualHours ? parseFloat(manualHours) : marketDuration?.estimatedHours ?? 0;
+  const verdict = verdictConfig[consumerRecommendation?.verdict] ?? verdictConfig.buy_with_caution;
   const VerdictIcon = verdict.icon;
 
   return (
