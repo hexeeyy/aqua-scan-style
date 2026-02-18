@@ -20,8 +20,6 @@ export const QuickStats = ({ stats }: QuickStatsProps) => {
     <div className="grid grid-cols-3 gap-1.5">
       {statConfig.map(({ key, label, icon: Icon }) => (
         <Card key={key} className="p-2.5 border-none shadow-md text-center hover-lift glass-effect group overflow-hidden relative">
-          {/* Accent top line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-ocean-gradient" />
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mx-auto mb-1.5 group-hover:scale-110 transition-transform duration-300 shadow-sm">
             <Icon className="w-4 h-4 text-primary" />
           </div>

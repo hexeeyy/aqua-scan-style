@@ -388,6 +388,8 @@ const Index = () => {
                           </div>
                         </ResultPanel>
 
+                        <FreshnessIndicator {...results.freshness!} />
+
                         {/* Freshness Score */}
                         {results.freshness && (
                           <ResultPanel
@@ -402,60 +404,6 @@ const Index = () => {
                                 <p className="text-xs font-bold text-foreground capitalize">{results.freshness.level} Quality</p>
                                 <p className="text-[10px] text-muted-foreground leading-relaxed">{results.freshness.reasoning}</p>
                               </div>
-                            </div>
-                          </ResultPanel>
-                        )}
-
-                        {/* Market Price */}
-                        {results.pricePerKilo && (
-                          <ResultPanel title="Market Price (PH)" icon={DollarSign} variant="primary" className="gsap-result">
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-2xl font-bold text-foreground">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
-                              <span className="text-muted-foreground font-semibold text-[10px]">per kg</span>
-                            </div>
-                            {results.pricePerKilo.source && (
-                              <p className="text-[9px] text-muted-foreground mt-1.5">Source: {results.pricePerKilo.source}</p>
-                            )}
-                          </ResultPanel>
-                        )}
-
-                        {/* Quality Indicators */}
-                        <ResultPanel title="Quality Indicators" icon={Eye} variant="info" className="gsap-result">
-                          <QuickStats stats={results.stats!} />
-                        </ResultPanel>
-                      </div>
-
-                      <div className="space-y-2">
-                        {/* Nutrition */}
-                        {results.nutritionalInfo && (
-                          <ResultPanel title="Nutrition (per 100g)" icon={Apple} variant="success" className="gsap-result">
-                            <div className="space-y-1.5">
-                              {[
-                                { label: "Protein", value: `${results.nutritionalInfo.protein}g`, icon: "💪" },
-                                { label: "Omega-3", value: results.nutritionalInfo.omega3, icon: "🐟" },
-                                { label: "Calories", value: `${results.nutritionalInfo.calories} kcal`, icon: "🔥" },
-                              ].map((n, i) => (
-                                <div key={n.label} className={`flex justify-between items-center py-1.5 ${i < 2 ? 'border-b border-border/20' : ''}`}>
-                                  <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                    <span>{n.icon}</span>{n.label}
-                                  </span>
-                                  <span className="text-sm font-bold text-foreground">{n.value}</span>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="h-24 mt-2">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={[
-                                  { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
-                                  { name: 'Cal/10', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--success))' }
-                                ]}>
-                                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                                  <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                                  <YAxis tick={{ fontSize: 9 }} />
-                                  <Tooltip contentStyle={{ fontSize: 10, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-                                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
-                                </BarChart>
-                              </ResponsiveContainer>
                             </div>
                           </ResultPanel>
                         )}
@@ -488,6 +436,60 @@ const Index = () => {
                                 ))}
                               </div>
                               <p className="text-[9px] text-muted-foreground bg-muted/50 rounded-lg px-2 py-1.5 leading-relaxed">{results.spoilagePrediction.recommendation}</p>
+                            </div>
+                          </ResultPanel>
+                        )}
+
+                         {/* Quality Indicators */}
+                        <ResultPanel title="Quality Indicators" icon={Eye}  variant={results.spoilagePrediction.riskLevel === "low" ? "success" : results.spoilagePrediction.riskLevel === "moderate" ? "warning" : "danger"} className="gsap-result">
+                          <QuickStats stats={results.stats!} />
+                        </ResultPanel>
+                      </div>
+
+                      <div className="space-y-2">
+                        {/* Market Price */}
+                        {results.pricePerKilo && (
+                          <ResultPanel title="Market Price (PH)" icon={DollarSign} variant="primary" className="gsap-result">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-bold text-foreground">₱{results.pricePerKilo.min.toLocaleString()} - ₱{results.pricePerKilo.max.toLocaleString()}</span>
+                              <span className="text-muted-foreground font-semibold text-[10px]">per kg</span>
+                            </div>
+                            {results.pricePerKilo.source && (
+                              <p className="text-[9px] text-muted-foreground mt-1.5">Source: {results.pricePerKilo.source}</p>
+                            )}
+                          </ResultPanel>
+                        )}
+
+                        {/* Nutrition */}
+                        {results.nutritionalInfo && (
+                          <ResultPanel title="Nutrition (per 100g)" icon={Apple} variant="success" className="gsap-result">
+                            <div className="space-y-1.5">
+                              {[
+                                { label: "Protein", value: `${results.nutritionalInfo.protein}g`, icon: "💪" },
+                                { label: "Omega-3", value: results.nutritionalInfo.omega3, icon: "🐟" },
+                                { label: "Calories", value: `${results.nutritionalInfo.calories} kcal`, icon: "🔥" },
+                              ].map((n, i) => (
+                                <div key={n.label} className={`flex justify-between items-center py-1.5 ${i < 2 ? 'border-b border-border/20' : ''}`}>
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                    <span>{n.icon}</span>{n.label}
+                                  </span>
+                                  <span className="text-sm font-bold text-foreground">{n.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="h-24 mt-2">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={[
+                                  { name: 'Protein (g)', value: results.nutritionalInfo.protein, fill: 'hsl(var(--primary))' },
+                                  { name: 'Cal/10', value: results.nutritionalInfo.calories / 10, fill: 'hsl(var(--success))' }
+                                ]}>
+                                  <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                                  <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+                                  <YAxis tick={{ fontSize: 9 }} />
+                                  <Tooltip contentStyle={{ fontSize: 10, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+                                  <Bar dataKey="value" radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                              </ResponsiveContainer>
                             </div>
                           </ResultPanel>
                         )}
@@ -536,8 +538,6 @@ const Index = () => {
                             )}
                           </ul>
                         </ResultPanel>
-
-                        <FreshnessIndicator {...results.freshness!} />
                       </div>
 
                       {/* Habitat - full width */}
@@ -586,9 +586,6 @@ const Index = () => {
                               <p className="text-[10px] font-bold text-foreground capitalize mb-0.5">{results.freshness.level} Quality</p>
                               <p className="text-[9px] text-muted-foreground leading-snug line-clamp-3">{results.freshness.reasoning}</p>
                             </div>
-                          </div>
-                          <div className="mt-1.5">
-                            <QuickStats stats={results.stats!} />
                           </div>
                         </ResultPanel>
                       )}
