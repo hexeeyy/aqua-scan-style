@@ -3,19 +3,23 @@ import { Award, GraduationCap, Target, Lightbulb } from "lucide-react";
 import gsap from "gsap";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import teamMark from "@/assets/team-mark.jpg";
+import teamTrisha from "@/assets/team-trisha.jpg";
+import teamYvan from "@/assets/team-yvan.jpg";
+import teamPhilip from "@/assets/team-philip.jpg";
 
 interface Researcher {
   name: string;
   role: string;
   color: string;
-  initials: string;
+  photo: string;
 }
 
 const researchers: Researcher[] = [
-  { name: "Mark Hexilon Payno", role: "Lead Researcher", color: "from-primary to-blue-600", initials: "MP" },
-  { name: "Trisha Tumbagahan", role: "Data Analyst", color: "from-violet-500 to-purple-600", initials: "TT" },
-  { name: "Yvan Joaquin Aquino", role: "Marine Biologist", color: "from-emerald-500 to-teal-600", initials: "YA" },
-  { name: "Philip Inigo Lenida", role: "Software Engineer", color: "from-amber-500 to-orange-600", initials: "PL" },
+  { name: "Mark Hexilon Payno", role: "Lead Researcher", color: "from-primary to-blue-600", photo: teamMark },
+  { name: "Trisha Tumbagahan", role: "Data Analyst", color: "from-violet-500 to-purple-600", photo: teamTrisha },
+  { name: "Yvan Joaquin Aquino", role: "Marine Biologist", color: "from-emerald-500 to-teal-600", photo: teamYvan },
+  { name: "Philip Inigo Lenida", role: "Software Engineer", color: "from-amber-500 to-orange-600", photo: teamPhilip },
 ];
 
 const About = () => {
@@ -146,9 +150,7 @@ const About = () => {
                 key={r.name}
                 className="researcher-card flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-border/30"
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${r.color} flex items-center justify-center shadow-md flex-shrink-0`}>
-                  <span className="text-white text-[11px] font-bold">{r.initials}</span>
-                </div>
+                <img src={r.photo} alt={r.name} className="w-10 h-10 rounded-xl object-cover shadow-md flex-shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-bold text-foreground truncate leading-tight">{r.name}</p>
                   <p className="text-[10px] text-primary font-medium">{r.role}</p>
