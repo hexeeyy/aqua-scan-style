@@ -50,7 +50,7 @@ export const Footer = () => {
               asChild
               className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
             >
-              <a href="https://github.com/yourusername/sari-one" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+              <a href="https://github.com/hexeeyy" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
                 <Github className="h-4 w-4" />
               </a>
             </Button>
@@ -61,7 +61,7 @@ export const Footer = () => {
               asChild
               className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
             >
-              <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <a href="https://linkedin.com/in/mark-hexilon-payno" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </a>
             </Button>
@@ -72,7 +72,7 @@ export const Footer = () => {
               asChild
               className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
             >
-              <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+              <a href="https://twitter.com/hexeeyy" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                 <Twitter className="h-4 w-4" />
               </a>
             </Button>
