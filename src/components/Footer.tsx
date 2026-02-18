@@ -39,52 +39,56 @@ export const Footer = () => {
               </div>
           </div>
 
-          {/* Social Media */}
-          <div className="flex flex-col items-center">
-            <h4 className="text-[9px] font-bold text-foreground mb-3">Connect With Us</h4>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="h-8 w-8 rounded-lg hover:bg-primary/5"
-              >
-                <a href="https://github.com/yourusername/sari-one" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                  <Github className="h-4 w-4" />
-                </a>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="h-8 w-8 rounded-lg hover:bg-primary/5"
-              >
-                <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                  <Linkedin className="h-4 w-4" />
-                </a>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="h-8 w-8 rounded-lg hover:bg-primary/5"
-              >
-                <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                  <Twitter className="h-4 w-4" />
-                </a>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="h-8 w-8 rounded-lg hover:bg-primary/5"
-              >
-                <a href="mailto:contact@sari-one.ph" aria-label="Email">
-                  <Mail className="h-4 w-4" />
-                </a>
-              </Button>
-            </div>
+         {/* Social Media */}
+        <div className="flex flex-col items-center">
+          <h4 className="text-[9px] font-bold text-foreground mb-3">Connect With Us</h4>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+            >
+              <a href="https://github.com/yourusername/sari-one" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <Github className="h-4 w-4" />
+              </a>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+            >
+              <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <Linkedin className="h-4 w-4" />
+              </a>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+            >
+              <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                <Twitter className="h-4 w-4" />
+              </a>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="h-8 w-8 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
+            >
+              <a href="mailto:contact@sari-one.ph" aria-label="Email">
+                <Mail className="h-4 w-4" />
+              </a>
+            </Button>
           </div>
+        </div>
 
           {/* Contact Info */}
           <div>
