@@ -13,13 +13,43 @@ interface Researcher {
   role: string;
   color: string;
   photo: string;
+  bio: string;
+  focus: string;
 }
 
 const researchers: Researcher[] = [
-  { name: "Mark Hexilon Payno", role: "Lead Researcher", color: "from-primary to-blue-600", photo: teamMark },
-  { name: "Trisha Tumbagahan", role: "Data Analyst", color: "from-violet-500 to-purple-600", photo: teamTrisha },
-  { name: "Yvan Joaquin Aquino", role: "Marine Biologist", color: "from-emerald-500 to-teal-600", photo: teamYvan },
-  { name: "Philip Inigo Lenida", role: "Software Engineer", color: "from-amber-500 to-orange-600", photo: teamPhilip },
+  {
+    name: "Mark Hexilon Payno",
+    role: "Lead Researcher",
+    color: "from-primary to-blue-600",
+    photo: teamMark,
+    bio: "Oversees the entire SARI-ONE project, coordinating research methodology, team deliverables, and stakeholder communications with BFAR.",
+    focus: "Project Management • Research Design • AI Strategy",
+  },
+  {
+    name: "Trisha Tumbagahan",
+    role: "Data Analyst",
+    color: "from-violet-500 to-purple-600",
+    photo: teamTrisha,
+    bio: "Handles dataset curation, statistical modeling, and performance benchmarking of the CNN classification and freshness regression models.",
+    focus: "Data Preprocessing • Model Evaluation • Statistical Analysis",
+  },
+  {
+    name: "Yvan Joaquin Aquino",
+    role: "Marine Biologist",
+    color: "from-emerald-500 to-teal-600",
+    photo: teamYvan,
+    bio: "Provides domain expertise on Philippine fish species taxonomy, freshness indicators, and sustainable fisheries practices aligned with UN SDG 14.",
+    focus: "Species Taxonomy • Freshness Science • Sustainability",
+  },
+  {
+    name: "Philip Inigo Lenida",
+    role: "Software Engineer",
+    color: "from-amber-500 to-orange-600",
+    photo: teamPhilip,
+    bio: "Architects and develops the SARI-ONE web platform, integrating real-time computer vision pipelines with the deep learning inference backend.",
+    focus: "Full-Stack Development • Computer Vision • System Architecture",
+  },
 ];
 
 const About = () => {
@@ -144,17 +174,21 @@ const About = () => {
             </div>
             Research Team
           </h3>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             {researchers.map((r) => (
               <div
                 key={r.name}
-                className="researcher-card flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-border/30"
+                className="researcher-card flex flex-col p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-border/30"
               >
-                <img src={r.photo} alt={r.name} className="w-10 h-10 rounded-xl object-cover shadow-md flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-bold text-foreground truncate leading-tight">{r.name}</p>
-                  <p className="text-[10px] text-primary font-medium">{r.role}</p>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <img src={r.photo} alt={r.name} className="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold text-foreground truncate leading-tight">{r.name}</p>
+                    <p className="text-[10px] text-primary font-medium">{r.role}</p>
+                  </div>
                 </div>
+                <p className="text-[9px] text-muted-foreground leading-relaxed">{r.bio}</p>
+                <p className="text-[8px] text-primary/70 font-medium mt-1.5 pt-1.5 border-t border-border/30">{r.focus}</p>
               </div>
             ))}
           </div>
