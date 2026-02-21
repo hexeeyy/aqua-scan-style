@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, History, Maximize, Minimize, LogOut } from "lucide-react";
+import { Home, Users, History, Maximize, Minimize, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/assets/logo.png";
 
 interface NavbarProps {
@@ -17,9 +19,25 @@ const navItems = [
 ];
 
 export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarProps) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .then(({ data }) => setIsAdmin((data ?? []).length > 0));
+  }, [user]);
+
+  const allNavItems = [
+    ...navItems,
+    ...(isAdmin ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-10 border-b border-white/10 shadow-lg backdrop-blur-xl" style={{ background: 'linear-gradient(135deg, hsl(204, 100%, 61%) 0%, hsl(214, 100%, 50%) 100%)' }}>
@@ -32,7 +50,7 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
 
         {/* Nav Links */}
         <nav className="flex items-center gap-0.5">
-          {navItems.map((item) => {
+          {allNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <button

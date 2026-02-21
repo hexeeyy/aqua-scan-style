@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import HistoryPage from "./pages/HistoryPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
+import AdminPage from "./pages/AdminPage";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
             <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
             <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

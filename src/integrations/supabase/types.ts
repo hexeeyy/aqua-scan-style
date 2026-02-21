@@ -14,16 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scan_history: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          eye_clarity: string | null
+          freshness_level: string | null
+          freshness_reasoning: string | null
+          freshness_score: number | null
+          gill_color: string | null
+          id: string
+          nutritional_calories: number | null
+          nutritional_omega3: string | null
+          nutritional_protein: number | null
+          price_currency: string | null
+          price_max: number | null
+          price_min: number | null
+          scientific_name: string | null
+          species_name: string | null
+          spoilage_hours_room_temp: number | null
+          spoilage_recommendation: string | null
+          spoilage_risk_level: string | null
+          spoilage_storage: Json | null
+          texture: string | null
+          thumbnail: string | null
+          timestamp: number
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          eye_clarity?: string | null
+          freshness_level?: string | null
+          freshness_reasoning?: string | null
+          freshness_score?: number | null
+          gill_color?: string | null
+          id?: string
+          nutritional_calories?: number | null
+          nutritional_omega3?: string | null
+          nutritional_protein?: number | null
+          price_currency?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          scientific_name?: string | null
+          species_name?: string | null
+          spoilage_hours_room_temp?: number | null
+          spoilage_recommendation?: string | null
+          spoilage_risk_level?: string | null
+          spoilage_storage?: Json | null
+          texture?: string | null
+          thumbnail?: string | null
+          timestamp?: number
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          eye_clarity?: string | null
+          freshness_level?: string | null
+          freshness_reasoning?: string | null
+          freshness_score?: number | null
+          gill_color?: string | null
+          id?: string
+          nutritional_calories?: number | null
+          nutritional_omega3?: string | null
+          nutritional_protein?: number | null
+          price_currency?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          scientific_name?: string | null
+          species_name?: string | null
+          spoilage_hours_room_temp?: number | null
+          spoilage_recommendation?: string | null
+          spoilage_risk_level?: string | null
+          spoilage_storage?: Json | null
+          texture?: string | null
+          thumbnail?: string | null
+          timestamp?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +281,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

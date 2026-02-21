@@ -17,6 +17,8 @@ import heroImage from "@/assets/hero.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
+import { saveScanToDb } from "@/lib/scanHistoryDb";
+import { useAuth } from "@/contexts/AuthContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats } from "@/components/DashboardPanels";
 import { Navbar } from "@/components/Navbar";
@@ -84,6 +86,7 @@ const Index = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
 
@@ -204,6 +207,7 @@ const Index = () => {
             spoilagePrediction: analysisData.spoilagePrediction,
           };
           saveScanToHistory(record);
+          if (user) saveScanToDb(record, user.id);
         }
         toast({ title: "Analysis Complete", description: `Detected ${analysisData.species?.name} with ${analysisData.species?.confidence}% confidence` });
       }

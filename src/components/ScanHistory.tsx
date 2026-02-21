@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line, Area, AreaChart } from "recharts";
@@ -47,6 +47,9 @@ interface ScanHistoryProps {
   onBack: () => void;
 }
 
+import { getScansFromDb, deleteScanFromDb } from "@/lib/scanHistoryDb";
+
+// Keep legacy helpers for backward compat but they now just delegate
 const STORAGE_KEY = "fishbuddy_scan_history";
 
 export const getScanHistory = (): ScanRecord[] => {
@@ -59,8 +62,8 @@ export const getScanHistory = (): ScanRecord[] => {
 };
 
 export const saveScanToHistory = (record: ScanRecord) => {
+  // legacy localStorage fallback - DB save handled separately
   const history = getScanHistory();
-  // Keep max 50 entries, newest first
   history.unshift(record);
   if (history.length > 50) history.pop();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
@@ -88,14 +91,24 @@ const freshnessBg = (level: FreshnessLevel) => {
 };
 
 export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
-  const [history, setHistory] = useState<ScanRecord[]>(getScanHistory());
+  const [history, setHistory] = useState<ScanRecord[]>([]);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [loadingDb, setLoadingDb] = useState(true);
 
-  const handleDelete = (id: string) => {
+  useEffect(() => {
+    getScansFromDb().then((dbScans) => {
+      setHistory(dbScans.length > 0 ? dbScans : getScanHistory());
+      setLoadingDb(false);
+    });
+  }, []);
+
+  const handleDelete = async (id: string) => {
     deleteScanFromHistory(id);
-    setHistory(getScanHistory());
+    await deleteScanFromDb(id);
+    const dbScans = await getScansFromDb();
+    setHistory(dbScans.length > 0 ? dbScans : getScanHistory());
     setCompareIds((prev) => prev.filter((cid) => cid !== id));
   };
 
