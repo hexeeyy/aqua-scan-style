@@ -11,6 +11,7 @@ import { ResultPanel } from "@/components/ResultPanel";
 import { FreshnessGauge } from "@/components/FreshnessGauge";
 import { SpoilageCountdown } from "@/components/SpoilageCountdown";
 import { MarketDurationCard, type MarketDuration, type ConsumerRecommendation } from "@/components/MarketDurationCard";
+import { ScanQRCode } from "@/components/ScanQRCode";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero.png";
@@ -82,6 +83,7 @@ const Index = () => {
   const [results, setResults] = useState<AnalysisResult | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
   const [location, setLocation] = useState<LocationData | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
@@ -207,7 +209,10 @@ const Index = () => {
             spoilagePrediction: analysisData.spoilagePrediction,
           };
           saveScanToHistory(record);
-          if (user) saveScanToDb(record, user.id);
+          if (user) {
+            saveScanToDb(record, user.id, analysisData.marketDuration, analysisData.consumerRecommendation)
+              .then((token) => { if (token) setShareToken(token); });
+          }
         }
         toast({ title: "Analysis Complete", description: `Detected ${analysisData.species?.name} with ${analysisData.species?.confidence}% confidence` });
       }
@@ -225,6 +230,7 @@ const Index = () => {
     setShowResults(false);
     setResults(null);
     setCapturedImage(null);
+    setShareToken(null);
   };
 
   const toggleVoiceNarration = () => {
@@ -571,6 +577,11 @@ const Index = () => {
                             <span className="font-mono text-primary text-[11px]">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</span>
                           </div>
                         </ResultPanel>
+                      )}
+
+                      {/* QR Code for sharing */}
+                      {shareToken && (
+                        <ScanQRCode shareToken={shareToken} />
                       )}
                     </div>
                   </TabsContent>
