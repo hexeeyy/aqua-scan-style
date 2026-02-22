@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
-import { getScanHistory } from "@/components/ScanHistory";
+import { getScansFromDb } from "@/lib/scanHistoryDb";
+import type { ScanRecord } from "@/components/ScanHistory";
 
 const spectrumData = [
   { nm: "380", r: 12, g: 8, b: 45 },
@@ -17,8 +18,13 @@ const spectrumData = [
 ];
 
 const useHistoryStats = () => {
+  const [history, setHistory] = useState<ScanRecord[]>([]);
+
+  useEffect(() => {
+    getScansFromDb().then(setHistory);
+  }, []);
+
   return useMemo(() => {
-    const history = getScanHistory();
     const total = history.length;
 
     const speciesSet = new Set(history.map((s) => s.species.name));
@@ -44,10 +50,8 @@ const useHistoryStats = () => {
     const scanActivity = dayNames.map((day) => ({ day, scans: dayCounts[day] }));
 
     return { total, species: speciesSet.size, avgScore, freshPct, modPct, poorPct, scanActivity };
-  }, []);
+  }, [history]);
 };
-
-
 
 const radarData = [
   { metric: "Eye Clarity", value: 88 },
