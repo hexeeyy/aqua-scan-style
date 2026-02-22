@@ -44,6 +44,7 @@ export type Database = {
       scan_history: {
         Row: {
           confidence: number | null
+          consumer_recommendation: Json | null
           created_at: string
           eye_clarity: string | null
           freshness_level: string | null
@@ -51,6 +52,7 @@ export type Database = {
           freshness_score: number | null
           gill_color: string | null
           id: string
+          market_duration: Json | null
           nutritional_calories: number | null
           nutritional_omega3: string | null
           nutritional_protein: number | null
@@ -58,6 +60,7 @@ export type Database = {
           price_max: number | null
           price_min: number | null
           scientific_name: string | null
+          share_token: string | null
           species_name: string | null
           spoilage_hours_room_temp: number | null
           spoilage_recommendation: string | null
@@ -70,6 +73,7 @@ export type Database = {
         }
         Insert: {
           confidence?: number | null
+          consumer_recommendation?: Json | null
           created_at?: string
           eye_clarity?: string | null
           freshness_level?: string | null
@@ -77,6 +81,7 @@ export type Database = {
           freshness_score?: number | null
           gill_color?: string | null
           id?: string
+          market_duration?: Json | null
           nutritional_calories?: number | null
           nutritional_omega3?: string | null
           nutritional_protein?: number | null
@@ -84,6 +89,7 @@ export type Database = {
           price_max?: number | null
           price_min?: number | null
           scientific_name?: string | null
+          share_token?: string | null
           species_name?: string | null
           spoilage_hours_room_temp?: number | null
           spoilage_recommendation?: string | null
@@ -96,6 +102,7 @@ export type Database = {
         }
         Update: {
           confidence?: number | null
+          consumer_recommendation?: Json | null
           created_at?: string
           eye_clarity?: string | null
           freshness_level?: string | null
@@ -103,6 +110,7 @@ export type Database = {
           freshness_score?: number | null
           gill_color?: string | null
           id?: string
+          market_duration?: Json | null
           nutritional_calories?: number | null
           nutritional_omega3?: string | null
           nutritional_protein?: number | null
@@ -110,6 +118,7 @@ export type Database = {
           price_max?: number | null
           price_min?: number | null
           scientific_name?: string | null
+          share_token?: string | null
           species_name?: string | null
           spoilage_hours_room_temp?: number | null
           spoilage_recommendation?: string | null

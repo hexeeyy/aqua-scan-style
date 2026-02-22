@@ -1,8 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ScanRecord } from "@/components/ScanHistory";
+import type { MarketDuration, ConsumerRecommendation } from "@/components/MarketDurationCard";
 
-export const saveScanToDb = async (record: ScanRecord, userId: string) => {
-  const { error } = await supabase.from("scan_history").insert({
+export const saveScanToDb = async (
+  record: ScanRecord,
+  userId: string,
+  marketDuration?: MarketDuration,
+  consumerRecommendation?: ConsumerRecommendation
+): Promise<string | null> => {
+  const { data, error } = await supabase.from("scan_history").insert({
     id: record.id,
     user_id: userId,
     timestamp: record.timestamp,
@@ -26,8 +32,15 @@ export const saveScanToDb = async (record: ScanRecord, userId: string) => {
     spoilage_risk_level: record.spoilagePrediction?.riskLevel ?? null,
     spoilage_recommendation: record.spoilagePrediction?.recommendation ?? null,
     spoilage_storage: record.spoilagePrediction?.storage ?? null,
-  });
-  if (error) console.error("Failed to save scan to DB:", error);
+    market_duration: marketDuration ? (marketDuration as any) : null,
+    consumer_recommendation: consumerRecommendation ? (consumerRecommendation as any) : null,
+  }).select("share_token").single();
+
+  if (error) {
+    console.error("Failed to save scan to DB:", error);
+    return null;
+  }
+  return data?.share_token ?? null;
 };
 
 export const getScansFromDb = async (): Promise<ScanRecord[]> => {
