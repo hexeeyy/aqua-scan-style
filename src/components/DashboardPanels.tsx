@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useRef, createContext, useContext, type ReactNode } from "react";
 
 import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
@@ -18,34 +18,57 @@ const spectrumData = [
   { nm: "700", r: 68, g: 12, b: 5 },
 ];
 
-const useHistoryStats = () => {
+// Shared dashboard data context — single realtime subscription
+interface DashboardData {
+  history: ScanRecord[];
+  hasNewData: boolean;
+}
+
+const DashboardDataContext = createContext<DashboardData>({ history: [], hasNewData: false });
+
+export const DashboardDataProvider = ({ children }: { children: ReactNode }) => {
   const [history, setHistory] = useState<ScanRecord[]>([]);
   const [hasNewData, setHasNewData] = useState(false);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
-
-  const refresh = useCallback(() => {
-    getScansFromDb().then((data) => {
-      setHistory((prev) => {
-        if (!isFirstLoad && data.length !== prev.length) {
-          setHasNewData(true);
-          setTimeout(() => setHasNewData(false), 2000);
-        }
-        return data;
-      });
-      if (isFirstLoad) setIsFirstLoad(false);
-    });
-  }, [isFirstLoad]);
+  const isFirstLoadRef = useRef(true);
 
   useEffect(() => {
-    refresh();
+    const fetchData = () => {
+      getScansFromDb().then((data) => {
+        setHistory((prev) => {
+          if (!isFirstLoadRef.current && data.length !== prev.length) {
+            setHasNewData(true);
+            setTimeout(() => setHasNewData(false), 2000);
+          }
+          isFirstLoadRef.current = false;
+          return data;
+        });
+      });
+    };
+
+    fetchData();
+
     const channel = supabase
-      .channel('dashboard-scans')
+      .channel('dashboard-scans-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
-        refresh();
+        console.log('[Realtime] scan_history changed, refreshing dashboard...');
+        fetchData();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Realtime] dashboard channel status:', status);
+      });
+
     return () => { supabase.removeChannel(channel); };
-  }, [refresh]);
+  }, []);
+
+  return (
+    <DashboardDataContext.Provider value={{ history, hasNewData }}>
+      {children}
+    </DashboardDataContext.Provider>
+  );
+};
+
+const useHistoryStats = () => {
+  const { history, hasNewData } = useContext(DashboardDataContext);
 
   return useMemo(() => {
     const total = history.length;
@@ -60,7 +83,6 @@ const useHistoryStats = () => {
     const modPct = total > 0 ? Math.round((moderate / total) * 100) : 0;
     const poorPct = total > 0 ? 100 - freshPct - modPct : 0;
 
-    // Weekly scan activity from real timestamps
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dayCounts: Record<string, number> = {};
     dayNames.forEach((d) => (dayCounts[d] = 0));
