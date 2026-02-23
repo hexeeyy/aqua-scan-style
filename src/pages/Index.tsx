@@ -21,7 +21,7 @@ import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { saveScanToDb } from "@/lib/scanHistoryDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { SplashScreen } from "@/components/SplashScreen";
-import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats } from "@/components/DashboardPanels";
+import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats, DashboardDataProvider } from "@/components/DashboardPanels";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useGsapDashboard, useGsapResults } from "@/hooks/useGsapAnimations";
@@ -319,6 +319,7 @@ const Index = () => {
             </div>
 
             {/* Dashboard Panels + Charts - single flowing grid */}
+            <DashboardDataProvider>
             <div className="grid grid-cols-3 gap-2">
               <div className="gsap-panel"><LiveStats /></div>
               <div className="gsap-panel"><SystemOverview /></div>
@@ -327,6 +328,7 @@ const Index = () => {
               <div className="gsap-chart"><SpectrumAnalysis /></div>
               <div className="gsap-chart"><QualityRadar /></div>
             </div>
+            </DashboardDataProvider>
           </>
         ) : results ? (
           <>
