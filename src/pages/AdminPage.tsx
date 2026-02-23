@@ -51,6 +51,14 @@ const AdminPage = () => {
   useEffect(() => {
     if (!user) return;
     checkAdminAndLoad();
+
+    const channel = supabase
+      .channel('admin-scans-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
+        checkAdminAndLoad();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const checkAdminAndLoad = async () => {
