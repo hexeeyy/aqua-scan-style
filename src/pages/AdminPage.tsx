@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield } from "lucide-react";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,6 +19,7 @@ interface UserProfile {
   scan_count: number;
   avg_freshness: number;
   last_scan: string | null;
+  role: "admin" | "user";
 }
 
 interface ScanRow {
@@ -66,15 +68,24 @@ const AdminPage = () => {
     }
     setIsAdmin(true);
 
-    // Fetch all profiles and scans in parallel
-    const [profilesRes, scansRes] = await Promise.all([
+    // Fetch all profiles, scans, and roles in parallel
+    const [profilesRes, scansRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*"),
       supabase.from("scan_history").select("user_id, species_name, freshness_level, freshness_score, timestamp, created_at"),
+      supabase.from("user_roles").select("user_id, role"),
     ]);
 
     const profiles = profilesRes.data ?? [];
     const allScans = (scansRes.data ?? []) as ScanRow[];
+    const allRoles = rolesRes.data ?? [];
     setScans(allScans);
+
+    // Build role map
+    const roleMap = new Map<string, "admin" | "user">();
+    allRoles.forEach((r: any) => {
+      if (r.role === "admin") roleMap.set(r.user_id, "admin");
+      else if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, "user");
+    });
 
     // Merge user stats
     const userStats: UserProfile[] = profiles.map((p: any) => {
@@ -93,11 +104,39 @@ const AdminPage = () => {
         scan_count: userScans.length,
         avg_freshness: avgFreshness,
         last_scan: lastScan,
+        role: roleMap.get(p.user_id) ?? "user",
       };
     });
 
     setUsers(userStats);
     setLoading(false);
+  };
+
+  const toggleRole = async (targetUserId: string, currentRole: "admin" | "user") => {
+    if (targetUserId === user!.id) {
+      toast.error("You cannot change your own role");
+      return;
+    }
+    const newRole = currentRole === "admin" ? "user" : "admin";
+    
+    if (currentRole === "admin") {
+      // Remove admin role, keep user role
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", targetUserId)
+        .eq("role", "admin");
+      if (error) { toast.error("Failed to update role"); return; }
+    } else {
+      // Add admin role
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: targetUserId, role: "admin" });
+      if (error) { toast.error("Failed to update role"); return; }
+    }
+
+    setUsers(prev => prev.map(u => u.user_id === targetUserId ? { ...u, role: newRole } : u));
+    toast.success(`${newRole === "admin" ? "Promoted" : "Demoted"} user to ${newRole}`);
   };
 
   if (loading) {
@@ -378,6 +417,7 @@ const AdminPage = () => {
                   <tr className="border-b border-border/30">
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">User</th>
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Role</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Avg Freshness</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Last Scan</th>
@@ -389,6 +429,23 @@ const AdminPage = () => {
                     <tr key={u.user_id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
                       <td className="p-3 text-xs font-semibold text-foreground">{u.display_name || "—"}</td>
                       <td className="p-3 text-xs text-muted-foreground">{u.email}</td>
+                      <td className="p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
+                            u.role === "admin"
+                              ? "bg-primary/15 text-primary hover:bg-primary/25"
+                              : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                          } ${u.user_id === user!.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={() => toggleRole(u.user_id, u.role)}
+                          disabled={u.user_id === user!.id}
+                          title={u.user_id === user!.id ? "Cannot change your own role" : `Click to ${u.role === "admin" ? "demote to user" : "promote to admin"}`}
+                        >
+                          {u.role === "admin" ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
+                          {u.role}
+                        </Button>
+                      </td>
                       <td className="p-3 text-center text-xs font-bold text-primary">{u.scan_count}</td>
                       <td className="p-3 text-center">
                         <span className={`text-xs font-bold ${u.avg_freshness >= 70 ? "text-success" : u.avg_freshness >= 40 ? "text-warning" : "text-destructive"}`}>
