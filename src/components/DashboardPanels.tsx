@@ -20,10 +20,21 @@ const spectrumData = [
 
 const useHistoryStats = () => {
   const [history, setHistory] = useState<ScanRecord[]>([]);
+  const [hasNewData, setHasNewData] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const refresh = useCallback(() => {
-    getScansFromDb().then(setHistory);
-  }, []);
+    getScansFromDb().then((data) => {
+      setHistory((prev) => {
+        if (!isFirstLoad && data.length !== prev.length) {
+          setHasNewData(true);
+          setTimeout(() => setHasNewData(false), 2000);
+        }
+        return data;
+      });
+      if (isFirstLoad) setIsFirstLoad(false);
+    });
+  }, [isFirstLoad]);
 
   useEffect(() => {
     refresh();
@@ -61,8 +72,8 @@ const useHistoryStats = () => {
     });
     const scanActivity = dayNames.map((day) => ({ day, scans: dayCounts[day] }));
 
-    return { total, species: speciesSet.size, avgScore, freshPct, modPct, poorPct, scanActivity };
-  }, [history]);
+    return { total, species: speciesSet.size, avgScore, freshPct, modPct, poorPct, scanActivity, hasNewData };
+  }, [history, hasNewData]);
 };
 
 const radarData = [
@@ -239,14 +250,19 @@ export const QualityRadar = () => (
 );
 
 export const LiveStats = () => {
-  const { total, species, avgScore } = useHistoryStats();
+  const { total, species, avgScore, hasNewData } = useHistoryStats();
   return (
-    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
+    <section className={`glass-effect rounded-xl p-3 border shadow-md h-full transition-all duration-500 ${hasNewData ? "border-primary ring-2 ring-primary/30" : "border-border/50"}`}>
       <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
         <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
           <Database className="w-3 h-3 text-primary" />
         </div>
         Live Statistics
+        <span className="ml-auto flex items-center gap-1">
+          <span className={`w-1.5 h-1.5 rounded-full ${hasNewData ? "bg-emerald-400 animate-ping" : "bg-emerald-400"}`} />
+          <span className={`w-1.5 h-1.5 rounded-full bg-emerald-400 absolute`} style={{ marginLeft: 0 }} />
+          <span className="text-[8px] font-semibold text-emerald-500 uppercase tracking-widest">Live</span>
+        </span>
       </h3>
       <div className="grid grid-cols-3 gap-2">
         {[
@@ -254,7 +270,7 @@ export const LiveStats = () => {
           { label: "Species Found", value: String(species) },
           { label: "Avg Score", value: String(avgScore) },
         ].map((stat) => (
-          <div key={stat.label} className="text-center p-1.5 rounded-lg bg-muted/30">
+          <div key={stat.label} className={`text-center p-1.5 rounded-lg transition-colors duration-500 ${hasNewData ? "bg-primary/10" : "bg-muted/30"}`}>
             <p className="text-lg font-bold text-primary leading-none">{stat.value}</p>
             <p className="text-[9px] text-muted-foreground mt-0.5">{stat.label}</p>
           </div>
