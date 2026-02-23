@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake } from "lucide-react";
+import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line, Area, AreaChart } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -47,9 +49,10 @@ interface ScanHistoryProps {
   onBack: () => void;
 }
 
-import { getScansFromDb, deleteScanFromDb } from "@/lib/scanHistoryDb";
+import { getScansFromDb, getAllScansForAdmin, deleteScanFromDb } from "@/lib/scanHistoryDb";
+import type { ScanRecordWithUser } from "@/lib/scanHistoryDb";
 
-// Keep legacy helpers for backward compat but they now just delegate
+// Keep legacy helpers for backward compat
 const STORAGE_KEY = "fishbuddy_scan_history";
 
 export const getScanHistory = (): ScanRecord[] => {
@@ -62,7 +65,6 @@ export const getScanHistory = (): ScanRecord[] => {
 };
 
 export const saveScanToHistory = (record: ScanRecord) => {
-  // legacy localStorage fallback - DB save handled separately
   const history = getScanHistory();
   history.unshift(record);
   if (history.length > 50) history.pop();
@@ -91,24 +93,39 @@ const freshnessBg = (level: FreshnessLevel) => {
 };
 
 export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
-  const [history, setHistory] = useState<ScanRecord[]>([]);
+  const { user } = useAuth();
+  const [history, setHistory] = useState<ScanRecordWithUser[]>([]);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loadingDb, setLoadingDb] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    getScansFromDb().then((dbScans) => {
-      setHistory(dbScans.length > 0 ? dbScans : getScanHistory());
+    const load = async () => {
+      // Check admin role
+      let admin = false;
+      if (user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin");
+        admin = (roleData?.length ?? 0) > 0;
+      }
+      setIsAdmin(admin);
+
+      // Fetch scans: admin gets all, user gets own (via RLS)
+      const scans = admin ? await getAllScansForAdmin() : await getScansFromDb();
+      setHistory(scans);
       setLoadingDb(false);
-    });
-  }, []);
+    };
+    load();
+  }, [user]);
 
   const handleDelete = async (id: string) => {
-    deleteScanFromHistory(id);
     await deleteScanFromDb(id);
-    const dbScans = await getScansFromDb();
-    setHistory(dbScans.length > 0 ? dbScans : getScanHistory());
+    setHistory((prev) => prev.filter((r) => r.id !== id));
     setCompareIds((prev) => prev.filter((cid) => cid !== id));
   };
 
@@ -196,7 +213,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
         ) : (
           <div className="space-y-4">
             <p className="text-xs text-muted-foreground font-medium">
-              {history.length} scan{history.length !== 1 ? "s" : ""} • Tap to select for comparison (max 3)
+              {history.length} scan{history.length !== 1 ? "s" : ""} {isAdmin ? "• All Users (Admin View)" : "• Tap to select for comparison (max 3)"}
             </p>
 
             {/* Freshness Trend Chart */}
@@ -304,6 +321,12 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                       <div>
                         <h3 className="font-bold text-foreground text-sm truncate">{record.species.name}</h3>
                         <p className="text-xs text-muted-foreground italic">{record.species.scientificName}</p>
+                        {isAdmin && (record as ScanRecordWithUser).userName && (
+                          <p className="text-[10px] text-primary font-medium flex items-center gap-1 mt-0.5">
+                            <User className="w-3 h-3" />
+                            {(record as ScanRecordWithUser).userName || (record as ScanRecordWithUser).userEmail}
+                          </p>
+                        )}
                       </div>
                       <div className={`px-2 py-1 rounded-full text-xs font-semibold border ${freshnessBg(record.freshness.level)}`}>
                         <span className={freshnessColor(record.freshness.level)}>
@@ -397,13 +420,15 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                     <Download className="w-3.5 h-3.5 inline mr-1" />
                     Export
                   </button>
-                  <button
-                    className="flex-1 py-2.5 text-xs font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/5 transition-colors"
-                    onClick={() => handleDelete(record.id)}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 inline mr-1" />
-                    Delete
-                  </button>
+                  {(!isAdmin || (record as ScanRecordWithUser).scanUserId === user?.id) && (
+                    <button
+                      className="flex-1 py-2.5 text-xs font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/5 transition-colors"
+                      onClick={() => handleDelete(record.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 inline mr-1" />
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

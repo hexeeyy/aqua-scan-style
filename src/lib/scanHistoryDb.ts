@@ -2,6 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ScanRecord } from "@/components/ScanHistory";
 import type { MarketDuration, ConsumerRecommendation } from "@/components/MarketDurationCard";
 
+export interface ScanRecordWithUser extends ScanRecord {
+  scanUserId?: string;
+  userName?: string;
+  userEmail?: string;
+}
+
 export const saveScanToDb = async (
   record: ScanRecord,
   userId: string,
@@ -43,6 +49,46 @@ export const saveScanToDb = async (
   return data?.share_token ?? null;
 };
 
+const mapRowToScanRecord = (row: any): ScanRecordWithUser => ({
+  id: row.id,
+  scanUserId: row.user_id,
+  timestamp: Number(row.timestamp),
+  thumbnail: row.thumbnail ?? "",
+  species: {
+    name: row.species_name ?? "",
+    scientificName: row.scientific_name ?? "",
+    confidence: Number(row.confidence ?? 0),
+  },
+  freshness: {
+    level: (row.freshness_level ?? "moderate") as "fresh" | "moderate" | "poor",
+    score: Number(row.freshness_score ?? 0),
+    reasoning: row.freshness_reasoning ?? "",
+  },
+  pricePerKilo: row.price_min != null ? {
+    min: Number(row.price_min),
+    max: Number(row.price_max),
+    currency: row.price_currency ?? "₱",
+  } : undefined,
+  nutritionalInfo: row.nutritional_protein != null ? {
+    protein: Number(row.nutritional_protein),
+    omega3: row.nutritional_omega3 ?? "",
+    calories: Number(row.nutritional_calories ?? 0),
+  } : undefined,
+  stats: row.eye_clarity ? {
+    eyeClarity: row.eye_clarity,
+    gillColor: row.gill_color ?? "",
+    texture: row.texture ?? "",
+  } : undefined,
+  spoilagePrediction: row.spoilage_hours_room_temp != null ? {
+    hoursAtRoomTemp: Number(row.spoilage_hours_room_temp),
+    storage: (row.spoilage_storage as any[]) ?? [],
+    riskLevel: row.spoilage_risk_level ?? "",
+    recommendation: row.spoilage_recommendation ?? "",
+  } : undefined,
+  userName: row.profiles?.display_name ?? undefined,
+  userEmail: row.profiles?.email ?? undefined,
+});
+
 export const getScansFromDb = async (): Promise<ScanRecord[]> => {
   const { data, error } = await supabase
     .from("scan_history")
@@ -55,42 +101,31 @@ export const getScansFromDb = async (): Promise<ScanRecord[]> => {
     return [];
   }
 
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    timestamp: Number(row.timestamp),
-    thumbnail: row.thumbnail ?? "",
-    species: {
-      name: row.species_name ?? "",
-      scientificName: row.scientific_name ?? "",
-      confidence: Number(row.confidence ?? 0),
-    },
-    freshness: {
-      level: (row.freshness_level ?? "moderate") as "fresh" | "moderate" | "poor",
-      score: Number(row.freshness_score ?? 0),
-      reasoning: row.freshness_reasoning ?? "",
-    },
-    pricePerKilo: row.price_min != null ? {
-      min: Number(row.price_min),
-      max: Number(row.price_max),
-      currency: row.price_currency ?? "₱",
-    } : undefined,
-    nutritionalInfo: row.nutritional_protein != null ? {
-      protein: Number(row.nutritional_protein),
-      omega3: row.nutritional_omega3 ?? "",
-      calories: Number(row.nutritional_calories ?? 0),
-    } : undefined,
-    stats: row.eye_clarity ? {
-      eyeClarity: row.eye_clarity,
-      gillColor: row.gill_color ?? "",
-      texture: row.texture ?? "",
-    } : undefined,
-    spoilagePrediction: row.spoilage_hours_room_temp != null ? {
-      hoursAtRoomTemp: Number(row.spoilage_hours_room_temp),
-      storage: (row.spoilage_storage as any[]) ?? [],
-      riskLevel: row.spoilage_risk_level ?? "",
-      recommendation: row.spoilage_recommendation ?? "",
-    } : undefined,
-  }));
+  return (data ?? []).map(mapRowToScanRecord);
+};
+
+export const getAllScansForAdmin = async (): Promise<ScanRecordWithUser[]> => {
+  // Fetch scans and profiles separately, then merge
+  const [scansRes, profilesRes] = await Promise.all([
+    supabase.from("scan_history").select("*").order("timestamp", { ascending: false }).limit(200),
+    supabase.from("profiles").select("user_id, display_name, email"),
+  ]);
+
+  if (scansRes.error) {
+    console.error("Failed to fetch admin scans:", scansRes.error);
+    return [];
+  }
+
+  const profileMap = new Map<string, { display_name: string; email: string }>();
+  (profilesRes.data ?? []).forEach((p: any) => profileMap.set(p.user_id, p));
+
+  return (scansRes.data ?? []).map((row: any) => {
+    const record = mapRowToScanRecord(row);
+    const profile = profileMap.get(row.user_id);
+    record.userName = profile?.display_name ?? undefined;
+    record.userEmail = profile?.email ?? undefined;
+    return record;
+  });
 };
 
 export const deleteScanFromDb = async (id: string) => {
