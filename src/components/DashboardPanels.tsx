@@ -1,8 +1,9 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 
 import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import { getScansFromDb } from "@/lib/scanHistoryDb";
+import { supabase } from "@/integrations/supabase/client";
 import type { ScanRecord } from "@/components/ScanHistory";
 
 const spectrumData = [
@@ -20,9 +21,20 @@ const spectrumData = [
 const useHistoryStats = () => {
   const [history, setHistory] = useState<ScanRecord[]>([]);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     getScansFromDb().then(setHistory);
   }, []);
+
+  useEffect(() => {
+    refresh();
+    const channel = supabase
+      .channel('dashboard-scans')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
+        refresh();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [refresh]);
 
   return useMemo(() => {
     const total = history.length;
