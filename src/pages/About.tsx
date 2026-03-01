@@ -20,15 +20,15 @@ interface Researcher {
 const researchers: Researcher[] = [
   {
     name: "Mark Hexilon Payno",
-    role: "Lead Researcher",
+    role: "Project Lead, Software & AI Engineer",
     color: "from-primary to-blue-600",
     photo: teamMark,
-    bio: "Oversees the entire SARI-ONE project, coordinating research methodology, team deliverables, and stakeholder communications with BFAR.",
-    focus: "Project Management • Research Design • AI Strategy",
+    bio: "Leads the overall project direction, coordinates the research team, and develops the core deep learning models for fish species classification and freshness regression.",
+    focus: "Project Management • Deep Learning • Model Development",
   },
   {
     name: "Trisha Tumbagahan",
-    role: "Data Analyst",
+    role: "Data Scientist",
     color: "from-violet-500 to-purple-600",
     photo: teamTrisha,
     bio: "Handles dataset curation, statistical modeling, and performance benchmarking of the CNN classification and freshness regression models.",
@@ -36,19 +36,19 @@ const researchers: Researcher[] = [
   },
   {
     name: "Yvan Joaquin Aquino",
-    role: "Marine Biologist",
+    role: "Field Researcher & Web Designer",
     color: "from-emerald-500 to-teal-600",
     photo: teamYvan,
-    bio: "Provides domain expertise on Philippine fish species taxonomy, freshness indicators, and sustainable fisheries practices aligned with UN SDG 14.",
-    focus: "Species Taxonomy • Freshness Science • Sustainability",
+    bio: "Conducts field research in local wet markets to collect fish samples and images, and designs the user interface for the SARI-ONE web platform.",
+    focus: "Field Data Collection • UX/UI Design • User Testing",
   },
   {
     name: "Philip Inigo Lenida",
-    role: "Software Engineer",
+    role: "Field Researcher & Full-Stack Developer",
     color: "from-amber-500 to-orange-600",
     photo: teamPhilip,
-    bio: "Architects and develops the SARI-ONE web platform, integrating real-time computer vision pipelines with the deep learning inference backend.",
-    focus: "Full-Stack Development • Computer Vision • System Architecture",
+    bio: "Assists with field data collection and is responsible for developing the backend infrastructure and frontend integration of the SARI-ONE system.",
+    focus: "Field Data Collection • Backend Development • Frontend Integration",
   },
 ];
 
