@@ -28,11 +28,11 @@ const researchers: Researcher[] = [
   },
   {
     name: "Trisha Tumbagahan",
-    role: "Data Scientist",
+    role: "Data Scientist & Marine Researcher",
     color: "from-violet-500 to-purple-600",
     photo: teamTrisha,
-    bio: "Handles dataset curation, statistical modeling, and performance benchmarking of the CNN classification and freshness regression models.",
-    focus: "Data Preprocessing • Model Evaluation • Statistical Analysis",
+    bio: "Conducts marine biology research to curate a comprehensive dataset of local fish species and freshness levels, and performs data preprocessing, model evaluation, and statistical analysis to optimize the SARI-ONE system.",
+    focus: "Marine Biology Research • Data Curation • Model Evaluation",
   },
   {
     name: "Yvan Joaquin Aquino",
