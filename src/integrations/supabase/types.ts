@@ -52,6 +52,9 @@ export type Database = {
           freshness_score: number | null
           gill_color: string | null
           id: string
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
           market_duration: Json | null
           nutritional_calories: number | null
           nutritional_omega3: string | null
@@ -81,6 +84,9 @@ export type Database = {
           freshness_score?: number | null
           gill_color?: string | null
           id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
           market_duration?: Json | null
           nutritional_calories?: number | null
           nutritional_omega3?: string | null
@@ -110,6 +116,9 @@ export type Database = {
           freshness_score?: number | null
           gill_color?: string | null
           id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
           market_duration?: Json | null
           nutritional_calories?: number | null
           nutritional_omega3?: string | null

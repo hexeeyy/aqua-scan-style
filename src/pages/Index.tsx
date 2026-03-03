@@ -20,6 +20,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { saveScanToDb } from "@/lib/scanHistoryDb";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats, DashboardDataProvider } from "@/components/DashboardPanels";
 import { Navbar } from "@/components/Navbar";
@@ -89,6 +90,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { location: userLocation, detectLocation: detectUserLocation } = useUserLocation();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
 
@@ -168,6 +170,10 @@ const Index = () => {
     setCapturedImage(imageData);
     setIsAnalyzing(true);
 
+    // Auto-detect location if not already set
+    if (!userLocation) {
+      detectUserLocation();
+    }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -210,7 +216,11 @@ const Index = () => {
           };
           saveScanToHistory(record);
           if (user) {
-            saveScanToDb(record, user.id, analysisData.marketDuration, analysisData.consumerRecommendation)
+            saveScanToDb(record, user.id, analysisData.marketDuration, analysisData.consumerRecommendation, {
+                latitude: userLocation?.latitude,
+                longitude: userLocation?.longitude,
+                locationName: userLocation?.locationName,
+              })
               .then((token) => { if (token) setShareToken(token); });
           }
         }
