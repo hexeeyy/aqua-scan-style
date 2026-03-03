@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, History, Maximize, Minimize, LogOut, Shield } from "lucide-react";
+import { Home, Users, History, Maximize, Minimize, LogOut, Shield, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ interface NavbarProps {
 
 const navItems = [
   { label: "Home", path: "/", icon: Home },
+  { label: "Area", path: "/area", icon: MapPin },
   { label: "History", path: "/history", icon: History },
   { label: "About", path: "/about", icon: Users },
 ];

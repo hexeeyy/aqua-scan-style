@@ -12,7 +12,8 @@ export const saveScanToDb = async (
   record: ScanRecord,
   userId: string,
   marketDuration?: MarketDuration,
-  consumerRecommendation?: ConsumerRecommendation
+  consumerRecommendation?: ConsumerRecommendation,
+  locationData?: { latitude?: number; longitude?: number; locationName?: string }
 ): Promise<string | null> => {
   const { data, error } = await supabase.from("scan_history").insert({
     id: record.id,
@@ -40,7 +41,12 @@ export const saveScanToDb = async (
     spoilage_storage: record.spoilagePrediction?.storage ?? null,
     market_duration: marketDuration ? (marketDuration as any) : null,
     consumer_recommendation: consumerRecommendation ? (consumerRecommendation as any) : null,
-  }).select("share_token").single();
+    ...(locationData?.locationName ? {
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      location_name: locationData.locationName,
+    } : {}),
+  } as any).select("share_token").single();
 
   if (error) {
     console.error("Failed to save scan to DB:", error);

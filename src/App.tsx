@@ -10,6 +10,7 @@ import About from "./pages/About";
 import HistoryPage from "./pages/HistoryPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import AdminPage from "./pages/AdminPage";
+import AreaDashboard from "./pages/AreaDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import PublicScanPage from "./pages/PublicScanPage";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
             <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+            <Route path="/area" element={<ProtectedRoute><AreaDashboard /></ProtectedRoute>} />
             <Route path="/scan/share/:token" element={<PublicScanPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
