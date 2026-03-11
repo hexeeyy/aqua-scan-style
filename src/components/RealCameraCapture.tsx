@@ -31,7 +31,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionStatus, setDetectionStatus] = useState<DetectionResult | null>(null);
   const [autoCapture, setAutoCapture] = useState(false);
-  const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
 
   // Enumerate available video devices for robust switching
