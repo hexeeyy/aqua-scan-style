@@ -100,7 +100,7 @@ export const getScansFromDb = async (): Promise<ScanRecord[]> => {
     .from("scan_history")
     .select("*")
     .order("timestamp", { ascending: false })
-    .limit(50);
+    .limit(1000);
 
   if (error) {
     console.error("Failed to fetch scans:", error);
