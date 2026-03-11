@@ -79,7 +79,19 @@ const AreaDashboard = () => {
       setAllLocations(locs);
     };
 
-    if (user) fetchScans();
+    if (!user) return;
+    fetchScans();
+
+    // Realtime subscription to keep dashboard synced with scan history
+    const channel = supabase
+      .channel('area-dashboard-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
+        console.log('[Realtime] scan_history changed, refreshing area dashboard...');
+        fetchScans();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, isAdmin]);
 
   // Auto-select user's location
