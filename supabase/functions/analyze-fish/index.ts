@@ -183,6 +183,34 @@ If the image is NOT a fish, return:
 
 IMPORTANT: Use realistic Philippine peso prices based on current market rates. Common fish like tilapia: ₱120-180/kg, bangus: ₱160-220/kg, galunggong: ₱180-280/kg, tuna: ₱300-500/kg, lapu-lapu: ₱400-800/kg. Adjust for freshness.
 
+CRITICAL FRESHNESS EVALUATION RULES — DO NOT DEFAULT TO MODERATE:
+You MUST evaluate freshness independently for each image. Do NOT use "moderate" as a safe middle-ground default.
+
+FRESHNESS LEVEL DECISION TREE (follow strictly):
+★ "fresh" (score 75-100): Use when AT LEAST 2 of these are true:
+  - Eyes are clear, bright, and convex (not flat or sunken)
+  - Gills are bright red or vibrant pink
+  - Skin is shiny, metallic, with intact scales and clear mucus
+  - Flesh is firm when pressed (springs back)
+  - No off-odor indicators visible (no yellowing, no dullness)
+  → Most fish photographed at markets early morning or just caught SHOULD be "fresh"
+
+★ "moderate" (score 40-74): Use ONLY when clear deterioration signs are visible:
+  - Eyes are slightly cloudy or flattening but not sunken
+  - Gills are fading from red toward brownish-pink  
+  - Skin is losing sheen, some scale loss visible
+  - Slight softening of flesh
+  → This means the fish has been sitting for several hours and shows VISIBLE aging
+
+★ "poor" (score 0-39): Use when obvious spoilage is present:
+  - Eyes are sunken, gray, or opaque
+  - Gills are brown, gray, or greenish
+  - Skin is dull, slimy with milky/yellowish mucus
+  - Flesh is soft, leaves indentation when pressed
+  - Visible discoloration or bloating
+
+IMPORTANT: A fish that looks reasonably good with clear eyes and decent color should be rated "fresh", NOT "moderate". Reserve "moderate" for fish showing multiple visible signs of aging. The freshness score should use the FULL range (0-100), not cluster around 50-70.
+
 Spoilage prediction guidelines:
 - Fresh fish at room temp (~30°C PH climate): 4-8 hours safe
 - Moderate freshness at room temp: 1-3 hours safe
