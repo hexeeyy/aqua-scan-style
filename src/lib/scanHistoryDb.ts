@@ -99,8 +99,7 @@ export const getScansFromDb = async (): Promise<ScanRecord[]> => {
   const { data, error } = await supabase
     .from("scan_history")
     .select("*")
-    .order("timestamp", { ascending: false })
-    .limit(1000);
+    .order("timestamp", { ascending: false });
 
   if (error) {
     console.error("Failed to fetch scans:", error);
