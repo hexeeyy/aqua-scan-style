@@ -4,6 +4,7 @@ import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingU
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import type { ScanRecord } from "@/components/ScanHistory";
 import { useScanHistory } from "@/hooks/useScanData";
+import { countUniqueSpecies } from "@/lib/speciesNormalize";
 
 const spectrumData = [
   { nm: "380", r: 12, g: 8, b: 45 },
