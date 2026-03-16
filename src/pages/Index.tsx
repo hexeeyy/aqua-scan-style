@@ -6,7 +6,7 @@ import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
 import { SpeciesCard } from "@/components/SpeciesCard";
 import { QuickStats } from "@/components/QuickStats";
-import { ModelMetrics } from "@/components/ModelMetrics";
+
 import { ResultPanel } from "@/components/ResultPanel";
 import { FreshnessGauge } from "@/components/FreshnessGauge";
 import { SpoilageCountdown } from "@/components/SpoilageCountdown";
