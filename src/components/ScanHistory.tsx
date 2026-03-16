@@ -380,7 +380,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                     <Download className="w-3.5 h-3.5 inline mr-1" />
                     Export
                   </button>
-                  {(!isAdmin || (record as ScanRecordWithUser).scanUserId === user?.id) && (
+                  {(isAdmin || (record as ScanRecordWithUser).scanUserId === user?.id) && (
                     <button
                       className="flex-1 py-2.5 text-xs font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/5 transition-colors"
                       onClick={() => handleDelete(record.id)}
