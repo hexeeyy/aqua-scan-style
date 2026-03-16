@@ -173,7 +173,6 @@ const AdminPage = () => {
   });
   const speciesData = Array.from(speciesMap.entries())
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
     .map(([name, value]) => ({ name, value }));
 
   // Freshness distribution
