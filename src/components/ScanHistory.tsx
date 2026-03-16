@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line, Area, AreaChart } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useScanHistory, useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
