@@ -39,26 +39,20 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const [activeDeviceIdx, setActiveDeviceIdx] = useState(0);
 
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then(all => {
-      const cams = all.filter(d => d.kind === "videoinput");
-      setDevices(cams);
-    });
-  }, []);
-
-  useEffect(() => {
-    // Stop any existing stream before starting a new one
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      if (videoRef.current) videoRef.current.srcObject = null;
-      setStream(null);
-    }
-    // Small delay to ensure device is released
-    const timer = setTimeout(() => startCamera(), 150);
+    // Initial camera start – enumerate after permission is granted
+    startCamera();
     return () => {
-      clearTimeout(timer);
       stopCamera();
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
     };
+  }, []);
+
+  // Re-start camera when switching device or facing mode
+  useEffect(() => {
+    if (devices.length === 0) return; // skip initial mount
+    stopCamera();
+    const timer = setTimeout(() => startCamera(), 150);
+    return () => clearTimeout(timer);
   }, [facingMode, activeDeviceIdx]);
 
   useEffect(() => {
@@ -77,18 +71,29 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setStream(null);
   };
 
   const startCamera = async () => {
     try {
-      // Prefer exact deviceId when available, fall back to facingMode
-      const constraints: MediaStreamConstraints = devices.length > 0
-        ? { video: { deviceId: { exact: devices[activeDeviceIdx]?.deviceId }, width: { ideal: 640 }, height: { ideal: 480 } } }
+      // Build constraints – only use deviceId if we already have enumerated devices with IDs
+      const targetDevice = devices.length > 0 ? devices[activeDeviceIdx] : null;
+      const hasDeviceId = targetDevice?.deviceId && targetDevice.deviceId !== "";
+
+      const constraints: MediaStreamConstraints = hasDeviceId
+        ? { video: { deviceId: { exact: targetDevice!.deviceId }, width: { ideal: 640 }, height: { ideal: 480 } } }
         : { video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } } };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setStream(mediaStream);
+
+      // Now that permission is granted, enumerate devices for switching
+      if (devices.length === 0) {
+        const all = await navigator.mediaDevices.enumerateDevices();
+        const cams = all.filter(d => d.kind === "videoinput" && d.deviceId);
+        if (cams.length > 0) setDevices(cams);
+      }
     } catch (error) {
       console.error("Error accessing camera:", error);
       toast({ title: "Camera Error", description: "Unable to access camera. Please check permissions.", variant: "destructive" });
