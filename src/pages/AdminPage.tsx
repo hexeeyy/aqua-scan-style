@@ -343,6 +343,39 @@ const AdminPage = () => {
           </Card>
         </div>
 
+        {/* Location Distribution */}
+        <Card className="border-border/30 shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              Location Distribution ({locationData.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-64 overflow-y-auto">
+              {locationData.length > 0 ? (
+                <div style={{ height: Math.max(208, locationData.length * 32) }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={locationData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={120} />
+                      <Tooltip />
+                      <Bar dataKey="value" name="Scans" radius={[0, 6, 6, 0]}>
+                        {locationData.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-52 text-muted-foreground text-sm">No data yet</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Species + Top Users */}
         <div className="grid md:grid-cols-2 gap-4">
           {/* Species Distribution */}
