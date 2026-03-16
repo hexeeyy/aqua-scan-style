@@ -26,6 +26,7 @@ interface UserProfile {
 }
 
 interface ScanRow {
+  id: string;
   user_id: string;
   species_name: string;
   freshness_level: string;
