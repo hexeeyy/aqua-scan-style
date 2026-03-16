@@ -117,7 +117,7 @@ const AreaDashboard = () => {
   const avgFreshness = useMemo(() => {
     const scored = filtered.filter((s) => s.freshness_score != null && s.freshness_score > 0);
     if (scored.length === 0) return 0;
-    return Math.round(scored.reduce((sum, s) => sum + (s.freshness_score ?? 0), 0) / scored.length);
+    return Math.round(scored.reduce((sum, s) => sum + (s.freshness_score ?? 0), 0) / scored.length * 10) / 10;
   }, [filtered]);
 
   // Avg price
