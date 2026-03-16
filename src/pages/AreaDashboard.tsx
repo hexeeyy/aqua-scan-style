@@ -243,16 +243,18 @@ const AreaDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="h-36">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={speciesData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                        <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={80} />
-                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="max-h-48 overflow-y-auto">
+                    <div style={{ height: Math.max(144, speciesData.length * 28) }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={speciesData} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                          <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={80} />
+                          <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+                          <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

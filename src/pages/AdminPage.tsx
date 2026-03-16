@@ -344,23 +344,25 @@ const AdminPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-52">
+              <div className="max-h-64 overflow-y-auto">
                 {speciesData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={speciesData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                      <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} />
-                      <Tooltip />
-                      <Bar dataKey="value" name="Scans" radius={[0, 6, 6, 0]}>
-                        {speciesData.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div style={{ height: Math.max(208, speciesData.length * 32) }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={speciesData} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} />
+                        <Tooltip />
+                        <Bar dataKey="value" name="Scans" radius={[0, 6, 6, 0]}>
+                          {speciesData.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No data yet</div>
+                  <div className="flex items-center justify-center h-52 text-muted-foreground text-sm">No data yet</div>
                 )}
               </div>
             </CardContent>
