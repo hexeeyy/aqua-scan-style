@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { getScansFromDb, getAllScansForAdmin } from "@/lib/scanHistoryDb";
 import type { ScanRecordWithUser } from "@/lib/scanHistoryDb";
@@ -49,10 +50,33 @@ export const useRealtimeScans = () => {
       .channel("global-scans-realtime")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "scan_history" },
-        () => {
+        { event: "INSERT", schema: "public", table: "scan_history" },
+        (payload) => {
           invalidate();
+          const newScan = payload.new as {
+            user_id?: string;
+            species_name?: string | null;
+            location_name?: string | null;
+          };
+          if (newScan.user_id !== user.id) {
+            const species = newScan.species_name || "Unknown species";
+            const location = newScan.location_name || "Unknown location";
+            toast({
+              title: "🐟 New Scan Detected",
+              description: `${species} scanned at ${location}`,
+            });
+          }
         }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "scan_history" },
+        () => { invalidate(); }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "scan_history" },
+        () => { invalidate(); }
       )
       .subscribe();
 
