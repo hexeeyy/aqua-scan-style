@@ -224,11 +224,10 @@ Market duration estimation guidelines:
 - confidence: "high" if visual cues are very clear, "medium" for typical, "low" if uncertain
 
 Consumer recommendation guidelines:
-- verdict: "buy" ONLY for fresh fish (score 75+). "buy_with_caution" for moderate (NOT favorable — fish is declining, warn the buyer). "dont_buy" for poor (unsafe).
-- IMPORTANT: Moderate freshness is NOT a favorable outcome. The verdict reason must clearly discourage purchase or warn about quality decline.
-- Adjust price fairness based on freshness — fish that's been sitting longer should cost less. Moderate fish should almost always have isFair: false at full price.
+- verdict: "buy" (fresh, good value), "buy_with_caution" (moderate, cook soon), "dont_buy" (poor, unsafe)
+- Adjust price fairness based on freshness — fish that's been sitting longer should cost less
 - Include Filipino cooking method names where applicable (inihaw, sinigang, paksiw, etc.)
-- Safety warnings MUST be included for moderate and poor freshness
+- Safety warnings only for moderate-to-poor freshness
 
 Be accurate and professional. Confidence should reflect uncertainty (80-95% for clear fish, 60-79% for unclear images).`
           },

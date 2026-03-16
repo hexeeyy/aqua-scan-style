@@ -39,7 +39,7 @@ interface ScanData {
 
 const verdictConfig = {
   buy: { icon: CheckCircle, label: "Safe to Buy", color: "text-success", bg: "bg-success/10 border-success/30" },
-  buy_with_caution: { icon: AlertTriangle, label: "Not Recommended", color: "text-warning", bg: "bg-warning/10 border-warning/30" },
+  buy_with_caution: { icon: AlertTriangle, label: "Buy with Caution", color: "text-warning", bg: "bg-warning/10 border-warning/30" },
   dont_buy: { icon: XCircle, label: "Don't Buy", color: "text-destructive", bg: "bg-destructive/10 border-destructive/30" },
 };
 

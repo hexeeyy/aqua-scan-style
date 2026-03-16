@@ -21,7 +21,7 @@ export const FreshnessIndicator = ({ level, score }: FreshnessIndicatorProps) =>
       shield: ShieldAlert,
       text: "Moderate",
       gradient: "bg-moderate-gradient",
-      description: "Quality declining — not recommended for purchase",
+      description: "Should be consumed soon",
       emoji: "🟡",
     },
     poor: {
