@@ -116,8 +116,7 @@ export const useAreaScans = () => {
         .from("scan_history")
         .select("id, species_name, freshness_level, freshness_score, price_min, price_max, location_name, timestamp, user_id")
         
-        .order("timestamp", { ascending: false })
-        .limit(500);
+        .order("timestamp", { ascending: false });
 
       if (!isAdmin) {
         query = query.eq("user_id", user?.id ?? "");
