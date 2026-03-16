@@ -530,8 +530,14 @@ const AdminPage = () => {
             Researchers & Experts — Model Performance
           </h2>
           <ModelMetrics
-            confidence={totalScans > 0 ? Math.round(scans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans) : 75}
-            freshnessScore={avgFreshnessAll}
+            totalScans={totalScans}
+            freshCount={scans.filter((s) => s.freshness_level === "fresh").length}
+            moderateCount={scans.filter((s) => s.freshness_level === "moderate").length}
+            poorCount={scans.filter((s) => s.freshness_level === "poor").length}
+            avgFreshness={avgFreshnessAll}
+            avgConfidence={totalScans > 0 ? Math.round(scans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans) : 0}
+            speciesCount={speciesData.length}
+            locationCount={locationData.length}
           />
         </div>
 
