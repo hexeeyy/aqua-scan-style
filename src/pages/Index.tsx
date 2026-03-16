@@ -374,20 +374,7 @@ const Index = () => {
                   <p className="text-muted-foreground font-medium text-sm">The image does not appear to be a fish. Please try again.</p>
                 </div>
               ) : (
-                <Tabs defaultValue="consumer" className="w-full">
-                  <TabsList className="w-full mb-2 bg-muted/50 backdrop-blur-sm rounded-xl p-1 h-9">
-                    <TabsTrigger value="consumer" className="flex-1 rounded-lg text-[11px] font-bold gap-1.5 data-[state=active]:bg-ocean-gradient data-[state=active]:text-primary-foreground">
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      Vendors & Consumers
-                    </TabsTrigger>
-                    <TabsTrigger value="researcher" className="flex-1 rounded-lg text-[11px] font-bold gap-1.5 data-[state=active]:bg-ocean-gradient data-[state=active]:text-primary-foreground">
-                      <FlaskConical className="w-3.5 h-3.5" />
-                      Researchers & Experts
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* ===== VENDORS & CONSUMERS TAB ===== */}
-                  <TabsContent value="consumer" className="mt-0">
+                <div className="w-full">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
                         {/* Species ID */}
