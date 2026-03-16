@@ -36,7 +36,8 @@ const useHistoryStats = () => {
     const total = history.length;
 
     const speciesCount = countUniqueSpecies(history, (s) => s.species.name);
-    const avgScore = total > 0 ? Math.round(history.reduce((sum, s) => sum + s.freshness.score, 0) / total * 10) / 10 : 0;
+    const scored = history.filter((s) => s.freshness.score != null && s.freshness.score > 0);
+    const avgScore = scored.length > 0 ? Math.round(scored.reduce((sum, s) => sum + s.freshness.score, 0) / scored.length * 10) / 10 : 0;
 
     const fresh = history.filter((s) => s.freshness.level === "fresh").length;
     const moderate = history.filter((s) => s.freshness.level === "moderate").length;
