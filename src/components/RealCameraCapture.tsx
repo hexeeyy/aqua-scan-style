@@ -81,9 +81,11 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
       const targetDevice = devices.length > 0 ? devices[activeDeviceIdx] : null;
       const hasDeviceId = targetDevice?.deviceId && targetDevice.deviceId !== "";
 
+      const videoSettings = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 60, min: 30 } };
+
       const constraints: MediaStreamConstraints = hasDeviceId
-        ? { video: { deviceId: { exact: targetDevice!.deviceId }, width: { ideal: 640 }, height: { ideal: 480 } } }
-        : { video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } } };
+        ? { video: { deviceId: { exact: targetDevice!.deviceId }, ...videoSettings } }
+        : { video: { facingMode, ...videoSettings } };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
