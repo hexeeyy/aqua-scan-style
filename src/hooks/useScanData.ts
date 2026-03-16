@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,9 +20,46 @@ export const useIsAdmin = () => {
     queryKey: ["isAdmin", user?.id],
     queryFn: () => checkAdmin(user!.id),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+};
+
+export const useInvalidateScans = () => {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({ queryKey: ["scanHistory"] });
+    queryClient.invalidateQueries({ queryKey: ["areaScans"] });
+    queryClient.invalidateQueries({ queryKey: ["adminScans"] });
+  };
+};
+
+/**
+ * Single realtime subscription that invalidates all scan-related queries.
+ * Mount this ONCE at a high level (e.g. App or layout) to avoid duplicate channels.
+ */
+export const useRealtimeScans = () => {
+  const { user } = useAuth();
+  const invalidate = useInvalidateScans();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("global-scans-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "scan_history" },
+        () => {
+          invalidate();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 };
 
 export const useScanHistory = () => {
@@ -32,9 +70,9 @@ export const useScanHistory = () => {
     queryKey: ["scanHistory", user?.id, isAdmin],
     queryFn: () => (isAdmin ? getAllScansForAdmin() : getScansFromDb()),
     enabled: !!user && !adminLoading,
-    staleTime: 2 * 60 * 1000, // 2 min cache
+    staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    placeholderData: (prev) => prev, // keep previous data while refetching
+    placeholderData: (prev) => prev,
   });
 };
 
@@ -74,12 +112,4 @@ export const useAreaScans = () => {
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
-};
-
-export const useInvalidateScans = () => {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({ queryKey: ["scanHistory"] });
-    queryClient.invalidateQueries({ queryKey: ["areaScans"] });
-  };
 };
