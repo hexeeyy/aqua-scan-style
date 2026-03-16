@@ -371,6 +371,12 @@ const AreaDashboard = () => {
             )}
           </>
         )}
+        <EditLocationDialog
+          open={editLocOpen}
+          onOpenChange={setEditLocOpen}
+          scanIds={scans.filter((s) => !s.location_name).map((s) => s.id)}
+          onSuccess={invalidateScans}
+        />
       </main>
 
       <Footer />
