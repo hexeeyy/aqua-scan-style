@@ -110,6 +110,33 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const zoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
   const zoomOut = () => setZoom(prev => Math.max(prev - 0.25, 1));
 
+  const enhanceImage = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    // Calculate average brightness
+    let totalBrightness = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+    }
+    const avgBrightness = totalBrightness / (data.length / 4);
+
+    // Adaptive brightness & contrast correction
+    const brightnessBoost = avgBrightness < 100 ? 30 : avgBrightness < 140 ? 15 : 0;
+    const contrastFactor = avgBrightness < 120 ? 1.3 : 1.15;
+
+    for (let i = 0; i < data.length; i += 4) {
+      for (let c = 0; c < 3; c++) {
+        let val = data[i + c];
+        // Apply contrast around midpoint
+        val = ((val - 128) * contrastFactor) + 128 + brightnessBoost;
+        data[i + c] = Math.max(0, Math.min(255, val));
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  };
+
   const captureFrameData = (): string | null => {
     if (!videoRef.current || !canvasRef.current) return null;
     const video = videoRef.current;
@@ -124,7 +151,11 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
     ctx.rotate((rotation * Math.PI) / 180);
     ctx.drawImage(video, -video.videoWidth / 2, -video.videoHeight / 2);
     ctx.restore();
-    return canvas.toDataURL("image/jpeg", 0.6);
+
+    // Apply adaptive image enhancement for real-world conditions
+    enhanceImage(ctx, canvas.width, canvas.height);
+
+    return canvas.toDataURL("image/jpeg", 0.7);
   };
 
   const startRealtimeDetection = () => {

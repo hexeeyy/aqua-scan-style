@@ -77,11 +77,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-lite',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: `You are a real-time fish detection and species identification system. Analyze the image and return ONLY a JSON object:
+            content: `You are a real-time fish detection and species identification system optimized for REAL-WORLD camera captures from phones and tablets. These images are often imperfect. Return ONLY a JSON object:
 {
   "fishDetected": true/false,
   "confidence": 0-100,
@@ -92,13 +92,20 @@ serve(async (req) => {
   "freshness": "fresh/moderate/poor/unknown"
 }
 
-Rules:
-- fishDetected: true if a fish is clearly visible
-- confidence: 80+ for high certainty species ID, 50-79 for uncertain
-- quality: "good" if well-lit and centered
-- species: Identify the fish species if possible (e.g. "Tilapia", "Milkfish", "Galunggong"). null if no fish.
+CRITICAL REAL-WORLD HANDLING RULES:
+- Images may have poor/uneven lighting, glare, reflections from wet fish surfaces, or yellowish indoor market lighting. Compensate mentally for color casts.
+- Fish may be on ice, in plastic bags, on cutting boards, held by hands, or surrounded by other fish. Focus on the PRIMARY/center fish.
+- Images may be slightly blurry, low-resolution, or have motion blur. Still attempt identification if fish shape/features are discernible.
+- Wet, slimy fish surfaces cause specular highlights — do NOT mistake these for signs of spoilage.
+- Market fish are often piled together — identify the most prominent/centered specimen.
+
+Species ID Rules:
+- fishDetected: true if ANY fish or fish part is visible, even partially
+- confidence: 80+ only when species features are clearly distinguishable despite image quality. 50-79 for reasonable guess. 30-49 for low certainty but fish is present.
+- species: Identify the fish species. Common Philippine market fish: Tilapia, Milkfish (Bangus), Galunggong (Round Scad), Tulingan (Mackerel Tuna), Bangus, Dalagang Bukid (Yellowtail Fusilier), Alumahan (Indian Mackerel), Hasa-hasa (Short Mackerel), Lapu-lapu (Grouper), Maya-maya (Red Snapper), Catfish, Mudfish/Snakehead. Use common English name.
 - scientificName: Latin name if identifiable. null otherwise.
-- freshness: Quick visual assessment based on eye clarity, skin color, gill appearance. "unknown" if can't determine.
+- freshness: Visual assessment. Account for lighting conditions. "unknown" if image quality prevents assessment.
+- quality: "good" even if imperfect lighting, as long as fish is identifiable. "poor" only if truly unusable.
 - message: Include species name if detected, e.g. "Tilapia detected! Hold steady"`
           },
           {
