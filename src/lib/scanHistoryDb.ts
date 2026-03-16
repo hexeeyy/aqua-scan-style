@@ -99,8 +99,7 @@ export const getScansFromDb = async (): Promise<ScanRecord[]> => {
   const { data, error } = await supabase
     .from("scan_history")
     .select("*")
-    .order("timestamp", { ascending: false })
-    .limit(1000);
+    .order("timestamp", { ascending: false });
 
   if (error) {
     console.error("Failed to fetch scans:", error);
@@ -113,7 +112,7 @@ export const getScansFromDb = async (): Promise<ScanRecord[]> => {
 export const getAllScansForAdmin = async (): Promise<ScanRecordWithUser[]> => {
   // Fetch scans and profiles separately, then merge
   const [scansRes, profilesRes] = await Promise.all([
-    supabase.from("scan_history").select("*").order("timestamp", { ascending: false }).limit(1000),
+    supabase.from("scan_history").select("*").order("timestamp", { ascending: false }),
     supabase.from("profiles").select("user_id, display_name, email"),
   ]);
 
