@@ -41,9 +41,9 @@ const useHistoryStats = () => {
     const fresh = history.filter((s) => s.freshness.level === "fresh").length;
     const moderate = history.filter((s) => s.freshness.level === "moderate").length;
     const poor = history.filter((s) => s.freshness.level === "poor").length;
-    const freshPct = total > 0 ? Math.round((fresh / total) * 100) : 0;
-    const modPct = total > 0 ? Math.round((moderate / total) * 100) : 0;
-    const poorPct = total > 0 ? 100 - freshPct - modPct : 0;
+    const freshPct = total > 0 ? parseFloat(((fresh / total) * 100).toFixed(1)) : 0;
+    const modPct = total > 0 ? parseFloat(((moderate / total) * 100).toFixed(1)) : 0;
+    const poorPct = total > 0 ? parseFloat((100 - freshPct - modPct).toFixed(1)) : 0;
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dayCounts: Record<string, number> = {};
