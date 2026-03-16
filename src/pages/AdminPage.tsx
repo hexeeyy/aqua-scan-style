@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff } from "lucide-react";
+import { normalizeSpeciesName } from "@/lib/speciesNormalize";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
