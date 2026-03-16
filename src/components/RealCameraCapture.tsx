@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw, ZoomIn, ZoomOut, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const isFirefox = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
   const [rotation, setRotation] = useState(isFirefox ? 270 : 0);
   const [zoom, setZoom] = useState(1);
+  const [fitToScreen, setFitToScreen] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionStatus, setDetectionStatus] = useState<DetectionResult | null>(null);
   const [autoCapture, setAutoCapture] = useState(false);
@@ -216,9 +217,13 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           ref={videoRef}
           autoPlay
           playsInline
-          className="w-full h-full object-contain"
+          className={`w-full h-full ${fitToScreen && (rotation === 90 || rotation === 270) ? 'object-cover' : 'object-contain'}`}
           style={{
-            transform: `rotate(${rotation}deg) scale(${zoom}) translateZ(0)`,
+            transform: `rotate(${rotation}deg) scale(${
+              fitToScreen && (rotation === 90 || rotation === 270)
+                ? Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * zoom
+                : zoom
+            }) translateZ(0)`,
             transformOrigin: 'center center',
             transition: 'transform 0.3s ease',
           }}
@@ -243,6 +248,11 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
                 </span>
               )}
             </Button>
+            {(rotation === 90 || rotation === 270) && (
+              <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={() => setFitToScreen(f => !f)} aria-label={fitToScreen ? "Contain video" : "Fit to screen"}>
+                {fitToScreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </Button>
+            )}
             <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={switchCamera}>
               <RotateCw className="w-4 h-4" />
             </Button>
