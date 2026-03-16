@@ -47,7 +47,8 @@ const AreaDashboard = () => {
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-
+  const [editLocOpen, setEditLocOpen] = useState(false);
+  const invalidateScans = useInvalidateScans();
   // Auto-select user's location
   useEffect(() => {
     if (location?.locationName && !isAdmin) {
