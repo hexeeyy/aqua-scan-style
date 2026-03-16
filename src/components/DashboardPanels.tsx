@@ -35,7 +35,7 @@ const useHistoryStats = () => {
   return useMemo(() => {
     const total = history.length;
 
-    const speciesSet = new Set(history.map((s) => s.species.name));
+    const speciesCount = countUniqueSpecies(history, (s) => s.species.name);
     const avgScore = total > 0 ? Math.round(history.reduce((sum, s) => sum + s.freshness.score, 0) / total * 10) / 10 : 0;
 
     const fresh = history.filter((s) => s.freshness.level === "fresh").length;
