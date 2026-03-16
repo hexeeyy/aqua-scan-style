@@ -52,6 +52,7 @@ const AdminPage = () => {
   const [scans, setScans] = useState<ScanRow[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editLocOpen, setEditLocOpen] = useState(false);
 
   const { data: isAdminCached, isLoading: adminLoading } = useIsAdmin();
   const invalidateScans = useInvalidateScans();
