@@ -115,7 +115,7 @@ export const useAreaScans = () => {
       let query = supabase
         .from("scan_history")
         .select("id, species_name, freshness_level, freshness_score, price_min, price_max, location_name, timestamp, user_id")
-        .not("location_name", "is", null)
+        
         .order("timestamp", { ascending: false })
         .limit(500);
 

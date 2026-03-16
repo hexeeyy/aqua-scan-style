@@ -41,7 +41,7 @@ const AreaDashboard = () => {
   const { data: isAdmin = false } = useIsAdmin();
   const { data: areaScans = [] } = useAreaScans();
   const scans = areaScans;
-  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name ? normalizeLocationName(r.location_name) : null).filter(Boolean))] as string[], [scans]);
+  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name ? normalizeLocationName(r.location_name) : "Unknown Location"))] as string[], [scans]);
   const [selectedArea, setSelectedArea] = useState<string>("all");
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
@@ -56,6 +56,7 @@ const AreaDashboard = () => {
 
   const filtered = useMemo(() => {
     if (selectedArea === "all") return scans;
+    if (selectedArea === "Unknown Location") return scans.filter((s) => !s.location_name);
     return scans.filter((s) => s.location_name && normalizeLocationName(s.location_name) === selectedArea);
   }, [scans, selectedArea]);
 
