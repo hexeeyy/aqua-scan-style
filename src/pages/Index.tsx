@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
+import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
