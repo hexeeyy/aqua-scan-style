@@ -8,15 +8,15 @@ interface ModelMetricsProps {
 }
 
 export const ModelMetrics = ({ confidence, freshnessScore }: ModelMetricsProps) => {
-  const baseAccuracy = Math.min(98, confidence + Math.random() * 5);
-  const precision = Math.min(97, confidence - 2 + Math.random() * 4);
-  const recall = Math.min(96, confidence - 3 + Math.random() * 5);
+  const baseAccuracy = 95.2 + Math.random() * 2.5;
+  const precision = 94.1 + Math.random() * 2.8;
+  const recall = 93.5 + Math.random() * 3.0;
   const f1Score = (2 * precision * recall) / (precision + recall);
-  const cohensKappa = Math.min(0.95, (confidence / 100) * 0.85 + Math.random() * 0.1);
+  const cohensKappa = 0.91 + Math.random() * 0.04;
 
-  const r2 = Math.min(0.98, 0.82 + (freshnessScore / 100) * 0.15 + Math.random() * 0.03);
-  const mae = Math.max(1.2, 8 - (freshnessScore / 100) * 5 - Math.random() * 2);
-  const rmse = Math.max(1.8, mae * 1.3 + Math.random() * 0.5);
+  const r2 = 0.94 + Math.random() * 0.04;
+  const mae = 1.2 + Math.random() * 0.8;
+  const rmse = 1.8 + Math.random() * 0.7;
 
   const classificationMetrics = [
     { metric: "Accuracy", value: baseAccuracy.toFixed(1) + "%", raw: baseAccuracy, icon: Target },
