@@ -1,19 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical } from "lucide-react";
+import { useIsAdmin, useInvalidateScans, useScanHistory } from "@/hooks/useScanData";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical } from "lucide-react";
 import { ModelMetrics } from "@/components/ModelMetrics";
 import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, AreaChart, Area, Legend, LineChart, Line,
+  PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
+
+const COLORS = [
+  "hsl(204, 100%, 61%)",
+  "hsl(145, 65%, 45%)",
+  "hsl(45, 95%, 55%)",
+  "hsl(0, 85%, 60%)",
+  "hsl(260, 70%, 60%)",
+  "hsl(180, 60%, 50%)",
+];
 
 interface UserProfile {
   user_id: string;
@@ -26,93 +36,85 @@ interface UserProfile {
   role: "admin" | "user";
 }
 
-interface ScanRow {
-  id: string;
-  user_id: string;
-  species_name: string;
-  freshness_level: string;
-  freshness_score: number;
-  timestamp: number;
-  created_at: string;
-  location_name: string | null;
-}
-
-const COLORS = [
-  "hsl(204, 100%, 61%)",
-  "hsl(145, 65%, 45%)",
-  "hsl(45, 95%, 55%)",
-  "hsl(0, 85%, 60%)",
-  "hsl(260, 70%, 60%)",
-  "hsl(180, 60%, 50%)",
-];
-
 const AdminPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [scans, setScans] = useState<ScanRow[]>([]);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
+  const invalidateScans = useInvalidateScans();
+  const queryClient = useQueryClient();
   const [editLocOpen, setEditLocOpen] = useState(false);
 
-  const { data: isAdminCached, isLoading: adminLoading } = useIsAdmin();
-  const invalidateScans = useInvalidateScans();
+  // Use the SAME shared hook that Home/History use
+  const { data: scanHistory = [], isLoading: scansLoading } = useScanHistory();
 
-  useEffect(() => {
-    if (adminLoading) return;
-    if (!isAdminCached) {
-      setIsAdmin(false);
-      setLoading(false);
-      return;
-    }
-    setIsAdmin(true);
-    loadData();
-  }, [user, isAdminCached, adminLoading]);
+  // Fetch profiles & roles via React Query so they also benefit from caching
+  const { data: usersData = [], isLoading: usersLoading } = useQuery({
+    queryKey: ["adminUsers"],
+    queryFn: async () => {
+      const [profilesRes, rolesRes] = await Promise.all([
+        supabase.from("profiles").select("*"),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
+      return { profiles: profilesRes.data ?? [], roles: rolesRes.data ?? [] };
+    },
+    enabled: !!isAdmin,
+    select: (data) => {
+      const roleMap = new Map<string, "admin" | "user">();
+      data.roles.forEach((r: any) => {
+        if (r.role === "admin") roleMap.set(r.user_id, "admin");
+        else if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, "user");
+      });
 
-  const loadData = async () => {
-    // Fetch all profiles, scans, and roles in parallel
-    const [profilesRes, scansRes, rolesRes] = await Promise.all([
-      supabase.from("profiles").select("*"),
-      supabase.from("scan_history").select("id, user_id, species_name, freshness_level, freshness_score, timestamp, created_at, location_name"),
-      supabase.from("user_roles").select("user_id, role"),
-    ]);
+      return data.profiles.map((p: any): UserProfile => {
+        const userScans = scanHistory.filter((s) => s.scanUserId === p.user_id);
+        const avgFreshness = userScans.length > 0
+          ? Math.round(userScans.reduce((sum, s) => sum + s.freshness.score, 0) / userScans.length)
+          : 0;
+        const lastScan = userScans.length > 0
+          ? new Date(Math.max(...userScans.map((s) => s.timestamp))).toLocaleDateString()
+          : null;
+        return {
+          user_id: p.user_id,
+          email: p.email ?? "",
+          display_name: p.display_name ?? "",
+          created_at: p.created_at,
+          scan_count: userScans.length,
+          avg_freshness: avgFreshness,
+          last_scan: lastScan,
+          role: roleMap.get(p.user_id) ?? "user",
+        };
+      });
+    },
+  });
 
-    const profiles = profilesRes.data ?? [];
-    const allScans = (scansRes.data ?? []) as ScanRow[];
-    const allRoles = rolesRes.data ?? [];
-    setScans(allScans);
+  const users = usersData;
+  const loading = adminLoading || scansLoading || usersLoading;
 
-    // Build role map
-    const roleMap = new Map<string, "admin" | "user">();
-    allRoles.forEach((r: any) => {
-      if (r.role === "admin") roleMap.set(r.user_id, "admin");
-      else if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, "user");
-    });
+  // Derive all stats from the shared scanHistory data
+  const scans = useMemo(() => scanHistory.map(s => ({
+    id: s.id,
+    user_id: s.scanUserId ?? "",
+    species_name: s.species.name,
+    freshness_level: s.freshness.level,
+    freshness_score: s.freshness.score,
+    timestamp: s.timestamp,
+    location_name: (s as any).locationName ?? null,
+  })), [scanHistory]);
 
-    // Merge user stats
-    const userStats: UserProfile[] = profiles.map((p: any) => {
-      const userScans = allScans.filter((s) => s.user_id === p.user_id);
-      const avgFreshness = userScans.length > 0
-        ? Math.round(userScans.reduce((sum, s) => sum + Number(s.freshness_score ?? 0), 0) / userScans.length)
-        : 0;
-      const lastScan = userScans.length > 0
-        ? new Date(Math.max(...userScans.map((s) => Number(s.timestamp)))).toLocaleDateString()
-        : null;
-      return {
-        user_id: p.user_id,
-        email: p.email ?? "",
-        display_name: p.display_name ?? "",
-        created_at: p.created_at,
-        scan_count: userScans.length,
-        avg_freshness: avgFreshness,
-        last_scan: lastScan,
-        role: roleMap.get(p.user_id) ?? "user",
-      };
-    });
-
-    setUsers(userStats);
-    setLoading(false);
-  };
+  // We need location_name from the raw data, let's get it from the area scans query
+  // Actually, scanHistory doesn't carry location_name. Let's use a separate query for location data.
+  const { data: scanLocations = [] } = useQuery({
+    queryKey: ["adminScanLocations"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("scan_history")
+        .select("id, location_name, user_id, species_name, freshness_level, freshness_score, timestamp, created_at")
+        .order("timestamp", { ascending: false });
+      return data ?? [];
+    },
+    enabled: !!isAdmin,
+    staleTime: 0,
+  });
 
   const toggleRole = async (targetUserId: string, currentRole: "admin" | "user") => {
     if (targetUserId === user!.id) {
@@ -120,9 +122,8 @@ const AdminPage = () => {
       return;
     }
     const newRole = currentRole === "admin" ? "user" : "admin";
-    
+
     if (currentRole === "admin") {
-      // Remove admin role, keep user role
       const { error } = await supabase
         .from("user_roles")
         .delete()
@@ -130,14 +131,13 @@ const AdminPage = () => {
         .eq("role", "admin");
       if (error) { toast.error("Failed to update role"); return; }
     } else {
-      // Add admin role
       const { error } = await supabase
         .from("user_roles")
         .insert({ user_id: targetUserId, role: "admin" });
       if (error) { toast.error("Failed to update role"); return; }
     }
 
-    setUsers(prev => prev.map(u => u.user_id === targetUserId ? { ...u, role: newRole } : u));
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
     toast.success(`${newRole === "admin" ? "Promoted" : "Demoted"} user to ${newRole}`);
   };
 
@@ -162,17 +162,29 @@ const AdminPage = () => {
     );
   }
 
+  // Use scanLocations as the primary data source (has location_name)
+  const allScans = scanLocations as Array<{
+    id: string;
+    location_name: string | null;
+    user_id: string;
+    species_name: string | null;
+    freshness_level: string | null;
+    freshness_score: number | null;
+    timestamp: number;
+    created_at: string;
+  }>;
+
   // Stats
-  const totalScans = scans.length;
+  const totalScans = allScans.length;
   const totalUsers = users.length;
   const avgFreshnessAll = totalScans > 0
-    ? Math.round(scans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans)
+    ? Math.round(allScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans)
     : 0;
   const activeUsers = users.filter((u) => u.scan_count > 0).length;
 
   // Species distribution
   const speciesMap = new Map<string, number>();
-  scans.forEach((s) => {
+  allScans.forEach((s) => {
     const name = normalizeSpeciesName(s.species_name || "Unknown");
     speciesMap.set(name, (speciesMap.get(name) ?? 0) + 1);
   });
@@ -182,9 +194,9 @@ const AdminPage = () => {
 
   // Freshness distribution
   const freshnessDistData = [
-    { name: "Fresh", value: scans.filter((s) => s.freshness_level === "fresh").length, fill: "hsl(145, 65%, 45%)" },
-    { name: "Moderate", value: scans.filter((s) => s.freshness_level === "moderate").length, fill: "hsl(45, 95%, 55%)" },
-    { name: "Poor", value: scans.filter((s) => s.freshness_level === "poor").length, fill: "hsl(0, 85%, 60%)" },
+    { name: "Fresh", value: allScans.filter((s) => s.freshness_level === "fresh").length, fill: "hsl(145, 65%, 45%)" },
+    { name: "Moderate", value: allScans.filter((s) => s.freshness_level === "moderate").length, fill: "hsl(45, 95%, 55%)" },
+    { name: "Poor", value: allScans.filter((s) => s.freshness_level === "poor").length, fill: "hsl(0, 85%, 60%)" },
   ].filter((d) => d.value > 0);
 
   // Scans over time (last 14 days)
@@ -194,7 +206,7 @@ const AdminPage = () => {
   for (let i = 13; i >= 0; i--) {
     const dayStart = now - i * dayMs;
     const dayEnd = dayStart + dayMs;
-    const count = scans.filter((s) => Number(s.timestamp) >= dayStart && Number(s.timestamp) < dayEnd).length;
+    const count = allScans.filter((s) => Number(s.timestamp) >= dayStart && Number(s.timestamp) < dayEnd).length;
     dailyScans.push({
       date: new Date(dayStart).toLocaleDateString("en-PH", { month: "short", day: "numeric" }),
       count,
@@ -203,7 +215,7 @@ const AdminPage = () => {
 
   // Location distribution
   const locationMap = new Map<string, number>();
-  scans.forEach((s) => {
+  allScans.forEach((s) => {
     const loc = s.location_name ? normalizeLocationName(s.location_name) : "Unknown Location";
     locationMap.set(loc, (locationMap.get(loc) ?? 0) + 1);
   });
@@ -289,7 +301,6 @@ const AdminPage = () => {
 
         {/* Charts Row */}
         <div className="grid md:grid-cols-2 gap-4">
-          {/* Scan Activity */}
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -318,7 +329,6 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          {/* Freshness Distribution */}
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -355,7 +365,7 @@ const AdminPage = () => {
                 <MapPin className="w-4 h-4 text-primary" />
                 Location Distribution ({locationData.length})
               </CardTitle>
-              {scans.some((s) => !s.location_name) && (
+              {allScans.some((s) => !s.location_name) && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -363,7 +373,7 @@ const AdminPage = () => {
                   onClick={() => setEditLocOpen(true)}
                 >
                   <Edit3 className="w-3 h-3" />
-                  Assign Location ({scans.filter((s) => !s.location_name).length})
+                  Assign Location ({allScans.filter((s) => !s.location_name).length})
                 </Button>
               )}
             </div>
@@ -395,7 +405,6 @@ const AdminPage = () => {
 
         {/* Species + Top Users */}
         <div className="grid md:grid-cols-2 gap-4">
-          {/* Species Distribution */}
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -428,7 +437,6 @@ const AdminPage = () => {
             </CardContent>
           </Card>
 
-          {/* Top Users */}
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -531,11 +539,11 @@ const AdminPage = () => {
           </h2>
           <ModelMetrics
             totalScans={totalScans}
-            freshCount={scans.filter((s) => s.freshness_level === "fresh").length}
-            moderateCount={scans.filter((s) => s.freshness_level === "moderate").length}
-            poorCount={scans.filter((s) => s.freshness_level === "poor").length}
+            freshCount={allScans.filter((s) => s.freshness_level === "fresh").length}
+            moderateCount={allScans.filter((s) => s.freshness_level === "moderate").length}
+            poorCount={allScans.filter((s) => s.freshness_level === "poor").length}
             avgFreshness={avgFreshnessAll}
-            avgConfidence={totalScans > 0 ? Math.round(scans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans) : 0}
+            avgConfidence={totalScans > 0 ? Math.round(allScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans) : 0}
             speciesCount={speciesData.length}
             locationCount={locationData.length}
           />
@@ -544,8 +552,11 @@ const AdminPage = () => {
         <EditLocationDialog
           open={editLocOpen}
           onOpenChange={setEditLocOpen}
-          scanIds={scans.filter((s) => !s.location_name).map((s) => s.id)}
-          onSuccess={() => { invalidateScans(); loadData(); }}
+          scanIds={allScans.filter((s) => !s.location_name).map((s) => s.id)}
+          onSuccess={() => {
+            invalidateScans();
+            queryClient.invalidateQueries({ queryKey: ["adminScanLocations"] });
+          }}
         />
       </main>
     </div>
