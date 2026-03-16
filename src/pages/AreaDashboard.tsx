@@ -238,7 +238,7 @@ const AreaDashboard = () => {
                 <CardHeader className="p-3 pb-1">
                   <CardTitle className="text-xs font-bold flex items-center gap-1.5">
                     <Fish className="w-3.5 h-3.5 text-primary" />
-                    Species Scanned
+                    Species Scanned ({speciesData.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
