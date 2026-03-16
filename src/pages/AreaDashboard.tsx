@@ -8,6 +8,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
+import { normalizeSpeciesName, countUniqueSpecies } from "@/lib/speciesNormalize";
 import { Footer } from "@/components/Footer";
 import { useAreaScans, useIsAdmin } from "@/hooks/useScanData";
 
