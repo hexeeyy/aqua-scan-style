@@ -168,7 +168,7 @@ const AdminPage = () => {
   // Species distribution
   const speciesMap = new Map<string, number>();
   scans.forEach((s) => {
-    const name = s.species_name || "Unknown";
+    const name = normalizeSpeciesName(s.species_name || "Unknown");
     speciesMap.set(name, (speciesMap.get(name) ?? 0) + 1);
   });
   const speciesData = Array.from(speciesMap.entries())

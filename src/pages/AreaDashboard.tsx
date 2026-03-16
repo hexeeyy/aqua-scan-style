@@ -334,7 +334,7 @@ const AreaDashboard = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={speciesData.map((s) => {
-                          const speciesScans = filtered.filter((sc) => sc.species_name === s.name && sc.price_min != null);
+                          const speciesScans = filtered.filter((sc) => sc.species_name && normalizeSpeciesName(sc.species_name) === s.name && sc.price_min != null);
                           const avg = speciesScans.length > 0
                             ? Math.round(speciesScans.reduce((sum, sc) => sum + ((sc.price_min ?? 0) + (sc.price_max ?? 0)) / 2, 0) / speciesScans.length)
                             : 0;

@@ -56,7 +56,7 @@ const useHistoryStats = () => {
     });
     const scanActivity = dayNames.map((day) => ({ day, scans: dayCounts[day] }));
 
-    return { total, species: speciesSet.size, avgScore, freshPct, modPct, poorPct, scanActivity, hasNewData };
+    return { total, species: speciesCount, avgScore, freshPct, modPct, poorPct, scanActivity, hasNewData };
   }, [history, hasNewData]);
 };
 
