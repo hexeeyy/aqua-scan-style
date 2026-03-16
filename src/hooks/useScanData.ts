@@ -57,13 +57,18 @@ export const useRealtimeScans = () => {
             user_id?: string;
             species_name?: string | null;
             location_name?: string | null;
+            freshness_level?: string | null;
           };
           if (newScan.user_id !== user.id) {
             const species = newScan.species_name || "Unknown species";
             const location = newScan.location_name || "Unknown location";
+            const level = (newScan.freshness_level || "").toLowerCase();
+            const variant = level === "fresh" ? "fresh" : level === "poor" ? "poor" : "moderate";
+            const emoji = level === "fresh" ? "🟢" : level === "poor" ? "🔴" : "🟡";
             toast({
-              title: "🐟 New Scan Detected",
+              title: `${emoji} New Scan Detected`,
               description: `${species} scanned at ${location}`,
+              variant: variant as any,
             });
           }
         }
