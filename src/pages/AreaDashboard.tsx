@@ -8,7 +8,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
-import { normalizeSpeciesName, countUniqueSpecies } from "@/lib/speciesNormalize";
+import { normalizeSpeciesName, countUniqueSpecies, normalizeLocationName } from "@/lib/speciesNormalize";
 import { Footer } from "@/components/Footer";
 import { useAreaScans, useIsAdmin } from "@/hooks/useScanData";
 
@@ -41,7 +41,7 @@ const AreaDashboard = () => {
   const { data: isAdmin = false } = useIsAdmin();
   const { data: areaScans = [] } = useAreaScans();
   const scans = areaScans;
-  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name).filter(Boolean))] as string[], [scans]);
+  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name ? normalizeLocationName(r.location_name) : null).filter(Boolean))] as string[], [scans]);
   const [selectedArea, setSelectedArea] = useState<string>("all");
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
@@ -50,13 +50,13 @@ const AreaDashboard = () => {
   // Auto-select user's location
   useEffect(() => {
     if (location?.locationName && !isAdmin) {
-      setSelectedArea(location.locationName);
+      setSelectedArea(normalizeLocationName(location.locationName));
     }
   }, [location, isAdmin]);
 
   const filtered = useMemo(() => {
     if (selectedArea === "all") return scans;
-    return scans.filter((s) => s.location_name === selectedArea);
+    return scans.filter((s) => s.location_name && normalizeLocationName(s.location_name) === selectedArea);
   }, [scans, selectedArea]);
 
   // Species count

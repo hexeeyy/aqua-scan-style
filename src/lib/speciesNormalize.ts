@@ -71,3 +71,16 @@ export const countUniqueSpecies = <T>(
   set.delete("Unknown");
   return set.size;
 };
+
+/**
+ * Normalizes location names to merge duplicates.
+ * e.g., "Tanay, Rizal" and "Tanay" → "Tanay"
+ * Strips province/region suffixes and normalizes casing.
+ */
+export const normalizeLocationName = (name: string): string => {
+  if (!name) return "Unknown";
+  // Take only the city/municipality part (before the first comma)
+  const city = name.split(",")[0].trim();
+  // Title-case it
+  return city.charAt(0).toUpperCase() + city.slice(1);
+};
