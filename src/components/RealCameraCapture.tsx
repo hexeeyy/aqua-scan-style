@@ -28,6 +28,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
   const isFirefox = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
   const [rotation, setRotation] = useState(isFirefox ? 270 : 0);
   const [zoom, setZoom] = useState(1);
+  const [fitToScreen, setFitToScreen] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionStatus, setDetectionStatus] = useState<DetectionResult | null>(null);
   const [autoCapture, setAutoCapture] = useState(false);
