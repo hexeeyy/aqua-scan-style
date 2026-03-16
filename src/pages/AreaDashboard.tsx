@@ -212,6 +212,18 @@ const AreaDashboard = () => {
           </div>
         ) : (
           <>
+            {/* Assign location banner for unknown scans */}
+            {selectedArea === "Unknown Location" && (
+              <div className="mb-3 p-3 rounded-xl border border-warning/30 bg-warning/5 flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">{filtered.length}</span> scan{filtered.length > 1 ? "s" : ""} without a location
+                </p>
+                <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1" onClick={() => setEditLocOpen(true)}>
+                  <Edit3 className="w-3 h-3" />
+                  Assign Location
+                </Button>
+              </div>
+            )}
             {/* Quick stats row */}
             <div className="grid grid-cols-4 gap-2 mb-3">
               {[
