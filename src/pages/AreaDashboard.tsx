@@ -41,7 +41,7 @@ const AreaDashboard = () => {
   const { data: isAdmin = false } = useIsAdmin();
   const { data: areaScans = [] } = useAreaScans();
   const scans = areaScans;
-  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name).filter(Boolean))] as string[], [scans]);
+  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name ? normalizeLocationName(r.location_name) : null).filter(Boolean))] as string[], [scans]);
   const [selectedArea, setSelectedArea] = useState<string>("all");
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
