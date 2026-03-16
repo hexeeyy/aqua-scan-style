@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line } from "recharts";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { useAreaScans, useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
+import { useAreaScans, useIsAdmin } from "@/hooks/useScanData";
 
 interface AreaScan {
   id: string;
@@ -39,27 +38,13 @@ const AreaDashboard = () => {
   const { user } = useAuth();
   const { location, loading: locLoading, detectLocation, setManualLocation } = useUserLocation();
   const { data: isAdmin = false } = useIsAdmin();
-  const { data: areaScans = [], refetch } = useAreaScans();
-  const invalidateScans = useInvalidateScans();
+  const { data: areaScans = [] } = useAreaScans();
   const scans = areaScans;
   const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name).filter(Boolean))] as string[], [scans]);
   const [selectedArea, setSelectedArea] = useState<string>("all");
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-
-  // Realtime subscription to invalidate cache
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('area-dashboard-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
-        invalidateScans();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
 
   // Auto-select user's location
   useEffect(() => {

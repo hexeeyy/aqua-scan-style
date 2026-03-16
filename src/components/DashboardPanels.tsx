@@ -1,10 +1,9 @@
-import { useMemo, useState, useEffect, useRef, createContext, useContext, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
-import { getScansFromDb } from "@/lib/scanHistoryDb";
-import { supabase } from "@/integrations/supabase/client";
 import type { ScanRecord } from "@/components/ScanHistory";
+import { useScanHistory } from "@/hooks/useScanData";
 
 const spectrumData = [
   { nm: "380", r: 12, g: 8, b: 45 },
@@ -18,57 +17,19 @@ const spectrumData = [
   { nm: "700", r: 68, g: 12, b: 5 },
 ];
 
-// Shared dashboard data context — single realtime subscription
+// Shared dashboard data context — now uses React Query via useScanHistory
 interface DashboardData {
   history: ScanRecord[];
   hasNewData: boolean;
 }
 
-const DashboardDataContext = createContext<DashboardData>({ history: [], hasNewData: false });
-
 export const DashboardDataProvider = ({ children }: { children: ReactNode }) => {
-  const [history, setHistory] = useState<ScanRecord[]>([]);
-  const [hasNewData, setHasNewData] = useState(false);
-  const isFirstLoadRef = useRef(true);
-
-  useEffect(() => {
-    const fetchData = () => {
-      getScansFromDb().then((data) => {
-        setHistory((prev) => {
-          if (!isFirstLoadRef.current && data.length !== prev.length) {
-            setHasNewData(true);
-            setTimeout(() => setHasNewData(false), 2000);
-          }
-          isFirstLoadRef.current = false;
-          return data;
-        });
-      });
-    };
-
-    fetchData();
-
-    const channel = supabase
-      .channel('dashboard-scans-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
-        console.log('[Realtime] scan_history changed, refreshing dashboard...');
-        fetchData();
-      })
-      .subscribe((status) => {
-        console.log('[Realtime] dashboard channel status:', status);
-      });
-
-    return () => { supabase.removeChannel(channel); };
-  }, []);
-
-  return (
-    <DashboardDataContext.Provider value={{ history, hasNewData }}>
-      {children}
-    </DashboardDataContext.Provider>
-  );
+  return <>{children}</>;
 };
 
 const useHistoryStats = () => {
-  const { history, hasNewData } = useContext(DashboardDataContext);
+  const { data: history = [], isFetching } = useScanHistory();
+  const hasNewData = isFetching;
 
   return useMemo(() => {
     const total = history.length;

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,34 +49,21 @@ const AdminPage = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { data: isAdminCached, isLoading: adminLoading } = useIsAdmin();
+  const invalidateScans = useInvalidateScans();
+
   useEffect(() => {
-    if (!user) return;
-    checkAdminAndLoad();
-
-    const channel = supabase
-      .channel('admin-scans-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
-        checkAdminAndLoad();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
-
-  const checkAdminAndLoad = async () => {
-    // Check admin role
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user!.id)
-      .eq("role", "admin");
-
-    if (!roleData || roleData.length === 0) {
+    if (adminLoading) return;
+    if (!isAdminCached) {
       setIsAdmin(false);
       setLoading(false);
       return;
     }
     setIsAdmin(true);
+    loadData();
+  }, [user, isAdminCached, adminLoading]);
 
+  const loadData = async () => {
     // Fetch all profiles, scans, and roles in parallel
     const [profilesRes, scansRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*"),
