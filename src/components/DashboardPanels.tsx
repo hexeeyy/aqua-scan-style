@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 
-import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
+import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import type { ScanRecord } from "@/components/ScanHistory";
 import { useScanHistory } from "@/hooks/useScanData";
