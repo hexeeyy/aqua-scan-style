@@ -28,7 +28,8 @@ export const DashboardDataProvider = ({ children }: { children: ReactNode }) => 
 };
 
 const useHistoryStats = () => {
-  const { history, hasNewData } = useContext(DashboardDataContext);
+  const { data: history = [], isFetching } = useScanHistory();
+  const hasNewData = isFetching;
 
   return useMemo(() => {
     const total = history.length;
