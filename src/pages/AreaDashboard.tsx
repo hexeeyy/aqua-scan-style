@@ -63,7 +63,10 @@ const AreaDashboard = () => {
   const speciesData = useMemo(() => {
     const counts: Record<string, number> = {};
     filtered.forEach((s) => {
-      if (s.species_name) counts[s.species_name] = (counts[s.species_name] || 0) + 1;
+      if (s.species_name) {
+        const name = normalizeSpeciesName(s.species_name);
+        counts[name] = (counts[name] || 0) + 1;
+      }
     });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
