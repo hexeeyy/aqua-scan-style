@@ -173,7 +173,6 @@ const AdminPage = () => {
   });
   const speciesData = Array.from(speciesMap.entries())
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
     .map(([name, value]) => ({ name, value }));
 
   // Freshness distribution
@@ -340,7 +339,7 @@ const AdminPage = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <Fish className="w-4 h-4 text-primary" />
-                Top Species Scanned
+                Species Scanned ({speciesData.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
