@@ -523,6 +523,18 @@ const AdminPage = () => {
           </CardContent>
         </Card>
 
+        {/* Model Performance Metrics (Researchers & Experts) */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <FlaskConical className="w-4 h-4 text-primary" />
+            Researchers & Experts — Model Performance
+          </h2>
+          <ModelMetrics
+            confidence={totalScans > 0 ? Math.round(scans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans) : 75}
+            freshnessScore={avgFreshnessAll}
+          />
+        </div>
+
         <EditLocationDialog
           open={editLocOpen}
           onOpenChange={setEditLocOpen}
