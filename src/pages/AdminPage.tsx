@@ -349,10 +349,23 @@ const AdminPage = () => {
         {/* Location Distribution */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              Location Distribution ({locationData.length})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Location Distribution ({locationData.length})
+              </CardTitle>
+              {scans.some((s) => !s.location_name) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[11px] gap-1"
+                  onClick={() => setEditLocOpen(true)}
+                >
+                  <Edit3 className="w-3 h-3" />
+                  Assign Location ({scans.filter((s) => !s.location_name).length})
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="max-h-64 overflow-y-auto">
