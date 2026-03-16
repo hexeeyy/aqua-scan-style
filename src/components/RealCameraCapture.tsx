@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Camera, X, RotateCw, Scan, Fish, Droplets, Target, RotateCcw, ZoomIn, ZoomOut, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
