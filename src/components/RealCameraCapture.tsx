@@ -217,9 +217,13 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           ref={videoRef}
           autoPlay
           playsInline
-          className="w-full h-full object-contain"
+          className={`w-full h-full ${fitToScreen && (rotation === 90 || rotation === 270) ? 'object-cover' : 'object-contain'}`}
           style={{
-            transform: `rotate(${rotation}deg) scale(${zoom}) translateZ(0)`,
+            transform: `rotate(${rotation}deg) scale(${
+              fitToScreen && (rotation === 90 || rotation === 270)
+                ? Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * zoom
+                : zoom
+            }) translateZ(0)`,
             transformOrigin: 'center center',
             transition: 'transform 0.3s ease',
           }}
