@@ -137,7 +137,7 @@ export const useAreaScans = () => {
       }>;
     },
     enabled: !!user && !adminLoading,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
