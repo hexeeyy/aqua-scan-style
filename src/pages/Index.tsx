@@ -15,7 +15,7 @@ import { ScanQRCode } from "@/components/ScanQRCode";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero.png";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { saveScanToDb } from "@/lib/scanHistoryDb";
