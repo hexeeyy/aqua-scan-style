@@ -72,7 +72,7 @@ const AdminPage = () => {
     // Fetch all profiles, scans, and roles in parallel
     const [profilesRes, scansRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*"),
-      supabase.from("scan_history").select("user_id, species_name, freshness_level, freshness_score, timestamp, created_at, location_name"),
+      supabase.from("scan_history").select("id, user_id, species_name, freshness_level, freshness_score, timestamp, created_at, location_name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);
 
