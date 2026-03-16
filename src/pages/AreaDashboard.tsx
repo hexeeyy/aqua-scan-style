@@ -11,7 +11,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
 import { normalizeSpeciesName, countUniqueSpecies, normalizeLocationName } from "@/lib/speciesNormalize";
 import { Footer } from "@/components/Footer";
-import { useAreaScans, useIsAdmin } from "@/hooks/useScanData";
+import { useAreaScans, useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 
 interface AreaScan {
   id: string;
