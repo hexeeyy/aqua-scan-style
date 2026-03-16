@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { getScansFromDb, getAllScansForAdmin } from "@/lib/scanHistoryDb";
 import type { ScanRecordWithUser } from "@/lib/scanHistoryDb";
