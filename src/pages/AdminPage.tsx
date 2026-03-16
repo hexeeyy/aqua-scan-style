@@ -179,7 +179,7 @@ const AdminPage = () => {
   const totalUsers = users.length;
   const scoredScans = allScans.filter((s) => s.freshness_score != null && Number(s.freshness_score) > 0);
   const avgFreshnessAll = scoredScans.length > 0
-    ? Math.round(scoredScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / scoredScans.length)
+    ? Math.round(scoredScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / scoredScans.length * 10) / 10
     : 0;
   const activeUsers = users.filter((u) => u.scan_count > 0).length;
 
