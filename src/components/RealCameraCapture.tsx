@@ -218,11 +218,7 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
           playsInline
           className="w-full h-full object-contain"
           style={{
-            transform: `rotate(${rotation}deg) scale(${
-              rotation === 90 || rotation === 270
-                ? Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * zoom
-                : zoom
-            }) translateZ(0)`,
+            transform: `rotate(${rotation}deg) scale(${zoom}) translateZ(0)`,
             transformOrigin: 'center center',
             transition: 'transform 0.3s ease',
           }}
