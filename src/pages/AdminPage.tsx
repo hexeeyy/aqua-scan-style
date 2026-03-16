@@ -31,6 +31,7 @@ interface ScanRow {
   freshness_score: number;
   timestamp: number;
   created_at: string;
+  location_name: string | null;
 }
 
 const COLORS = [
