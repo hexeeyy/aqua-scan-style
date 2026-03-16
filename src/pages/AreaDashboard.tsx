@@ -1,11 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { EditLocationDialog } from "@/components/EditLocationDialog";
-import { MapPin, Fish, TrendingUp, BarChart3, RefreshCw, Edit3, Locate, DollarSign, Activity } from "lucide-react";
+import {
+  MapPin, Fish, TrendingUp, BarChart3, Edit3, Locate, DollarSign, Activity,
+  Droplets, ThermometerSun, Eye, ShieldCheck, Layers
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line } from "recharts";
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
+  PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, Radar
+} from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
@@ -25,16 +31,29 @@ interface AreaScan {
   user_id: string;
 }
 
-const CHART_COLORS = [
+const FRESHNESS_COLORS = {
+  fresh: "hsl(142, 76%, 45%)",
+  moderate: "hsl(45, 93%, 55%)",
+  poor: "hsl(0, 84%, 60%)",
+};
+
+const SPECIES_COLORS = [
   "hsl(var(--primary))",
   "hsl(142, 76%, 45%)",
   "hsl(45, 93%, 55%)",
-  "hsl(0, 84%, 60%)",
   "hsl(260, 70%, 60%)",
   "hsl(200, 80%, 50%)",
   "hsl(30, 90%, 55%)",
   "hsl(320, 70%, 55%)",
+  "hsl(0, 84%, 60%)",
 ];
+
+const tooltipStyle = {
+  fontSize: 11,
+  borderRadius: 8,
+  border: "1px solid hsl(var(--border))",
+  background: "hsl(var(--card))",
+};
 
 const AreaDashboard = () => {
   const { user } = useAuth();
@@ -49,7 +68,7 @@ const AreaDashboard = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [editLocOpen, setEditLocOpen] = useState(false);
   const invalidateScans = useInvalidateScans();
-  // Auto-select user's location
+
   useEffect(() => {
     if (location?.locationName && !isAdmin) {
       setSelectedArea(normalizeLocationName(location.locationName));
@@ -80,19 +99,23 @@ const AreaDashboard = () => {
   const freshnessData = useMemo(() => {
     const counts = { fresh: 0, moderate: 0, poor: 0 };
     filtered.forEach((s) => {
-      const lvl = s.freshness_level as keyof typeof counts;
+      const lvl = (s.freshness_level || "").toLowerCase() as keyof typeof counts;
       if (lvl in counts) counts[lvl]++;
     });
     return [
-      { name: "Fresh", value: counts.fresh, fill: "hsl(142, 76%, 45%)" },
-      { name: "Moderate", value: counts.moderate, fill: "hsl(45, 93%, 55%)" },
-      { name: "Poor", value: counts.poor, fill: "hsl(0, 84%, 60%)" },
+      { name: "Fresh", value: counts.fresh, fill: FRESHNESS_COLORS.fresh },
+      { name: "Moderate", value: counts.moderate, fill: FRESHNESS_COLORS.moderate },
+      { name: "Poor", value: counts.poor, fill: FRESHNESS_COLORS.poor },
     ].filter((d) => d.value > 0);
   }, [filtered]);
 
+  const freshCount = freshnessData.find(d => d.name === "Fresh")?.value ?? 0;
+  const moderateCount = freshnessData.find(d => d.name === "Moderate")?.value ?? 0;
+  const poorCount = freshnessData.find(d => d.name === "Poor")?.value ?? 0;
+
   // Avg freshness score
   const avgFreshness = useMemo(() => {
-    const scored = filtered.filter((s) => s.freshness_score != null);
+    const scored = filtered.filter((s) => s.freshness_score != null && s.freshness_score > 0);
     if (scored.length === 0) return 0;
     return Math.round(scored.reduce((sum, s) => sum + (s.freshness_score ?? 0), 0) / scored.length);
   }, [filtered]);
@@ -108,17 +131,74 @@ const AreaDashboard = () => {
   // Scan volume over time (last 14 days)
   const volumeData = useMemo(() => {
     const now = Date.now();
-    const days: { date: string; scans: number }[] = [];
+    const days: { date: string; fresh: number; moderate: number; poor: number }[] = [];
     for (let i = 13; i >= 0; i--) {
       const d = new Date(now - i * 86400000);
       const key = `${d.getMonth() + 1}/${d.getDate()}`;
       const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
       const dayEnd = dayStart + 86400000;
-      const count = filtered.filter((s) => s.timestamp >= dayStart && s.timestamp < dayEnd).length;
-      days.push({ date: key, scans: count });
+      const dayScans = filtered.filter((s) => s.timestamp >= dayStart && s.timestamp < dayEnd);
+      days.push({
+        date: key,
+        fresh: dayScans.filter(s => (s.freshness_level || "").toLowerCase() === "fresh").length,
+        moderate: dayScans.filter(s => (s.freshness_level || "").toLowerCase() === "moderate").length,
+        poor: dayScans.filter(s => (s.freshness_level || "").toLowerCase() === "poor").length,
+      });
     }
     return days;
   }, [filtered]);
+
+  // Freshness by species (stacked data)
+  const freshnessBySpecies = useMemo(() => {
+    const map: Record<string, { fresh: number; moderate: number; poor: number }> = {};
+    filtered.forEach((s) => {
+      if (!s.species_name) return;
+      const name = normalizeSpeciesName(s.species_name);
+      if (!map[name]) map[name] = { fresh: 0, moderate: 0, poor: 0 };
+      const lvl = (s.freshness_level || "").toLowerCase();
+      if (lvl === "fresh") map[name].fresh++;
+      else if (lvl === "moderate") map[name].moderate++;
+      else if (lvl === "poor") map[name].poor++;
+    });
+    return Object.entries(map)
+      .sort((a, b) => (b[1].fresh + b[1].moderate + b[1].poor) - (a[1].fresh + a[1].moderate + a[1].poor))
+      .map(([name, counts]) => ({ name, ...counts }));
+  }, [filtered]);
+
+  // Location comparison data
+  const locationComparison = useMemo(() => {
+    if (selectedArea !== "all") return [];
+    const map: Record<string, { total: number; avgScore: number; scores: number[] }> = {};
+    scans.forEach((s) => {
+      const loc = s.location_name ? normalizeLocationName(s.location_name) : "Unknown";
+      if (!map[loc]) map[loc] = { total: 0, avgScore: 0, scores: [] };
+      map[loc].total++;
+      if (s.freshness_score != null && s.freshness_score > 0) map[loc].scores.push(s.freshness_score);
+    });
+    return Object.entries(map)
+      .map(([name, d]) => ({
+        name,
+        scans: d.total,
+        avgScore: d.scores.length > 0 ? Math.round(d.scores.reduce((a, b) => a + b, 0) / d.scores.length) : 0,
+      }))
+      .sort((a, b) => b.scans - a.scans);
+  }, [scans, selectedArea]);
+
+  // Quality radar from scan data
+  const qualityRadar = useMemo(() => {
+    const freshPct = filtered.length > 0 ? (freshCount / filtered.length) * 100 : 0;
+    const avgScore = avgFreshness;
+    const consistency = filtered.length > 2 ? Math.min(95, 100 - (Math.abs(freshCount - moderateCount) / filtered.length) * 30) : 50;
+    const coverage = Math.min(100, speciesData.length * 20);
+    const sampleSize = Math.min(100, filtered.length * 2);
+    return [
+      { metric: "Freshness Rate", value: Math.round(freshPct) },
+      { metric: "Avg Score", value: avgScore },
+      { metric: "Consistency", value: Math.round(consistency) },
+      { metric: "Species Coverage", value: Math.round(coverage) },
+      { metric: "Sample Size", value: Math.round(sampleSize) },
+    ];
+  }, [filtered, freshCount, moderateCount, avgFreshness, speciesData]);
 
   const handleManualSave = () => {
     if (manualInput.trim()) {
@@ -136,6 +216,9 @@ const AreaDashboard = () => {
     }
   };
 
+  const freshnessLabel = avgFreshness >= 80 ? "Excellent" : avgFreshness >= 60 ? "Good" : avgFreshness >= 40 ? "Fair" : "Poor";
+  const freshnessColor = avgFreshness >= 80 ? "text-emerald-400" : avgFreshness >= 60 ? "text-yellow-400" : "text-red-400";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} />
@@ -151,6 +234,7 @@ const AreaDashboard = () => {
               <h1 className="text-lg font-bold text-foreground tracking-tight">Area Analytics</h1>
               <p className="text-[10px] text-muted-foreground">
                 {isAdmin ? "All users' scans across all areas" : "Your scans by location"}
+                {filtered.length > 0 && ` • ${filtered.length} samples analyzed`}
               </p>
             </div>
           </div>
@@ -186,7 +270,7 @@ const AreaDashboard = () => {
           </div>
         </div>
 
-        {/* Area selector (admin sees all areas, user sees own areas) */}
+        {/* Area selector */}
         <div className="mb-3">
           <Select value={selectedArea} onValueChange={setSelectedArea}>
             <SelectTrigger className="w-48 h-8 text-xs">
@@ -212,7 +296,7 @@ const AreaDashboard = () => {
           </div>
         ) : (
           <>
-            {/* Assign location banner for unknown scans */}
+            {/* Assign location banner */}
             {selectedArea === "Unknown Location" && (
               <div className="mb-3 p-3 rounded-xl border border-warning/30 bg-warning/5 flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">
@@ -224,36 +308,40 @@ const AreaDashboard = () => {
                 </Button>
               </div>
             )}
+
             {/* Quick stats row */}
-            <div className="grid grid-cols-4 gap-2 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
               {[
-                { label: "Total Scans", value: filtered.length.toLocaleString(), icon: BarChart3 },
-                { label: "Species Found", value: String(countUniqueSpecies(filtered, (s) => s.species_name ?? "")), icon: Fish },
-                { label: "Avg Freshness", value: `${avgFreshness}%`, icon: Activity },
-                { label: "Avg Price", value: avgPrice ? `₱${avgPrice}/kg` : "N/A", icon: DollarSign },
+                { label: "Total Scans", value: filtered.length.toLocaleString(), icon: BarChart3, sub: `${speciesData.length} species` },
+                { label: "Fresh Rate", value: `${filtered.length > 0 ? Math.round((freshCount / filtered.length) * 100) : 0}%`, icon: ShieldCheck, sub: `${freshCount} fresh scans` },
+                { label: "Avg Freshness", value: `${avgFreshness}%`, icon: Activity, sub: freshnessLabel },
+                { label: "Avg Price", value: avgPrice ? `₱${avgPrice}/kg` : "N/A", icon: DollarSign, sub: `${allLocations.length} locations` },
               ].map((stat) => (
-                <Card key={stat.label} className="border-border/50">
+                <Card key={stat.label} className="border-border/50 glass-effect">
                   <CardContent className="p-3 flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-                      <stat.icon className="w-3.5 h-3.5 text-primary" />
+                    <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                      <stat.icon className="w-4 h-4 text-primary" />
                     </div>
                     <div>
                       <p className="text-lg font-bold text-foreground leading-none">{stat.value}</p>
                       <p className="text-[9px] text-muted-foreground mt-0.5">{stat.label}</p>
+                      <p className="text-[8px] text-primary/70">{stat.sub}</p>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            {/* Charts grid */}
+            {/* Row 1: Species + Freshness Pie */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               {/* Species count bar chart */}
-              <Card className="border-border/50">
+              <Card className="border-border/50 glass-effect">
                 <CardHeader className="p-3 pb-1">
                   <CardTitle className="text-xs font-bold flex items-center gap-1.5">
-                    <Fish className="w-3.5 h-3.5 text-primary" />
-                    Species Scanned ({speciesData.length})
+                    <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                      <Fish className="w-3 h-3 text-primary" />
+                    </div>
+                    Species Distribution ({speciesData.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
@@ -264,7 +352,7 @@ const AreaDashboard = () => {
                           <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
                           <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                           <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={80} />
-                          <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+                          <Tooltip contentStyle={tooltipStyle} />
                           <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
@@ -274,10 +362,12 @@ const AreaDashboard = () => {
               </Card>
 
               {/* Freshness pie chart */}
-              <Card className="border-border/50">
+              <Card className="border-border/50 glass-effect">
                 <CardHeader className="p-3 pb-1">
                   <CardTitle className="text-xs font-bold flex items-center gap-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-primary" />
+                    <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                      <TrendingUp className="w-3 h-3 text-primary" />
+                    </div>
                     Freshness Breakdown
                   </CardTitle>
                 </CardHeader>
@@ -290,85 +380,265 @@ const AreaDashboard = () => {
                             <Cell key={i} fill={entry.fill} />
                           ))}
                         </Pie>
-                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+                        <Tooltip contentStyle={tooltipStyle} />
                       </PieChart>
                     </ResponsiveContainer>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {freshnessData.map((d) => (
                         <div key={d.name} className="flex items-center gap-1.5 text-[10px]">
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.fill }} />
-                          <span className="text-muted-foreground">{d.name}</span>
-                          <span className="font-bold text-foreground">{d.value}</span>
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.fill }} />
+                          <div>
+                            <span className="text-foreground font-semibold">{d.value}</span>
+                            <span className="text-muted-foreground ml-1">{d.name}</span>
+                            <span className="text-muted-foreground/70 ml-1">
+                              ({filtered.length > 0 ? Math.round((d.value / filtered.length) * 100) : 0}%)
+                            </span>
+                          </div>
                         </div>
                       ))}
+                      <div className="pt-1 border-t border-border/30">
+                        <span className={`text-[10px] font-bold ${freshnessColor}`}>
+                          Overall: {freshnessLabel}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Scan volume over time */}
-            <Card className="border-border/50 mb-3">
+            {/* Row 2: Freshness by Species (stacked) + Quality Radar */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <Card className="border-border/50 glass-effect">
+                <CardHeader className="p-3 pb-1">
+                  <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                      <Layers className="w-3 h-3 text-primary" />
+                    </div>
+                    Freshness by Species
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="max-h-48 overflow-y-auto">
+                    <div style={{ height: Math.max(144, freshnessBySpecies.length * 28) }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={freshnessBySpecies} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                          <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={80} />
+                          <Tooltip contentStyle={tooltipStyle} />
+                          <Bar dataKey="fresh" stackId="a" fill={FRESHNESS_COLORS.fresh} radius={[0, 0, 0, 0]} name="Fresh" />
+                          <Bar dataKey="moderate" stackId="a" fill={FRESHNESS_COLORS.moderate} name="Moderate" />
+                          <Bar dataKey="poor" stackId="a" fill={FRESHNESS_COLORS.poor} radius={[0, 4, 4, 0]} name="Poor" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="flex justify-center gap-3 mt-1.5">
+                    {[
+                      { label: "Fresh", color: FRESHNESS_COLORS.fresh },
+                      { label: "Moderate", color: FRESHNESS_COLORS.moderate },
+                      { label: "Poor", color: FRESHNESS_COLORS.poor },
+                    ].map(l => (
+                      <span key={l.label} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
+                        {l.label}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quality Radar */}
+              <Card className="border-border/50 glass-effect">
+                <CardHeader className="p-3 pb-1">
+                  <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                      <Activity className="w-3 h-3 text-primary" />
+                    </div>
+                    Quality Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0">
+                  <div className="h-40">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={qualityRadar} cx="50%" cy="50%" outerRadius="68%">
+                        <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.3} />
+                        <PolarAngleAxis dataKey="metric" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} />
+                        <Radar
+                          dataKey="value"
+                          stroke="hsl(var(--primary))"
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.2}
+                          strokeWidth={1.5}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Row 3: Scan volume over time (stacked by freshness) */}
+            <Card className="border-border/50 glass-effect mb-3">
               <CardHeader className="p-3 pb-1">
                 <CardTitle className="text-xs font-bold flex items-center gap-1.5">
-                  <BarChart3 className="w-3.5 h-3.5 text-primary" />
-                  Scan Volume (Last 14 Days)
+                  <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                    <BarChart3 className="w-3 h-3 text-primary" />
+                  </div>
+                  Scan Activity (Last 14 Days)
+                  <span className="ml-auto text-[9px] font-normal text-muted-foreground">
+                    {volumeData.reduce((s, d) => s + d.fresh + d.moderate + d.poor, 0)} total scans
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                <div className="h-32">
+                <div className="h-36">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={volumeData}>
                       <defs>
-                        <linearGradient id="volumeGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        <linearGradient id="freshGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={FRESHNESS_COLORS.fresh} stopOpacity={0.5} />
+                          <stop offset="100%" stopColor={FRESHNESS_COLORS.fresh} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="modGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={FRESHNESS_COLORS.moderate} stopOpacity={0.4} />
+                          <stop offset="100%" stopColor={FRESHNESS_COLORS.moderate} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="poorGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={FRESHNESS_COLORS.poor} stopOpacity={0.4} />
+                          <stop offset="100%" stopColor={FRESHNESS_COLORS.poor} stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
                       <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={20} />
-                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-                      <Area type="monotone" dataKey="scans" stroke="hsl(var(--primary))" fill="url(#volumeGrad)" strokeWidth={2} />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Area type="monotone" dataKey="fresh" stackId="1" stroke={FRESHNESS_COLORS.fresh} fill="url(#freshGrad)" strokeWidth={1.5} name="Fresh" />
+                      <Area type="monotone" dataKey="moderate" stackId="1" stroke={FRESHNESS_COLORS.moderate} fill="url(#modGrad)" strokeWidth={1.5} name="Moderate" />
+                      <Area type="monotone" dataKey="poor" stackId="1" stroke={FRESHNESS_COLORS.poor} fill="url(#poorGrad)" strokeWidth={1.5} name="Poor" />
                     </AreaChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="flex justify-center gap-3 mt-1">
+                  {[
+                    { label: "Fresh", color: FRESHNESS_COLORS.fresh },
+                    { label: "Moderate", color: FRESHNESS_COLORS.moderate },
+                    { label: "Poor", color: FRESHNESS_COLORS.poor },
+                  ].map(l => (
+                    <span key={l.label} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
+                      {l.label}
+                    </span>
+                  ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Price trends per species */}
-            {speciesData.length > 0 && (
-              <Card className="border-border/50">
-                <CardHeader className="p-3 pb-1">
-                  <CardTitle className="text-xs font-bold flex items-center gap-1.5">
-                    <DollarSign className="w-3.5 h-3.5 text-primary" />
-                    Average Price by Species (₱/kg)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <div className="h-36">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={speciesData.map((s) => {
-                          const speciesScans = filtered.filter((sc) => sc.species_name && normalizeSpeciesName(sc.species_name) === s.name && sc.price_min != null);
-                          const avg = speciesScans.length > 0
-                            ? Math.round(speciesScans.reduce((sum, sc) => sum + ((sc.price_min ?? 0) + (sc.price_max ?? 0)) / 2, 0) / speciesScans.length)
-                            : 0;
-                          return { name: s.name, price: avg };
-                        }).filter((d) => d.price > 0)}
-                        layout="vertical"
-                      >
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
-                        <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={80} />
-                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v: number) => [`₱${v}`, "Avg Price"]} />
-                        <Bar dataKey="price" fill="hsl(142, 76%, 45%)" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Row 4: Location Comparison (admin/all only) + Price by Species */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {locationComparison.length > 0 ? (
+                <Card className="border-border/50 glass-effect">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                        <MapPin className="w-3 h-3 text-primary" />
+                      </div>
+                      Location Comparison
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="h-36">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={locationComparison} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                          <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={60} />
+                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "scans" ? v : `${v}%`, name === "scans" ? "Scans" : "Avg Score"]} />
+                          <Bar dataKey="scans" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Scans" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-1.5 space-y-1">
+                      {locationComparison.map(loc => (
+                        <div key={loc.name} className="flex items-center justify-between text-[9px]">
+                          <span className="text-muted-foreground">{loc.name}</span>
+                          <span className={`font-bold ${loc.avgScore >= 75 ? "text-emerald-400" : loc.avgScore >= 50 ? "text-yellow-400" : "text-red-400"}`}>
+                            Avg: {loc.avgScore}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-border/50 glass-effect">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                        <Droplets className="w-3 h-3 text-primary" />
+                      </div>
+                      Freshness Distribution
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="space-y-2">
+                      {[
+                        { label: "Fresh", count: freshCount, pct: filtered.length > 0 ? (freshCount / filtered.length) * 100 : 0, color: FRESHNESS_COLORS.fresh },
+                        { label: "Moderate", count: moderateCount, pct: filtered.length > 0 ? (moderateCount / filtered.length) * 100 : 0, color: FRESHNESS_COLORS.moderate },
+                        { label: "Poor", count: poorCount, pct: filtered.length > 0 ? (poorCount / filtered.length) * 100 : 0, color: FRESHNESS_COLORS.poor },
+                      ].map((item) => (
+                        <div key={item.label}>
+                          <div className="flex items-center justify-between text-[10px] mb-0.5">
+                            <span className="text-muted-foreground">{item.label}</span>
+                            <span className="font-bold text-foreground">{item.count} ({item.pct.toFixed(1)}%)</span>
+                          </div>
+                          <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${item.pct}%`, backgroundColor: item.color }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Price by Species */}
+              {speciesData.length > 0 && (
+                <Card className="border-border/50 glass-effect">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+                        <DollarSign className="w-3 h-3 text-primary" />
+                      </div>
+                      Avg Price by Species (₱/kg)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <div className="h-36">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={speciesData.map((s) => {
+                            const speciesScans = filtered.filter((sc) => sc.species_name && normalizeSpeciesName(sc.species_name) === s.name && sc.price_min != null);
+                            const avg = speciesScans.length > 0
+                              ? Math.round(speciesScans.reduce((sum, sc) => sum + ((sc.price_min ?? 0) + (sc.price_max ?? 0)) / 2, 0) / speciesScans.length)
+                              : 0;
+                            return { name: s.name, price: avg };
+                          }).filter((d) => d.price > 0)}
+                          layout="vertical"
+                        >
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                          <XAxis type="number" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={80} />
+                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`₱${v}`, "Avg Price"]} />
+                          <Bar dataKey="price" fill="hsl(142, 76%, 45%)" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </>
         )}
         <EditLocationDialog
