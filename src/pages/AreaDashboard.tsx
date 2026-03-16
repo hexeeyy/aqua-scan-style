@@ -38,62 +38,28 @@ const CHART_COLORS = [
 const AreaDashboard = () => {
   const { user } = useAuth();
   const { location, loading: locLoading, detectLocation, setManualLocation } = useUserLocation();
-  const [scans, setScans] = useState<AreaScan[]>([]);
-  const [allLocations, setAllLocations] = useState<string[]>([]);
+  const { data: isAdmin = false } = useIsAdmin();
+  const { data: areaScans = [], refetch } = useAreaScans();
+  const invalidateScans = useInvalidateScans();
+  const scans = areaScans;
+  const allLocations = useMemo(() => [...new Set(scans.map((r) => r.location_name).filter(Boolean))] as string[], [scans]);
   const [selectedArea, setSelectedArea] = useState<string>("all");
-  const [isAdmin, setIsAdmin] = useState(false);
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Check admin role
+  // Realtime subscription to invalidate cache
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .then(({ data }) => setIsAdmin((data ?? []).length > 0));
-  }, [user]);
-
-  // Fetch scans
-  useEffect(() => {
-    const fetchScans = async () => {
-      let query = supabase
-        .from("scan_history")
-        .select("id, species_name, freshness_level, freshness_score, price_min, price_max, location_name, timestamp, user_id")
-        .not("location_name", "is", null)
-        .order("timestamp", { ascending: false })
-        .limit(500);
-
-      // Non-admin users only see own scans
-      if (!isAdmin) {
-        query = query.eq("user_id", user?.id ?? "");
-      }
-
-      const { data } = await query;
-      const rows = (data ?? []) as AreaScan[];
-      setScans(rows);
-
-      const locs = [...new Set(rows.map((r) => r.location_name).filter(Boolean))] as string[];
-      setAllLocations(locs);
-    };
-
-    if (!user) return;
-    fetchScans();
-
-    // Realtime subscription to keep dashboard synced with scan history
     const channel = supabase
       .channel('area-dashboard-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
-        console.log('[Realtime] scan_history changed, refreshing area dashboard...');
-        fetchScans();
+        invalidateScans();
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user, isAdmin]);
+  }, [user]);
 
   // Auto-select user's location
   useEffect(() => {
