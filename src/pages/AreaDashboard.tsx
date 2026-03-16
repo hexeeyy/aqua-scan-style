@@ -8,6 +8,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
+import { normalizeSpeciesName, countUniqueSpecies } from "@/lib/speciesNormalize";
 import { Footer } from "@/components/Footer";
 import { useAreaScans, useIsAdmin } from "@/hooks/useScanData";
 
@@ -62,7 +63,10 @@ const AreaDashboard = () => {
   const speciesData = useMemo(() => {
     const counts: Record<string, number> = {};
     filtered.forEach((s) => {
-      if (s.species_name) counts[s.species_name] = (counts[s.species_name] || 0) + 1;
+      if (s.species_name) {
+        const name = normalizeSpeciesName(s.species_name);
+        counts[name] = (counts[name] || 0) + 1;
+      }
     });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
@@ -210,7 +214,7 @@ const AreaDashboard = () => {
             <div className="grid grid-cols-4 gap-2 mb-3">
               {[
                 { label: "Total Scans", value: filtered.length.toLocaleString(), icon: BarChart3 },
-                { label: "Species Found", value: String(new Set(filtered.map((s) => s.species_name).filter(Boolean)).size), icon: Fish },
+                { label: "Species Found", value: String(countUniqueSpecies(filtered, (s) => s.species_name ?? "")), icon: Fish },
                 { label: "Avg Freshness", value: `${avgFreshness}%`, icon: Activity },
                 { label: "Avg Price", value: avgPrice ? `₱${avgPrice}/kg` : "N/A", icon: DollarSign },
               ].map((stat) => (
@@ -330,7 +334,7 @@ const AreaDashboard = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={speciesData.map((s) => {
-                          const speciesScans = filtered.filter((sc) => sc.species_name === s.name && sc.price_min != null);
+                          const speciesScans = filtered.filter((sc) => sc.species_name && normalizeSpeciesName(sc.species_name) === s.name && sc.price_min != null);
                           const avg = speciesScans.length > 0
                             ? Math.round(speciesScans.reduce((sum, sc) => sum + ((sc.price_min ?? 0) + (sc.price_max ?? 0)) / 2, 0) / speciesScans.length)
                             : 0;
