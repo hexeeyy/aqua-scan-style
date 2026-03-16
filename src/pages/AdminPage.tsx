@@ -49,18 +49,21 @@ const AdminPage = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    checkAdminAndLoad();
+  const { data: isAdminCached, isLoading: adminLoading } = useIsAdmin();
+  const invalidateScans = useInvalidateScans();
 
-    const channel = supabase
-      .channel('admin-scans-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'scan_history' }, () => {
-        checkAdminAndLoad();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  useEffect(() => {
+    if (adminLoading) return;
+    if (!isAdminCached) {
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
+    setIsAdmin(true);
+    loadData();
+  }, [user, isAdminCached, adminLoading]);
+
+  const loadData = async () => {
 
   const checkAdminAndLoad = async () => {
     // Check admin role
