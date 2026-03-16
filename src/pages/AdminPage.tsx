@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff, MapPin } from "lucide-react";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff, MapPin, Edit3 } from "lucide-react";
+import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ interface UserProfile {
 }
 
 interface ScanRow {
+  id: string;
   user_id: string;
   species_name: string;
   freshness_level: string;
@@ -50,6 +52,7 @@ const AdminPage = () => {
   const [scans, setScans] = useState<ScanRow[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editLocOpen, setEditLocOpen] = useState(false);
 
   const { data: isAdminCached, isLoading: adminLoading } = useIsAdmin();
   const invalidateScans = useInvalidateScans();
@@ -69,7 +72,7 @@ const AdminPage = () => {
     // Fetch all profiles, scans, and roles in parallel
     const [profilesRes, scansRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*"),
-      supabase.from("scan_history").select("user_id, species_name, freshness_level, freshness_score, timestamp, created_at, location_name"),
+      supabase.from("scan_history").select("id, user_id, species_name, freshness_level, freshness_score, timestamp, created_at, location_name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);
 
@@ -346,10 +349,23 @@ const AdminPage = () => {
         {/* Location Distribution */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              Location Distribution ({locationData.length})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Location Distribution ({locationData.length})
+              </CardTitle>
+              {scans.some((s) => !s.location_name) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[11px] gap-1"
+                  onClick={() => setEditLocOpen(true)}
+                >
+                  <Edit3 className="w-3 h-3" />
+                  Assign Location ({scans.filter((s) => !s.location_name).length})
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="max-h-64 overflow-y-auto">
@@ -505,6 +521,13 @@ const AdminPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <EditLocationDialog
+          open={editLocOpen}
+          onOpenChange={setEditLocOpen}
+          scanIds={scans.filter((s) => !s.location_name).map((s) => s.id)}
+          onSuccess={() => { invalidateScans(); loadData(); }}
+        />
       </main>
     </div>
   );

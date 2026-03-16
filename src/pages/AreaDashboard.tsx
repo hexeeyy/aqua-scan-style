@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { MapPin, Fish, TrendingUp, BarChart3, RefreshCw, Edit3, Locate, DollarSign, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
 import { normalizeSpeciesName, countUniqueSpecies, normalizeLocationName } from "@/lib/speciesNormalize";
 import { Footer } from "@/components/Footer";
-import { useAreaScans, useIsAdmin } from "@/hooks/useScanData";
+import { useAreaScans, useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 
 interface AreaScan {
   id: string;
@@ -46,7 +47,8 @@ const AreaDashboard = () => {
   const [editingLocation, setEditingLocation] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-
+  const [editLocOpen, setEditLocOpen] = useState(false);
+  const invalidateScans = useInvalidateScans();
   // Auto-select user's location
   useEffect(() => {
     if (location?.locationName && !isAdmin) {
@@ -210,6 +212,18 @@ const AreaDashboard = () => {
           </div>
         ) : (
           <>
+            {/* Assign location banner for unknown scans */}
+            {selectedArea === "Unknown Location" && (
+              <div className="mb-3 p-3 rounded-xl border border-warning/30 bg-warning/5 flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">{filtered.length}</span> scan{filtered.length > 1 ? "s" : ""} without a location
+                </p>
+                <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1" onClick={() => setEditLocOpen(true)}>
+                  <Edit3 className="w-3 h-3" />
+                  Assign Location
+                </Button>
+              </div>
+            )}
             {/* Quick stats row */}
             <div className="grid grid-cols-4 gap-2 mb-3">
               {[
@@ -357,6 +371,12 @@ const AreaDashboard = () => {
             )}
           </>
         )}
+        <EditLocationDialog
+          open={editLocOpen}
+          onOpenChange={setEditLocOpen}
+          scanIds={scans.filter((s) => !s.location_name).map((s) => s.id)}
+          onSuccess={invalidateScans}
+        />
       </main>
 
       <Footer />
