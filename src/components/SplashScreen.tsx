@@ -33,7 +33,7 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       <div className="relative flex flex-col items-center gap-5 animate-scale-in">
         {/* Logo icon */}
         <div className="w-20 h-20 flex items-center justify-center">
-          <img src={splashLogo} className="w-20 h-20" />
+          <img src={splashLogo} className="w-20 h-20" fetchPriority="high" decoding="sync" />
         </div>
 
         {/* Brand name */}
