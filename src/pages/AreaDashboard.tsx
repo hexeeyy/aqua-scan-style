@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { MapPin, Fish, TrendingUp, BarChart3, RefreshCw, Edit3, Locate, DollarSign, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
