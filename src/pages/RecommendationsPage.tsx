@@ -6,7 +6,7 @@ import type { MarketDuration, ConsumerRecommendation } from "@/components/Market
 
 const verdictConfig = {
   buy: { icon: CheckCircle, label: "Safe to Buy", color: "text-success", bg: "bg-success/10 border-success/30", headerBg: "from-[hsl(145,65%,45%)] to-[hsl(160,70%,55%)]" },
-  buy_with_caution: { icon: AlertTriangle, label: "Buy with Caution", color: "text-warning", bg: "bg-warning/10 border-warning/30", headerBg: "from-[hsl(45,95%,55%)] to-[hsl(35,95%,60%)]" },
+  buy_with_caution: { icon: AlertTriangle, label: "Not Recommended", color: "text-warning", bg: "bg-warning/10 border-warning/30", headerBg: "from-[hsl(45,95%,55%)] to-[hsl(35,95%,60%)]" },
   dont_buy: { icon: XCircle, label: "Don't Buy", color: "text-destructive", bg: "bg-destructive/10 border-destructive/30", headerBg: "from-[hsl(0,85%,60%)] to-[hsl(15,85%,65%)]" },
 };
 

@@ -41,7 +41,7 @@ const verdictConfig = {
   },
   buy_with_caution: {
     icon: AlertTriangle,
-    label: "Buy with Caution",
+    label: "Not Recommended",
     color: "text-warning",
     bg: "bg-warning/10 border-warning/30",
     variant: "warning" as const,
