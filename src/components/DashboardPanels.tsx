@@ -1,6 +1,6 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
-import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp } from "lucide-react";
+import { Activity, Cpu, Database, Fish, Waves, Thermometer, BarChart3, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import type { ScanRecord } from "@/components/ScanHistory";
 import { useScanHistory } from "@/hooks/useScanData";
@@ -107,15 +107,56 @@ export const SystemOverview = () => (
 );
 
 export const ScanActivityChart = () => {
-  const { scanActivity } = useHistoryStats();
+  const { data: history = [] } = useScanHistory();
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const { scanActivity, weekLabel } = useMemo(() => {
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const now = new Date();
+    // Start of current week (Sunday)
+    const currentWeekStart = new Date(now);
+    currentWeekStart.setHours(0, 0, 0, 0);
+    currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay());
+
+    const weekStart = new Date(currentWeekStart.getTime() - weekOffset * 7 * 24 * 60 * 60 * 1000);
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const dayCounts: Record<string, number> = {};
+    dayNames.forEach((d) => (dayCounts[d] = 0));
+    history
+      .filter((s) => s.timestamp >= weekStart.getTime() && s.timestamp < weekEnd.getTime())
+      .forEach((s) => {
+        const day = dayNames[new Date(s.timestamp).getDay()];
+        dayCounts[day]++;
+      });
+
+    const scanActivity = dayNames.map((day) => ({ day, scans: dayCounts[day] }));
+    const label = weekOffset === 0
+      ? "This Week"
+      : `${weekStart.toLocaleDateString("en-PH", { month: "short", day: "numeric" })} – ${new Date(weekEnd.getTime() - 1).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}`;
+
+    return { scanActivity, weekLabel: label };
+  }, [history, weekOffset]);
+
   return (
-     <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
-      <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 tracking-tight">
-        <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
-          <BarChart3 className="w-3 h-3 text-primary" />
+    <section className="glass-effect rounded-xl p-3 border border-border/50 shadow-md h-full">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5 tracking-tight">
+          <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+            <BarChart3 className="w-3 h-3 text-primary" />
+          </div>
+          Scan Activity
+        </h3>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setWeekOffset((o) => o + 1)} className="p-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <span className="text-[10px] text-muted-foreground font-medium min-w-[70px] text-center">{weekLabel}</span>
+          <button onClick={() => setWeekOffset((o) => Math.max(0, o - 1))} disabled={weekOffset === 0} className="p-0.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30">
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
-        Weekly Scan Activity
-      </h3>
+      </div>
       <div className="h-24">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={scanActivity}>
