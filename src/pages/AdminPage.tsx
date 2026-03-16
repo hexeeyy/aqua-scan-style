@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff, MapPin, Edit3 } from "lucide-react";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical } from "lucide-react";
+import { ModelMetrics } from "@/components/ModelMetrics";
 import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
 import { toast } from "sonner";
@@ -521,6 +522,18 @@ const AdminPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Model Performance Metrics (Researchers & Experts) */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <FlaskConical className="w-4 h-4 text-primary" />
+            Researchers & Experts — Model Performance
+          </h2>
+          <ModelMetrics
+            confidence={totalScans > 0 ? Math.round(scans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / totalScans) : 75}
+            freshnessScore={avgFreshnessAll}
+          />
+        </div>
 
         <EditLocationDialog
           open={editLocOpen}

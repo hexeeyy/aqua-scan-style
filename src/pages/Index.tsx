@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, FlaskConical, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
+import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { RealCameraCapture } from "@/components/RealCameraCapture";
 import { FreshnessIndicator } from "@/components/FreshnessIndicator";
 import { SpeciesCard } from "@/components/SpeciesCard";
 import { QuickStats } from "@/components/QuickStats";
-import { ModelMetrics } from "@/components/ModelMetrics";
+
 import { ResultPanel } from "@/components/ResultPanel";
 import { FreshnessGauge } from "@/components/FreshnessGauge";
 import { SpoilageCountdown } from "@/components/SpoilageCountdown";
@@ -15,7 +15,7 @@ import { ScanQRCode } from "@/components/ScanQRCode";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero.png";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { saveScanToDb } from "@/lib/scanHistoryDb";
@@ -374,20 +374,7 @@ const Index = () => {
                   <p className="text-muted-foreground font-medium text-sm">The image does not appear to be a fish. Please try again.</p>
                 </div>
               ) : (
-                <Tabs defaultValue="consumer" className="w-full">
-                  <TabsList className="w-full mb-2 bg-muted/50 backdrop-blur-sm rounded-xl p-1 h-9">
-                    <TabsTrigger value="consumer" className="flex-1 rounded-lg text-[11px] font-bold gap-1.5 data-[state=active]:bg-ocean-gradient data-[state=active]:text-primary-foreground">
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      Vendors & Consumers
-                    </TabsTrigger>
-                    <TabsTrigger value="researcher" className="flex-1 rounded-lg text-[11px] font-bold gap-1.5 data-[state=active]:bg-ocean-gradient data-[state=active]:text-primary-foreground">
-                      <FlaskConical className="w-3.5 h-3.5" />
-                      Researchers & Experts
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* ===== VENDORS & CONSUMERS TAB ===== */}
-                  <TabsContent value="consumer" className="mt-0">
+                <div className="w-full">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-2">
                         {/* Species ID */}
@@ -596,36 +583,7 @@ const Index = () => {
                         <ScanQRCode shareToken={shareToken} />
                       )}
                     </div>
-                  </TabsContent>
-
-                  {/* ===== RESEARCHERS & EXPERTS TAB ===== */}
-                  <TabsContent value="researcher" className="mt-0">
-                    <div className="grid grid-cols-2 gap-1.5 auto-rows-min">
-                      <div className="gsap-result">
-                        <SpeciesCard {...results.species!} />
-                      </div>
-
-                      {results.freshness && (
-                        <ResultPanel title="Freshness Analysis" icon={Thermometer} variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"} className="gsap-result">
-                          <div className="flex items-center gap-2">
-                            <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={64} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-bold text-foreground capitalize mb-0.5">{results.freshness.level} Quality</p>
-                              <p className="text-[9px] text-muted-foreground leading-snug line-clamp-3">{results.freshness.reasoning}</p>
-                            </div>
-                          </div>
-                        </ResultPanel>
-                      )}
-
-                      <div className="col-span-2 gsap-result">
-                        <ModelMetrics
-                          confidence={results.species?.confidence ?? 0}
-                          freshnessScore={results.freshness?.score ?? 0}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                </div>
               )}
             </div>
           </>
