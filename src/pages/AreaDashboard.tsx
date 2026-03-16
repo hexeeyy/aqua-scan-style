@@ -214,7 +214,7 @@ const AreaDashboard = () => {
             <div className="grid grid-cols-4 gap-2 mb-3">
               {[
                 { label: "Total Scans", value: filtered.length.toLocaleString(), icon: BarChart3 },
-                { label: "Species Found", value: String(new Set(filtered.map((s) => s.species_name).filter(Boolean)).size), icon: Fish },
+                { label: "Species Found", value: String(countUniqueSpecies(filtered, (s) => s.species_name ?? "")), icon: Fish },
                 { label: "Avg Freshness", value: `${avgFreshness}%`, icon: Activity },
                 { label: "Avg Price", value: avgPrice ? `₱${avgPrice}/kg` : "N/A", icon: DollarSign },
               ].map((stat) => (
