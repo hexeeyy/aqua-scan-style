@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff } from "lucide-react";
-import { normalizeSpeciesName } from "@/lib/speciesNormalize";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Clock, Shield, ShieldCheck, ShieldOff, MapPin } from "lucide-react";
+import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,7 @@ interface ScanRow {
   freshness_score: number;
   timestamp: number;
   created_at: string;
+  location_name: string | null;
 }
 
 const COLORS = [
@@ -68,7 +69,7 @@ const AdminPage = () => {
     // Fetch all profiles, scans, and roles in parallel
     const [profilesRes, scansRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*"),
-      supabase.from("scan_history").select("user_id, species_name, freshness_level, freshness_score, timestamp, created_at"),
+      supabase.from("scan_history").select("user_id, species_name, freshness_level, freshness_score, timestamp, created_at, location_name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);
 
@@ -195,6 +196,16 @@ const AdminPage = () => {
       count,
     });
   }
+
+  // Location distribution
+  const locationMap = new Map<string, number>();
+  scans.forEach((s) => {
+    const loc = s.location_name ? normalizeLocationName(s.location_name) : "Unknown Location";
+    locationMap.set(loc, (locationMap.get(loc) ?? 0) + 1);
+  });
+  const locationData = Array.from(locationMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value]) => ({ name, value }));
 
   // User activity ranking
   const topUsers = [...users].sort((a, b) => b.scan_count - a.scan_count).slice(0, 10);
@@ -331,6 +342,39 @@ const AdminPage = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Location Distribution */}
+        <Card className="border-border/30 shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              Location Distribution ({locationData.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-64 overflow-y-auto">
+              {locationData.length > 0 ? (
+                <div style={{ height: Math.max(208, locationData.length * 32) }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={locationData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={120} />
+                      <Tooltip />
+                      <Bar dataKey="value" name="Scans" radius={[0, 6, 6, 0]}>
+                        {locationData.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-52 text-muted-foreground text-sm">No data yet</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Species + Top Users */}
         <div className="grid md:grid-cols-2 gap-4">
