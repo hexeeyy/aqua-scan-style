@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Trash2, Download, GitCompare, Calendar, Fish, X, Clock, Snowflake, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line, Area, AreaChart } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useScanHistory, useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 
 type FreshnessLevel = "fresh" | "moderate" | "poor";
 
@@ -94,38 +94,17 @@ const freshnessBg = (level: FreshnessLevel) => {
 
 export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
   const { user } = useAuth();
-  const [history, setHistory] = useState<ScanRecordWithUser[]>([]);
+  const { data: scanData, isLoading: loadingDb } = useScanHistory();
+  const { data: isAdmin = false } = useIsAdmin();
+  const invalidateScans = useInvalidateScans();
+  const history = scanData ?? [];
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [loadingDb, setLoadingDb] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      // Check admin role
-      let admin = false;
-      if (user) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "admin");
-        admin = (roleData?.length ?? 0) > 0;
-      }
-      setIsAdmin(admin);
-
-      // Fetch scans: admin gets all, user gets own (via RLS)
-      const scans = admin ? await getAllScansForAdmin() : await getScansFromDb();
-      setHistory(scans);
-      setLoadingDb(false);
-    };
-    load();
-  }, [user]);
 
   const handleDelete = async (id: string) => {
     await deleteScanFromDb(id);
-    setHistory((prev) => prev.filter((r) => r.id !== id));
+    invalidateScans();
     setCompareIds((prev) => prev.filter((cid) => cid !== id));
   };
 
