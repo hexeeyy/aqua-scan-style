@@ -339,7 +339,7 @@ const AdminPage = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <Fish className="w-4 h-4 text-primary" />
-                Top Species Scanned
+                Species Scanned ({speciesData.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
