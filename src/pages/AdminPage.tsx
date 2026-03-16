@@ -521,6 +521,13 @@ const AdminPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <EditLocationDialog
+          open={editLocOpen}
+          onOpenChange={setEditLocOpen}
+          scanIds={scans.filter((s) => !s.location_name).map((s) => s.id)}
+          onSuccess={() => { invalidateScans(); loadData(); }}
+        />
       </main>
     </div>
   );
