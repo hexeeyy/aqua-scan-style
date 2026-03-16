@@ -514,9 +514,9 @@ const AreaDashboard = () => {
                       <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={20} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Area type="monotone" dataKey="fresh" stackId="1" stroke={FRESHNESS_COLORS.fresh} fill="url(#freshGrad)" strokeWidth={1.5} name="Fresh" />
-                      <Area type="monotone" dataKey="moderate" stackId="1" stroke={FRESHNESS_COLORS.moderate} fill="url(#modGrad)" strokeWidth={1.5} name="Moderate" />
                       <Area type="monotone" dataKey="poor" stackId="1" stroke={FRESHNESS_COLORS.poor} fill="url(#poorGrad)" strokeWidth={1.5} name="Poor" />
+                      <Area type="monotone" dataKey="moderate" stackId="1" stroke={FRESHNESS_COLORS.moderate} fill="url(#modGrad)" strokeWidth={1.5} name="Moderate" />
+                      <Area type="monotone" dataKey="fresh" stackId="1" stroke={FRESHNESS_COLORS.fresh} fill="url(#freshGrad)" strokeWidth={1.5} name="Fresh" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
