@@ -64,22 +64,6 @@ const AdminPage = () => {
   }, [user, isAdminCached, adminLoading]);
 
   const loadData = async () => {
-
-  const checkAdminAndLoad = async () => {
-    // Check admin role
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user!.id)
-      .eq("role", "admin");
-
-    if (!roleData || roleData.length === 0) {
-      setIsAdmin(false);
-      setLoading(false);
-      return;
-    }
-    setIsAdmin(true);
-
     // Fetch all profiles, scans, and roles in parallel
     const [profilesRes, scansRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*"),
