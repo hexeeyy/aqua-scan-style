@@ -583,36 +583,7 @@ const Index = () => {
                         <ScanQRCode shareToken={shareToken} />
                       )}
                     </div>
-                  </TabsContent>
-
-                  {/* ===== RESEARCHERS & EXPERTS TAB ===== */}
-                  <TabsContent value="researcher" className="mt-0">
-                    <div className="grid grid-cols-2 gap-1.5 auto-rows-min">
-                      <div className="gsap-result">
-                        <SpeciesCard {...results.species!} />
-                      </div>
-
-                      {results.freshness && (
-                        <ResultPanel title="Freshness Analysis" icon={Thermometer} variant={results.freshness.level === "fresh" ? "success" : results.freshness.level === "moderate" ? "warning" : "danger"} className="gsap-result">
-                          <div className="flex items-center gap-2">
-                            <FreshnessGauge score={results.freshness.score} level={results.freshness.level} size={64} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-bold text-foreground capitalize mb-0.5">{results.freshness.level} Quality</p>
-                              <p className="text-[9px] text-muted-foreground leading-snug line-clamp-3">{results.freshness.reasoning}</p>
-                            </div>
-                          </div>
-                        </ResultPanel>
-                      )}
-
-                      <div className="col-span-2 gsap-result">
-                        <ModelMetrics
-                          confidence={results.species?.confidence ?? 0}
-                          freshnessScore={results.freshness?.score ?? 0}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                </div>
               )}
             </div>
           </>
