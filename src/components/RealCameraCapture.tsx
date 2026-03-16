@@ -248,6 +248,11 @@ export const RealCameraCapture = ({ onCapture, onCancel }: RealCameraCaptureProp
                 </span>
               )}
             </Button>
+            {(rotation === 90 || rotation === 270) && (
+              <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={() => setFitToScreen(f => !f)} aria-label={fitToScreen ? "Contain video" : "Fit to screen"}>
+                {fitToScreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </Button>
+            )}
             <Button variant="ghost" size="icon" className="bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm" onClick={switchCamera}>
               <RotateCw className="w-4 h-4" />
             </Button>
