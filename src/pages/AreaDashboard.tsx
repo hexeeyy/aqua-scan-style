@@ -50,7 +50,7 @@ const AreaDashboard = () => {
   // Auto-select user's location
   useEffect(() => {
     if (location?.locationName && !isAdmin) {
-      setSelectedArea(location.locationName);
+      setSelectedArea(normalizeLocationName(location.locationName));
     }
   }, [location, isAdmin]);
 
