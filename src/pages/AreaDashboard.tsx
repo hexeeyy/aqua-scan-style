@@ -56,7 +56,7 @@ const AreaDashboard = () => {
 
   const filtered = useMemo(() => {
     if (selectedArea === "all") return scans;
-    return scans.filter((s) => s.location_name === selectedArea);
+    return scans.filter((s) => s.location_name && normalizeLocationName(s.location_name) === selectedArea);
   }, [scans, selectedArea]);
 
   // Species count
