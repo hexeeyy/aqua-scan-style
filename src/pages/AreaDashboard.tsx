@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useAreaScans, useIsAdmin, useInvalidateScans } from "@/hooks/useScanData";
 
 interface AreaScan {
   id: string;
