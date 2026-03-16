@@ -197,6 +197,16 @@ const AdminPage = () => {
     });
   }
 
+  // Location distribution
+  const locationMap = new Map<string, number>();
+  scans.forEach((s) => {
+    const loc = s.location_name ? normalizeLocationName(s.location_name) : "Unknown Location";
+    locationMap.set(loc, (locationMap.get(loc) ?? 0) + 1);
+  });
+  const locationData = Array.from(locationMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value]) => ({ name, value }));
+
   // User activity ranking
   const topUsers = [...users].sort((a, b) => b.scan_count - a.scan_count).slice(0, 10);
 
