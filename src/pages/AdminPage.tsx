@@ -147,8 +147,8 @@ const AdminPage = () => {
   const users = usersData;
   const loading = adminLoading || scansLoading || usersLoading;
 
-  // Derive all stats from the shared scanHistory data
-  const scans = useMemo(() => scanHistory.map(s => ({
+  // Derive scan data with location from shared scanHistory (which now includes locationName)
+  const allScans = useMemo(() => scanHistory.map(s => ({
     id: s.id,
     user_id: s.scanUserId ?? "",
     species_name: s.species.name,
@@ -156,22 +156,8 @@ const AdminPage = () => {
     freshness_score: s.freshness.score,
     timestamp: s.timestamp,
     location_name: (s as any).locationName ?? null,
+    created_at: new Date(s.timestamp).toISOString(),
   })), [scanHistory]);
-
-  // We need location_name from the raw data, let's get it from the area scans query
-  // Actually, scanHistory doesn't carry location_name. Let's use a separate query for location data.
-  const { data: scanLocations = [] } = useQuery({
-    queryKey: ["adminScanLocations"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("scan_history")
-        .select("id, location_name, user_id, species_name, freshness_level, freshness_score, timestamp, created_at")
-        .order("timestamp", { ascending: false });
-      return data ?? [];
-    },
-    enabled: !!isAdmin,
-    staleTime: 0,
-  });
 
   const changeRole = async (targetUserId: string, newRole: AppRoleType) => {
     if (targetUserId === user!.id) {
@@ -284,17 +270,7 @@ const AdminPage = () => {
     );
   }
 
-  // Use scanLocations as the primary data source (has location_name)
-  const allScans = scanLocations as Array<{
-    id: string;
-    location_name: string | null;
-    user_id: string;
-    species_name: string | null;
-    freshness_level: string | null;
-    freshness_score: number | null;
-    timestamp: number;
-    created_at: string;
-  }>;
+  // allScans is already derived from scanHistory above
 
   // Stats
   const totalScans = allScans.length;
@@ -821,7 +797,6 @@ const AdminPage = () => {
           scanIds={allScans.filter((s) => !s.location_name).map((s) => s.id)}
           onSuccess={() => {
             invalidateScans();
-            queryClient.invalidateQueries({ queryKey: ["adminScanLocations"] });
           }}
         />
       </main>
