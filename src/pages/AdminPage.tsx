@@ -647,9 +647,8 @@ const AdminPage = () => {
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Access</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Role</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Location</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Avg Freshness</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Last Scan</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Joined</th>
                   </tr>
                 </thead>
