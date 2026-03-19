@@ -89,9 +89,11 @@ const Index = () => {
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [location, setLocation] = useState<LocationData | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showApprovalGate, setShowApprovalGate] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isApproved } = useApprovalStatus();
   const { location: userLocation, detectLocation: detectUserLocation } = useUserLocation();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
