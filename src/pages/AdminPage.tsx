@@ -682,7 +682,7 @@ const AdminPage = () => {
           </CardContent>
         </Card>
 
-        {/* All Users Table */}
+        {/* All Users */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -703,101 +703,97 @@ const AdminPage = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border/30">
-                    <th className="p-3 w-8">
-                      <input
-                        type="checkbox"
-                        className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
-                        checked={selectedUsers.size === users.length && users.length > 0}
-                        onChange={() => toggleSelectAll(users.map(u => u.user_id))}
-                      />
-                    </th>
-                    <th className="text-left p-3 text-xs text-muted-foreground font-semibold">User</th>
-                    <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Access</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Role</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Location</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Joined</th>
-                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold w-8"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u.user_id} className={`border-b border-border/20 hover:bg-muted/30 transition-colors ${selectedUsers.has(u.user_id) ? "bg-primary/5" : ""}`}>
-                      <td className="p-3">
-                        <input
-                          type="checkbox"
-                          className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
-                          checked={selectedUsers.has(u.user_id)}
-                          onChange={() => toggleSelectUser(u.user_id)}
-                        />
-                      </td>
-                      <td className="p-3 text-xs font-semibold text-foreground">{u.display_name || "—"}</td>
-                      <td className="p-3 text-xs text-muted-foreground">{u.email}</td>
-                      <td className="p-3 text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
-                            u.approved
-                              ? "bg-success/15 text-success hover:bg-success/25"
-                              : "bg-destructive/15 text-destructive hover:bg-destructive/25"
-                          }`}
-                          onClick={() => toggleApproval(u.user_id, u.approved)}
-                          title={u.approved ? "Click to revoke access" : "Click to approve access"}
-                        >
-                          {u.approved ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                          {u.approved ? "Approved" : "Pending"}
-                        </Button>
-                      </td>
-                      <td className="p-3 text-center">
-                        <select
-                          className="h-7 px-1.5 text-[11px] font-semibold rounded-lg border border-border/30 bg-background cursor-pointer"
-                          value={u.role}
-                          onChange={(e) => changeRole(u.user_id, e.target.value as AppRoleType)}
-                          disabled={u.user_id === user!.id}
-                          title={u.user_id === user!.id ? "Cannot change your own role" : "Change user role"}
-                        >
-                          <option value="user">User</option>
-                          <option value="moderator">Moderator</option>
-                          <option value="admin">Admin</option>
-                          <option value="super_admin">Super Admin</option>
-                        </select>
-                      </td>
-                      <td className="p-3 text-center">
-                        <select
-                          className="h-7 px-1.5 text-[11px] rounded-lg border border-border/30 bg-background cursor-pointer max-w-[100px]"
-                          value={u.location_id ?? ""}
-                          onChange={(e) => assignLocation(u.user_id, e.target.value || null)}
-                        >
-                          <option value="">— None —</option>
-                          {locations.map((loc) => (
-                            <option key={loc.id} value={loc.id}>{loc.name}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="p-3 text-center text-xs font-bold text-primary">{u.scan_count}</td>
-                      <td className="p-3 text-center text-xs text-muted-foreground">
-                        {new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
-                      </td>
-                      <td className="p-3 text-center">
-                        {u.user_id !== user!.id && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-7 h-7 text-destructive/50 hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => removeUser(u.user_id, u.display_name || u.email)}
-                            title="Remove user"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        )}
-                      </td>
+          <CardContent className="space-y-2">
+            {users.map((u) => (
+              <div
+                key={u.user_id}
+                className={`rounded-xl border border-border/20 p-3 space-y-2.5 transition-colors ${
+                  selectedUsers.has(u.user_id) ? "bg-primary/5 border-primary/20" : "bg-muted/20 hover:bg-muted/40"
+                }`}
+              >
+                {/* Row 1: Checkbox, Name, Access, Remove */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="w-3.5 h-3.5 rounded accent-primary cursor-pointer flex-shrink-0"
+                    checked={selectedUsers.has(u.user_id)}
+                    onChange={() => toggleSelectUser(u.user_id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{u.display_name || "—"}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-6 px-2 gap-1 text-[10px] font-semibold rounded-lg flex-shrink-0 ${
+                      u.approved
+                        ? "bg-success/15 text-success hover:bg-success/25"
+                        : "bg-destructive/15 text-destructive hover:bg-destructive/25"
+                    }`}
+                    onClick={() => toggleApproval(u.user_id, u.approved)}
+                  >
+                    {u.approved ? <UserCheck className="w-3 h-3" /> : <UserX className="w-3 h-3" />}
+                    {u.approved ? "Approved" : "Pending"}
+                  </Button>
+                  {u.user_id !== user!.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-6 h-6 text-destructive/40 hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
+                      onClick={() => removeUser(u.user_id, u.display_name || u.email)}
+                      title="Remove user"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Row 2: Role, Location, Stats */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <Crown className="w-3 h-3 text-muted-foreground" />
+                    <select
+                      className="h-6 px-1.5 text-[10px] font-semibold rounded-md border border-border/30 bg-background cursor-pointer"
+                      value={u.role}
+                      onChange={(e) => changeRole(u.user_id, e.target.value as AppRoleType)}
+                      disabled={u.user_id === user!.id}
+                    >
+                      <option value="user">User</option>
+                      <option value="moderator">Moderator</option>
+                      <option value="admin">Admin</option>
+                      <option value="super_admin">Super Admin</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-muted-foreground" />
+                    <select
+                      className={`h-6 px-1.5 text-[10px] rounded-md border cursor-pointer ${
+                        u.location_id
+                          ? "border-primary/30 bg-primary/5 font-semibold text-primary"
+                          : "border-border/30 bg-background text-muted-foreground"
+                      }`}
+                      value={u.location_id ?? ""}
+                      onChange={(e) => assignLocation(u.user_id, e.target.value || null)}
+                    >
+                      <option value="">No location</option>
+                      {locations.map((loc) => (
+                        <option key={loc.id} value={loc.id}>{loc.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="ml-auto flex items-center gap-3 text-[10px] text-muted-foreground">
+                    <span><span className="font-bold text-primary">{u.scan_count}</span> scans</span>
+                    <span>{new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {users.length === 0 && (
+              <p className="text-center text-muted-foreground text-sm py-8">No users yet</p>
+            )}
                     </tr>
                   ))}
                 </tbody>
