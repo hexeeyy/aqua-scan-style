@@ -34,6 +34,7 @@ interface UserProfile {
   avg_freshness: number;
   last_scan: string | null;
   role: "admin" | "user";
+  approved: boolean;
 }
 
 const AdminPage = () => {
