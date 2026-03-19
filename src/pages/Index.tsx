@@ -166,7 +166,13 @@ const Index = () => {
     };
   }, []);
 
-  const handleCameraOpen = () => setShowCamera(true);
+  const handleCameraOpen = () => {
+    if (!isApproved) {
+      setShowApprovalGate(true);
+      return;
+    }
+    setShowCamera(true);
+  };
   const handleCameraCancel = () => setShowCamera(false);
 
   const handleCapture = async (imageData: string) => {
