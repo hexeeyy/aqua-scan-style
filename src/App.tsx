@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useRealtimeScans } from "@/hooks/useScanData";
+import { useCapacityGuard } from "@/hooks/useCapacityGuard";
+import { CapacityWarning } from "@/components/CapacityWarning";
 import { Fish } from "lucide-react";
 
 // Lazy-load all page components to reduce initial bundle
@@ -33,6 +35,33 @@ const RealtimeProvider = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const CapacityGuardedApp = () => {
+  const { isOverCapacity, activeCount, maxUsers } = useCapacityGuard();
+
+  return (
+    <>
+      {isOverCapacity && (
+        <CapacityWarning activeCount={activeCount} maxUsers={maxUsers} />
+      )}
+      <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
+            <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+            <Route path="/area" element={<ProtectedRoute><AreaDashboard /></ProtectedRoute>} />
+            <Route path="/scan/share/:token" element={<PublicScanPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -40,21 +69,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <RealtimeProvider>
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-                <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
-                <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-                <Route path="/area" element={<ProtectedRoute><AreaDashboard /></ProtectedRoute>} />
-                <Route path="/scan/share/:token" element={<PublicScanPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+          <CapacityGuardedApp />
         </RealtimeProvider>
       </AuthProvider>
     </TooltipProvider>
