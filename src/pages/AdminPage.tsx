@@ -83,6 +83,7 @@ const AdminPage = () => {
           avg_freshness: avgFreshness,
           last_scan: lastScan,
           role: roleMap.get(p.user_id) ?? "user",
+          approved: p.approved ?? false,
         };
       });
     },
