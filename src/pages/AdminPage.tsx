@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans, useScanHistory } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical } from "lucide-react";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical, UserCheck, UserX } from "lucide-react";
 import { ModelMetrics } from "@/components/ModelMetrics";
 import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
@@ -34,6 +34,7 @@ interface UserProfile {
   avg_freshness: number;
   last_scan: string | null;
   role: "admin" | "user";
+  approved: boolean;
 }
 
 const AdminPage = () => {
@@ -82,6 +83,7 @@ const AdminPage = () => {
           avg_freshness: avgFreshness,
           last_scan: lastScan,
           role: roleMap.get(p.user_id) ?? "user",
+          approved: p.approved ?? false,
         };
       });
     },
@@ -141,6 +143,21 @@ const AdminPage = () => {
     toast.success(`${newRole === "admin" ? "Promoted" : "Demoted"} user to ${newRole}`);
   };
 
+  const toggleApproval = async (targetUserId: string, currentApproved: boolean) => {
+    const newStatus = !currentApproved;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ approved: newStatus })
+      .eq("user_id", targetUserId);
+    if (error) {
+      toast.error("Failed to update approval status");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    queryClient.invalidateQueries({ queryKey: ["approvalStatus", targetUserId] });
+    toast.success(newStatus ? "User approved — access granted" : "User access revoked");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -181,6 +198,7 @@ const AdminPage = () => {
   const avgFreshnessAll = scoredScans.length > 0
     ? Math.round(scoredScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / scoredScans.length * 10) / 10
     : 0;
+  const pendingUsers = users.filter((u) => !u.approved);
   const activeUsers = users.filter((u) => u.scan_count > 0).length;
 
   // Species distribution
@@ -300,7 +318,38 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        {/* Charts Row */}
+        {/* Pending Approvals Alert */}
+        {pendingUsers.length > 0 && (
+          <Card className="border-warning/30 bg-warning/5 shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center flex-shrink-0">
+                  <UserX className="w-5 h-5 text-warning" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-foreground">{pendingUsers.length} Pending Approval{pendingUsers.length > 1 ? "s" : ""}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {pendingUsers.map(u => u.display_name || u.email).join(", ")}
+                  </p>
+                </div>
+                <div className="flex gap-1.5">
+                  {pendingUsers.map((u) => (
+                    <Button
+                      key={u.user_id}
+                      size="sm"
+                      className="h-7 text-[11px] gap-1"
+                      onClick={() => toggleApproval(u.user_id, false)}
+                    >
+                      <UserCheck className="w-3 h-3" />
+                      Approve
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid md:grid-cols-2 gap-4">
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
@@ -485,6 +534,7 @@ const AdminPage = () => {
                   <tr className="border-b border-border/30">
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">User</th>
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Access</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Role</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Avg Freshness</th>
@@ -497,6 +547,22 @@ const AdminPage = () => {
                     <tr key={u.user_id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
                       <td className="p-3 text-xs font-semibold text-foreground">{u.display_name || "—"}</td>
                       <td className="p-3 text-xs text-muted-foreground">{u.email}</td>
+                      <td className="p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
+                            u.approved
+                              ? "bg-success/15 text-success hover:bg-success/25"
+                              : "bg-destructive/15 text-destructive hover:bg-destructive/25"
+                          }`}
+                          onClick={() => toggleApproval(u.user_id, u.approved)}
+                          title={u.approved ? "Click to revoke access" : "Click to approve access"}
+                        >
+                          {u.approved ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                          {u.approved ? "Approved" : "Pending"}
+                        </Button>
+                      </td>
                       <td className="p-3 text-center">
                         <Button
                           variant="ghost"
