@@ -520,6 +520,22 @@ const AdminPage = () => {
                           variant="ghost"
                           size="sm"
                           className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
+                            u.approved
+                              ? "bg-success/15 text-success hover:bg-success/25"
+                              : "bg-destructive/15 text-destructive hover:bg-destructive/25"
+                          }`}
+                          onClick={() => toggleApproval(u.user_id, u.approved)}
+                          title={u.approved ? "Click to revoke access" : "Click to approve access"}
+                        >
+                          {u.approved ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                          {u.approved ? "Approved" : "Pending"}
+                        </Button>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
                             u.role === "admin"
                               ? "bg-primary/15 text-primary hover:bg-primary/25"
                               : "bg-muted/50 text-muted-foreground hover:bg-muted"
