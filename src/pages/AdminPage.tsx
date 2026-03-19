@@ -84,19 +84,30 @@ const AdminPage = () => {
   const { data: usersData = [], isLoading: usersLoading } = useQuery({
     queryKey: ["adminUsers"],
     queryFn: async () => {
-      const [profilesRes, rolesRes] = await Promise.all([
+      const [profilesRes, rolesRes, locationsRes] = await Promise.all([
         supabase.from("profiles").select("*"),
         supabase.from("user_roles").select("user_id, role"),
+        supabase.from("locations").select("*"),
       ]);
-      return { profiles: profilesRes.data ?? [], roles: rolesRes.data ?? [] };
+      return {
+        profiles: profilesRes.data ?? [],
+        roles: rolesRes.data ?? [],
+        locations: locationsRes.data ?? [],
+      };
     },
     enabled: !!isAdmin,
     select: (data) => {
-      const roleMap = new Map<string, "admin" | "user">();
+      const roleMap = new Map<string, AppRoleType>();
       data.roles.forEach((r: any) => {
-        if (r.role === "admin") roleMap.set(r.user_id, "admin");
-        else if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, "user");
+        const current = roleMap.get(r.user_id);
+        const priority: Record<string, number> = { super_admin: 3, admin: 2, moderator: 1, user: 0 };
+        if (!current || (priority[r.role] ?? 0) > (priority[current] ?? 0)) {
+          roleMap.set(r.user_id, r.role as AppRoleType);
+        }
       });
+
+      const locMap = new Map<string, string>();
+      data.locations.forEach((l: any) => locMap.set(l.id, l.name));
 
       return data.profiles.map((p: any): UserProfile => {
         const userScans = scanHistory.filter((s) => s.scanUserId === p.user_id);
@@ -116,9 +127,21 @@ const AdminPage = () => {
           last_scan: lastScan,
           role: roleMap.get(p.user_id) ?? "user",
           approved: p.approved ?? false,
+          location_id: p.location_id ?? null,
+          location_name: p.location_id ? locMap.get(p.location_id) ?? null : null,
         };
       });
     },
+  });
+
+  // Locations query
+  const { data: locations = [] } = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => {
+      const { data } = await supabase.from("locations").select("*").order("name");
+      return (data ?? []) as Array<{ id: string; name: string; created_at: string }>;
+    },
+    enabled: !!isAdmin,
   });
 
   const users = usersData;
