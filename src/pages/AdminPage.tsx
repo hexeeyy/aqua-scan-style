@@ -553,16 +553,37 @@ const AdminPage = () => {
         {/* All Users Table */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              All Users ({users.length})
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                All Users ({users.length})
+              </CardTitle>
+              {selectedUsers.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-medium">{selectedUsers.size} selected</span>
+                  <Button size="sm" className="h-7 text-[11px] gap-1" onClick={() => bulkUpdateApproval(true)}>
+                    <UserCheck className="w-3 h-3" /> Approve
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-7 text-[11px] gap-1" onClick={() => bulkUpdateApproval(false)}>
+                    <UserX className="w-3 h-3" /> Revoke
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/30">
+                    <th className="p-3 w-8">
+                      <input
+                        type="checkbox"
+                        className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
+                        checked={selectedUsers.size === users.length && users.length > 0}
+                        onChange={() => toggleSelectAll(users.map(u => u.user_id))}
+                      />
+                    </th>
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">User</th>
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Access</th>
@@ -575,7 +596,15 @@ const AdminPage = () => {
                 </thead>
                 <tbody>
                   {users.map((u) => (
-                    <tr key={u.user_id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
+                    <tr key={u.user_id} className={`border-b border-border/20 hover:bg-muted/30 transition-colors ${selectedUsers.has(u.user_id) ? "bg-primary/5" : ""}`}>
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
+                          checked={selectedUsers.has(u.user_id)}
+                          onChange={() => toggleSelectUser(u.user_id)}
+                        />
+                      </td>
                       <td className="p-3 text-xs font-semibold text-foreground">{u.display_name || "—"}</td>
                       <td className="p-3 text-xs text-muted-foreground">{u.email}</td>
                       <td className="p-3 text-center">
