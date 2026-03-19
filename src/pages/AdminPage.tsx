@@ -785,6 +785,19 @@ const AdminPage = () => {
                       <td className="p-3 text-center text-xs text-muted-foreground">
                         {new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
                       </td>
+                      <td className="p-3 text-center">
+                        {u.user_id !== user!.id && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-7 h-7 text-destructive/50 hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => removeUser(u.user_id, u.display_name || u.email)}
+                            title="Remove user"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
