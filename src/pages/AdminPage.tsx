@@ -25,6 +25,8 @@ const COLORS = [
   "hsl(180, 60%, 50%)",
 ];
 
+type AppRoleType = "super_admin" | "admin" | "moderator" | "user";
+
 interface UserProfile {
   user_id: string;
   email: string;
@@ -33,8 +35,10 @@ interface UserProfile {
   scan_count: number;
   avg_freshness: number;
   last_scan: string | null;
-  role: "admin" | "user";
+  role: AppRoleType;
   approved: boolean;
+  location_id: string | null;
+  location_name: string | null;
 }
 
 const AdminPage = () => {
