@@ -797,7 +797,6 @@ const AdminPage = () => {
           scanIds={allScans.filter((s) => !s.location_name).map((s) => s.id)}
           onSuccess={() => {
             invalidateScans();
-            queryClient.invalidateQueries({ queryKey: ["adminScanLocations"] });
           }}
         />
       </main>
