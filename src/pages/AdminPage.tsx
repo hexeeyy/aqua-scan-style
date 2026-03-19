@@ -245,6 +245,24 @@ const AdminPage = () => {
     toast.success(newStatus ? "User approved — access granted" : "User access revoked");
   };
 
+  const removeUser = async (targetUserId: string, displayName: string) => {
+    if (targetUserId === user!.id) {
+      toast.error("You cannot remove yourself");
+      return;
+    }
+    if (!confirm(`Remove "${displayName || "this user"}"? This will delete their profile and revoke all access.`)) return;
+
+    // Delete roles, then profile (scans remain for data integrity)
+    await supabase.from("user_roles").delete().eq("user_id", targetUserId);
+    const { error } = await supabase.from("profiles").delete().eq("user_id", targetUserId);
+    if (error) {
+      toast.error("Failed to remove user");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    toast.success("User removed");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -705,6 +723,7 @@ const AdminPage = () => {
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Location</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Joined</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold w-8"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -765,6 +784,19 @@ const AdminPage = () => {
                       <td className="p-3 text-center text-xs font-bold text-primary">{u.scan_count}</td>
                       <td className="p-3 text-center text-xs text-muted-foreground">
                         {new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                      <td className="p-3 text-center">
+                        {u.user_id !== user!.id && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-7 h-7 text-destructive/50 hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => removeUser(u.user_id, u.display_name || u.email)}
+                            title="Remove user"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
