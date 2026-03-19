@@ -794,11 +794,6 @@ const AdminPage = () => {
             {users.length === 0 && (
               <p className="text-center text-muted-foreground text-sm py-8">No users yet</p>
             )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </CardContent>
         </Card>
 
