@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +44,34 @@ const AdminPage = () => {
   const invalidateScans = useInvalidateScans();
   const queryClient = useQueryClient();
   const [editLocOpen, setEditLocOpen] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+
+  const toggleSelectUser = useCallback((userId: string) => {
+    setSelectedUsers(prev => {
+      const next = new Set(prev);
+      next.has(userId) ? next.delete(userId) : next.add(userId);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback((userIds: string[]) => {
+    setSelectedUsers(prev => prev.size === userIds.length ? new Set() : new Set(userIds));
+  }, []);
+
+  const bulkUpdateApproval = async (approved: boolean) => {
+    const ids = Array.from(selectedUsers);
+    if (ids.length === 0) return;
+    const promises = ids.map(id =>
+      supabase.from("profiles").update({ approved }).eq("user_id", id)
+    );
+    const results = await Promise.all(promises);
+    const failed = results.filter(r => r.error).length;
+    if (failed > 0) toast.error(`${failed} update(s) failed`);
+    else toast.success(`${ids.length} user(s) ${approved ? "approved" : "access revoked"}`);
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    ids.forEach(id => queryClient.invalidateQueries({ queryKey: ["approvalStatus", id] }));
+    setSelectedUsers(new Set());
+  };
 
   // Use the SAME shared hook that Home/History use
   const { data: scanHistory = [], isLoading: scansLoading } = useScanHistory();
@@ -322,28 +350,31 @@ const AdminPage = () => {
         {pendingUsers.length > 0 && (
           <Card className="border-warning/30 bg-warning/5 shadow-md">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center flex-shrink-0">
                   <UserX className="w-5 h-5 text-warning" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground">{pendingUsers.length} Pending Approval{pendingUsers.length > 1 ? "s" : ""}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground truncate">
                     {pendingUsers.map(u => u.display_name || u.email).join(", ")}
                   </p>
                 </div>
                 <div className="flex gap-1.5">
-                  {pendingUsers.map((u) => (
-                    <Button
-                      key={u.user_id}
-                      size="sm"
-                      className="h-7 text-[11px] gap-1"
-                      onClick={() => toggleApproval(u.user_id, false)}
-                    >
-                      <UserCheck className="w-3 h-3" />
-                      Approve
-                    </Button>
-                  ))}
+                  <Button
+                    size="sm"
+                    className="h-7 text-[11px] gap-1"
+                    onClick={async () => {
+                      const ids = pendingUsers.map(u => u.user_id);
+                      await Promise.all(ids.map(id => supabase.from("profiles").update({ approved: true }).eq("user_id", id)));
+                      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+                      ids.forEach(id => queryClient.invalidateQueries({ queryKey: ["approvalStatus", id] }));
+                      toast.success(`${ids.length} user(s) approved`);
+                    }}
+                  >
+                    <UserCheck className="w-3 h-3" />
+                    Approve All
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -522,16 +553,37 @@ const AdminPage = () => {
         {/* All Users Table */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              All Users ({users.length})
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                All Users ({users.length})
+              </CardTitle>
+              {selectedUsers.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-medium">{selectedUsers.size} selected</span>
+                  <Button size="sm" className="h-7 text-[11px] gap-1" onClick={() => bulkUpdateApproval(true)}>
+                    <UserCheck className="w-3 h-3" /> Approve
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-7 text-[11px] gap-1" onClick={() => bulkUpdateApproval(false)}>
+                    <UserX className="w-3 h-3" /> Revoke
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/30">
+                    <th className="p-3 w-8">
+                      <input
+                        type="checkbox"
+                        className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
+                        checked={selectedUsers.size === users.length && users.length > 0}
+                        onChange={() => toggleSelectAll(users.map(u => u.user_id))}
+                      />
+                    </th>
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">User</th>
                     <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Access</th>
@@ -544,7 +596,15 @@ const AdminPage = () => {
                 </thead>
                 <tbody>
                   {users.map((u) => (
-                    <tr key={u.user_id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
+                    <tr key={u.user_id} className={`border-b border-border/20 hover:bg-muted/30 transition-colors ${selectedUsers.has(u.user_id) ? "bg-primary/5" : ""}`}>
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
+                          checked={selectedUsers.has(u.user_id)}
+                          onChange={() => toggleSelectUser(u.user_id)}
+                        />
+                      </td>
                       <td className="p-3 text-xs font-semibold text-foreground">{u.display_name || "—"}</td>
                       <td className="p-3 text-xs text-muted-foreground">{u.email}</td>
                       <td className="p-3 text-center">
