@@ -21,6 +21,8 @@ import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { saveScanToDb } from "@/lib/scanHistoryDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { useApprovalStatus } from "@/hooks/useApprovalStatus";
+import { ApprovalGate } from "@/components/ApprovalGate";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats, DashboardDataProvider } from "@/components/DashboardPanels";
 import { Navbar } from "@/components/Navbar";
