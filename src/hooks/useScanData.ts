@@ -11,34 +11,8 @@ const checkAdmin = async (userId: string): Promise<boolean> => {
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
-    .in("role", ["admin", "super_admin"] as any[]);
+    .eq("role", "admin");
   return (data?.length ?? 0) > 0;
-};
-
-export type AppRole = "super_admin" | "admin" | "moderator" | "user";
-
-const getUserRole = async (userId: string): Promise<AppRole> => {
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId);
-  if (!data || data.length === 0) return "user";
-  const roles = data.map((r: any) => r.role as AppRole);
-  if (roles.includes("super_admin")) return "super_admin";
-  if (roles.includes("admin")) return "admin";
-  if (roles.includes("moderator")) return "moderator";
-  return "user";
-};
-
-export const useUserRole = () => {
-  const { user } = useAuth();
-  return useQuery<AppRole>({
-    queryKey: ["userRole", user?.id],
-    queryFn: () => getUserRole(user!.id),
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
 };
 
 export const useIsAdmin = () => {

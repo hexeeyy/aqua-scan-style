@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans, useScanHistory } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical, UserCheck, UserX, Plus, Trash2, Crown, ShieldHalf } from "lucide-react";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical } from "lucide-react";
 import { ModelMetrics } from "@/components/ModelMetrics";
 import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
@@ -25,8 +25,6 @@ const COLORS = [
   "hsl(180, 60%, 50%)",
 ];
 
-type AppRoleType = "super_admin" | "admin" | "moderator" | "user";
-
 interface UserProfile {
   user_id: string;
   email: string;
@@ -35,10 +33,7 @@ interface UserProfile {
   scan_count: number;
   avg_freshness: number;
   last_scan: string | null;
-  role: AppRoleType;
-  approved: boolean;
-  location_id: string | null;
-  location_name: string | null;
+  role: "admin" | "user";
 }
 
 const AdminPage = () => {
@@ -48,34 +43,6 @@ const AdminPage = () => {
   const invalidateScans = useInvalidateScans();
   const queryClient = useQueryClient();
   const [editLocOpen, setEditLocOpen] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
-
-  const toggleSelectUser = useCallback((userId: string) => {
-    setSelectedUsers(prev => {
-      const next = new Set(prev);
-      next.has(userId) ? next.delete(userId) : next.add(userId);
-      return next;
-    });
-  }, []);
-
-  const toggleSelectAll = useCallback((userIds: string[]) => {
-    setSelectedUsers(prev => prev.size === userIds.length ? new Set() : new Set(userIds));
-  }, []);
-
-  const bulkUpdateApproval = async (approved: boolean) => {
-    const ids = Array.from(selectedUsers);
-    if (ids.length === 0) return;
-    const promises = ids.map(id =>
-      supabase.from("profiles").update({ approved }).eq("user_id", id)
-    );
-    const results = await Promise.all(promises);
-    const failed = results.filter(r => r.error).length;
-    if (failed > 0) toast.error(`${failed} update(s) failed`);
-    else toast.success(`${ids.length} user(s) ${approved ? "approved" : "access revoked"}`);
-    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    ids.forEach(id => queryClient.invalidateQueries({ queryKey: ["approvalStatus", id] }));
-    setSelectedUsers(new Set());
-  };
 
   // Use the SAME shared hook that Home/History use
   const { data: scanHistory = [], isLoading: scansLoading } = useScanHistory();
@@ -84,30 +51,19 @@ const AdminPage = () => {
   const { data: usersData = [], isLoading: usersLoading } = useQuery({
     queryKey: ["adminUsers"],
     queryFn: async () => {
-      const [profilesRes, rolesRes, locationsRes] = await Promise.all([
+      const [profilesRes, rolesRes] = await Promise.all([
         supabase.from("profiles").select("*"),
         supabase.from("user_roles").select("user_id, role"),
-        supabase.from("locations").select("*"),
       ]);
-      return {
-        profiles: profilesRes.data ?? [],
-        roles: rolesRes.data ?? [],
-        locations: locationsRes.data ?? [],
-      };
+      return { profiles: profilesRes.data ?? [], roles: rolesRes.data ?? [] };
     },
     enabled: !!isAdmin,
     select: (data) => {
-      const roleMap = new Map<string, AppRoleType>();
+      const roleMap = new Map<string, "admin" | "user">();
       data.roles.forEach((r: any) => {
-        const current = roleMap.get(r.user_id);
-        const priority: Record<string, number> = { super_admin: 3, admin: 2, moderator: 1, user: 0 };
-        if (!current || (priority[r.role] ?? 0) > (priority[current] ?? 0)) {
-          roleMap.set(r.user_id, r.role as AppRoleType);
-        }
+        if (r.role === "admin") roleMap.set(r.user_id, "admin");
+        else if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, "user");
       });
-
-      const locMap = new Map<string, string>();
-      data.locations.forEach((l: any) => locMap.set(l.id, l.name));
 
       return data.profiles.map((p: any): UserProfile => {
         const userScans = scanHistory.filter((s) => s.scanUserId === p.user_id);
@@ -126,22 +82,9 @@ const AdminPage = () => {
           avg_freshness: avgFreshness,
           last_scan: lastScan,
           role: roleMap.get(p.user_id) ?? "user",
-          approved: p.approved ?? false,
-          location_id: p.location_id ?? null,
-          location_name: p.location_id ? locMap.get(p.location_id) ?? null : null,
         };
       });
     },
-  });
-
-  // Locations query
-  const { data: locations = [] } = useQuery({
-    queryKey: ["locations"],
-    queryFn: async () => {
-      const { data } = await supabase.from("locations").select("*").order("name");
-      return (data ?? []) as Array<{ id: string; name: string; created_at: string }>;
-    },
-    enabled: !!isAdmin,
   });
 
   const users = usersData;
@@ -173,94 +116,29 @@ const AdminPage = () => {
     staleTime: 0,
   });
 
-  const changeRole = async (targetUserId: string, newRole: AppRoleType) => {
+  const toggleRole = async (targetUserId: string, currentRole: "admin" | "user") => {
     if (targetUserId === user!.id) {
       toast.error("You cannot change your own role");
       return;
     }
+    const newRole = currentRole === "admin" ? "user" : "admin";
 
-    // Delete all existing non-user roles for this user
-    await supabase
-      .from("user_roles")
-      .delete()
-      .eq("user_id", targetUserId)
-      .neq("role", "user" as any);
-
-    if (newRole !== "user") {
+    if (currentRole === "admin") {
       const { error } = await supabase
         .from("user_roles")
-        .insert({ user_id: targetUserId, role: newRole as any });
+        .delete()
+        .eq("user_id", targetUserId)
+        .eq("role", "admin");
+      if (error) { toast.error("Failed to update role"); return; }
+    } else {
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: targetUserId, role: "admin" });
       if (error) { toast.error("Failed to update role"); return; }
     }
 
     queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    queryClient.invalidateQueries({ queryKey: ["isAdmin"] });
-    queryClient.invalidateQueries({ queryKey: ["userRole"] });
-    toast.success(`User role changed to ${newRole.replace("_", " ")}`);
-  };
-
-  const assignLocation = async (targetUserId: string, locationId: string | null) => {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ location_id: locationId } as any)
-      .eq("user_id", targetUserId);
-    if (error) { toast.error("Failed to assign location"); return; }
-    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    toast.success("Location assigned");
-  };
-
-  const [newLocationName, setNewLocationName] = useState("");
-  const addLocation = async () => {
-    if (!newLocationName.trim()) return;
-    const { error } = await supabase
-      .from("locations")
-      .insert({ name: newLocationName.trim(), created_by: user!.id } as any);
-    if (error) { toast.error(error.message); return; }
-    setNewLocationName("");
-    queryClient.invalidateQueries({ queryKey: ["locations"] });
-    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    toast.success("Location added");
-  };
-
-  const deleteLocation = async (locationId: string) => {
-    const { error } = await supabase.from("locations").delete().eq("id", locationId);
-    if (error) { toast.error("Failed to delete location"); return; }
-    queryClient.invalidateQueries({ queryKey: ["locations"] });
-    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    toast.success("Location deleted");
-  };
-
-  const toggleApproval = async (targetUserId: string, currentApproved: boolean) => {
-    const newStatus = !currentApproved;
-    const { error } = await supabase
-      .from("profiles")
-      .update({ approved: newStatus })
-      .eq("user_id", targetUserId);
-    if (error) {
-      toast.error("Failed to update approval status");
-      return;
-    }
-    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    queryClient.invalidateQueries({ queryKey: ["approvalStatus", targetUserId] });
-    toast.success(newStatus ? "User approved — access granted" : "User access revoked");
-  };
-
-  const removeUser = async (targetUserId: string, displayName: string) => {
-    if (targetUserId === user!.id) {
-      toast.error("You cannot remove yourself");
-      return;
-    }
-    if (!confirm(`Remove "${displayName || "this user"}"? This will delete their profile and revoke all access.`)) return;
-
-    // Delete roles, then profile (scans remain for data integrity)
-    await supabase.from("user_roles").delete().eq("user_id", targetUserId);
-    const { error } = await supabase.from("profiles").delete().eq("user_id", targetUserId);
-    if (error) {
-      toast.error("Failed to remove user");
-      return;
-    }
-    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    toast.success("User removed");
+    toast.success(`${newRole === "admin" ? "Promoted" : "Demoted"} user to ${newRole}`);
   };
 
   if (loading) {
@@ -303,7 +181,6 @@ const AdminPage = () => {
   const avgFreshnessAll = scoredScans.length > 0
     ? Math.round(scoredScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / scoredScans.length * 10) / 10
     : 0;
-  const pendingUsers = users.filter((u) => !u.approved);
   const activeUsers = users.filter((u) => u.scan_count > 0).length;
 
   // Species distribution
@@ -423,41 +300,7 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        {/* Pending Approvals Alert */}
-        {pendingUsers.length > 0 && (
-          <Card className="border-warning/30 bg-warning/5 shadow-md">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center flex-shrink-0">
-                  <UserX className="w-5 h-5 text-warning" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground">{pendingUsers.length} Pending Approval{pendingUsers.length > 1 ? "s" : ""}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {pendingUsers.map(u => u.display_name || u.email).join(", ")}
-                  </p>
-                </div>
-                <div className="flex gap-1.5">
-                  <Button
-                    size="sm"
-                    className="h-7 text-[11px] gap-1"
-                    onClick={async () => {
-                      const ids = pendingUsers.map(u => u.user_id);
-                      await Promise.all(ids.map(id => supabase.from("profiles").update({ approved: true }).eq("user_id", id)));
-                      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-                      ids.forEach(id => queryClient.invalidateQueries({ queryKey: ["approvalStatus", id] }));
-                      toast.success(`${ids.length} user(s) approved`);
-                    }}
-                  >
-                    <UserCheck className="w-3 h-3" />
-                    Approve All
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+        {/* Charts Row */}
         <div className="grid md:grid-cols-2 gap-4">
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
@@ -627,173 +470,65 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        {/* Location Management */}
+        {/* All Users Table */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                Location Designations ({locations.length})
-              </CardTitle>
-            </div>
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" />
+              All Users ({users.length})
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <input
-                className="flex-1 h-8 px-3 text-xs rounded-lg border border-border/30 bg-background"
-                placeholder="New location name..."
-                value={newLocationName}
-                onChange={(e) => setNewLocationName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addLocation()}
-              />
-              <Button size="sm" className="h-8 text-xs gap-1" onClick={addLocation}>
-                <Plus className="w-3 h-3" /> Add
-              </Button>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/30">
+                    <th className="text-left p-3 text-xs text-muted-foreground font-semibold">User</th>
+                    <th className="text-left p-3 text-xs text-muted-foreground font-semibold">Email</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Role</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Avg Freshness</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Last Scan</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.user_id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
+                      <td className="p-3 text-xs font-semibold text-foreground">{u.display_name || "—"}</td>
+                      <td className="p-3 text-xs text-muted-foreground">{u.email}</td>
+                      <td className="p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
+                            u.role === "admin"
+                              ? "bg-primary/15 text-primary hover:bg-primary/25"
+                              : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                          } ${u.user_id === user!.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={() => toggleRole(u.user_id, u.role)}
+                          disabled={u.user_id === user!.id}
+                          title={u.user_id === user!.id ? "Cannot change your own role" : `Click to ${u.role === "admin" ? "demote to user" : "promote to admin"}`}
+                        >
+                          {u.role === "admin" ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
+                          {u.role}
+                        </Button>
+                      </td>
+                      <td className="p-3 text-center text-xs font-bold text-primary">{u.scan_count}</td>
+                      <td className="p-3 text-center">
+                        <span className={`text-xs font-bold ${u.avg_freshness >= 70 ? "text-success" : u.avg_freshness >= 40 ? "text-warning" : "text-destructive"}`}>
+                          {u.scan_count > 0 ? `${u.avg_freshness}%` : "—"}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center text-xs text-muted-foreground">{u.last_scan ?? "Never"}</td>
+                      <td className="p-3 text-center text-xs text-muted-foreground">
+                        {new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            {locations.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {locations.map((loc) => {
-                  const usersInLoc = users.filter(u => u.location_id === loc.id);
-                  const adminInLoc = usersInLoc.find(u => u.role === "admin");
-                  return (
-                    <div key={loc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 border border-border/20">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-foreground truncate">{loc.name}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {usersInLoc.length} user{usersInLoc.length !== 1 ? "s" : ""}
-                          {adminInLoc && <span className="text-primary ml-1">• {adminInLoc.display_name || "Admin"}</span>}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-6 h-6 text-destructive/50 hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => deleteLocation(loc.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center py-4">No locations yet. Add one above.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* All Users */}
-        <Card className="border-border/30 shadow-md">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" />
-                All Users ({users.length})
-              </CardTitle>
-              {selectedUsers.size > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground font-medium">{selectedUsers.size} selected</span>
-                  <Button size="sm" className="h-7 text-[11px] gap-1" onClick={() => bulkUpdateApproval(true)}>
-                    <UserCheck className="w-3 h-3" /> Approve
-                  </Button>
-                  <Button size="sm" variant="destructive" className="h-7 text-[11px] gap-1" onClick={() => bulkUpdateApproval(false)}>
-                    <UserX className="w-3 h-3" /> Revoke
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {users.map((u) => (
-              <div
-                key={u.user_id}
-                className={`rounded-xl border border-border/20 p-3 space-y-2.5 transition-colors ${
-                  selectedUsers.has(u.user_id) ? "bg-primary/5 border-primary/20" : "bg-muted/20 hover:bg-muted/40"
-                }`}
-              >
-                {/* Row 1: Checkbox, Name, Access, Remove */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="w-3.5 h-3.5 rounded accent-primary cursor-pointer flex-shrink-0"
-                    checked={selectedUsers.has(u.user_id)}
-                    onChange={() => toggleSelectUser(u.user_id)}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">{u.display_name || "—"}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-6 px-2 gap-1 text-[10px] font-semibold rounded-lg flex-shrink-0 ${
-                      u.approved
-                        ? "bg-success/15 text-success hover:bg-success/25"
-                        : "bg-destructive/15 text-destructive hover:bg-destructive/25"
-                    }`}
-                    onClick={() => toggleApproval(u.user_id, u.approved)}
-                  >
-                    {u.approved ? <UserCheck className="w-3 h-3" /> : <UserX className="w-3 h-3" />}
-                    {u.approved ? "Approved" : "Pending"}
-                  </Button>
-                  {u.user_id !== user!.id && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-6 h-6 text-destructive/40 hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                      onClick={() => removeUser(u.user_id, u.display_name || u.email)}
-                      title="Remove user"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  )}
-                </div>
-
-                {/* Row 2: Role, Location, Stats */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <Crown className="w-3 h-3 text-muted-foreground" />
-                    <select
-                      className="h-6 px-1.5 text-[10px] font-semibold rounded-md border border-border/30 bg-background cursor-pointer"
-                      value={u.role}
-                      onChange={(e) => changeRole(u.user_id, e.target.value as AppRoleType)}
-                      disabled={u.user_id === user!.id}
-                    >
-                      <option value="user">User</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="admin">Admin</option>
-                      <option value="super_admin">Super Admin</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-muted-foreground" />
-                    <select
-                      className={`h-6 px-1.5 text-[10px] rounded-md border cursor-pointer ${
-                        u.location_id
-                          ? "border-primary/30 bg-primary/5 font-semibold text-primary"
-                          : "border-border/30 bg-background text-muted-foreground"
-                      }`}
-                      value={u.location_id ?? ""}
-                      onChange={(e) => assignLocation(u.user_id, e.target.value || null)}
-                    >
-                      <option value="">No location</option>
-                      {locations.map((loc) => (
-                        <option key={loc.id} value={loc.id}>{loc.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="ml-auto flex items-center gap-3 text-[10px] text-muted-foreground">
-                    <span><span className="font-bold text-primary">{u.scan_count}</span> scans</span>
-                    <span>{new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {users.length === 0 && (
-              <p className="text-center text-muted-foreground text-sm py-8">No users yet</p>
-            )}
           </CardContent>
         </Card>
 

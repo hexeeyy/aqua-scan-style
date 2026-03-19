@@ -31,7 +31,7 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .in("role", ["admin", "super_admin"] as any[])
+      .eq("role", "admin")
       .then(({ data }) => setIsAdmin((data ?? []).length > 0));
   }, [user]);
 
