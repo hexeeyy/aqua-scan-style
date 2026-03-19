@@ -6,6 +6,7 @@ export interface ScanRecordWithUser extends ScanRecord {
   scanUserId?: string;
   userName?: string;
   userEmail?: string;
+  locationName?: string | null;
 }
 
 export const saveScanToDb = async (
