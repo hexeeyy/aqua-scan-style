@@ -21,6 +21,8 @@ import { saveScanToHistory, type ScanRecord } from "@/components/ScanHistory";
 import { saveScanToDb } from "@/lib/scanHistoryDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import { useApprovalStatus } from "@/hooks/useApprovalStatus";
+import { ApprovalGate } from "@/components/ApprovalGate";
 import { SplashScreen } from "@/components/SplashScreen";
 import { SystemOverview, ScanActivityChart, SpectrumAnalysis, FreshnessDistribution, QualityRadar, LiveStats, DashboardDataProvider } from "@/components/DashboardPanels";
 import { Navbar } from "@/components/Navbar";
@@ -87,9 +89,11 @@ const Index = () => {
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [location, setLocation] = useState<LocationData | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showApprovalGate, setShowApprovalGate] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isApproved } = useApprovalStatus();
   const { location: userLocation, detectLocation: detectUserLocation } = useUserLocation();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
@@ -162,7 +166,13 @@ const Index = () => {
     };
   }, []);
 
-  const handleCameraOpen = () => setShowCamera(true);
+  const handleCameraOpen = () => {
+    if (!isApproved) {
+      setShowApprovalGate(true);
+      return;
+    }
+    setShowCamera(true);
+  };
   const handleCameraCancel = () => setShowCamera(false);
 
   const handleCapture = async (imageData: string) => {
@@ -286,6 +296,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <ApprovalGate open={showApprovalGate} onOpenChange={setShowApprovalGate} />
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
 
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} onScanClick={handleCameraOpen} />
