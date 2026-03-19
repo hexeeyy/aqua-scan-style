@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin, useInvalidateScans, useScanHistory } from "@/hooks/useScanData";
-import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical, UserCheck, UserX } from "lucide-react";
+import { ArrowLeft, Users, BarChart3, Fish, Activity, TrendingUp, Shield, ShieldCheck, ShieldOff, MapPin, Edit3, FlaskConical, UserCheck, UserX, Plus, Trash2, Crown, ShieldHalf } from "lucide-react";
 import { ModelMetrics } from "@/components/ModelMetrics";
 import { EditLocationDialog } from "@/components/EditLocationDialog";
 import { normalizeSpeciesName, normalizeLocationName } from "@/lib/speciesNormalize";
