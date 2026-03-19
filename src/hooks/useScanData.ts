@@ -57,9 +57,8 @@ export const useInvalidateScans = () => {
   return () => {
     queryClient.invalidateQueries({ queryKey: ["scanHistory"] });
     queryClient.invalidateQueries({ queryKey: ["areaScans"] });
-    queryClient.invalidateQueries({ queryKey: ["adminScans"] });
-    queryClient.invalidateQueries({ queryKey: ["adminScanLocations"] });
     queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    queryClient.invalidateQueries({ queryKey: ["locations"] });
   };
 };
 

@@ -94,6 +94,7 @@ const mapRowToScanRecord = (row: any): ScanRecordWithUser => ({
   } : undefined,
   userName: row.profiles?.display_name ?? undefined,
   userEmail: row.profiles?.email ?? undefined,
+  locationName: row.location_name ?? null,
 });
 
 export const getScansFromDb = async (): Promise<ScanRecord[]> => {
