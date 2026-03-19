@@ -723,6 +723,7 @@ const AdminPage = () => {
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Location</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Scans</th>
                     <th className="text-center p-3 text-xs text-muted-foreground font-semibold">Joined</th>
+                    <th className="text-center p-3 text-xs text-muted-foreground font-semibold w-8"></th>
                   </tr>
                 </thead>
                 <tbody>
