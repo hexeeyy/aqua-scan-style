@@ -609,6 +609,61 @@ const AdminPage = () => {
           </Card>
         </div>
 
+        {/* Location Management */}
+        <Card className="border-border/30 shadow-md">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Location Designations ({locations.length})
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex gap-2">
+              <input
+                className="flex-1 h-8 px-3 text-xs rounded-lg border border-border/30 bg-background"
+                placeholder="New location name..."
+                value={newLocationName}
+                onChange={(e) => setNewLocationName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addLocation()}
+              />
+              <Button size="sm" className="h-8 text-xs gap-1" onClick={addLocation}>
+                <Plus className="w-3 h-3" /> Add
+              </Button>
+            </div>
+            {locations.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {locations.map((loc) => {
+                  const usersInLoc = users.filter(u => u.location_id === loc.id);
+                  const adminInLoc = usersInLoc.find(u => u.role === "admin");
+                  return (
+                    <div key={loc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 border border-border/20">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">{loc.name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {usersInLoc.length} user{usersInLoc.length !== 1 ? "s" : ""}
+                          {adminInLoc && <span className="text-primary ml-1">• {adminInLoc.display_name || "Admin"}</span>}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6 text-destructive/50 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => deleteLocation(loc.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-4">No locations yet. Add one above.</p>
+            )}
+          </CardContent>
+        </Card>
+
         {/* All Users Table */}
         <Card className="border-border/30 shadow-md">
           <CardHeader className="pb-2">
