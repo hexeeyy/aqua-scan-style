@@ -198,6 +198,7 @@ const AdminPage = () => {
   const avgFreshnessAll = scoredScans.length > 0
     ? Math.round(scoredScans.reduce((s, r) => s + Number(r.freshness_score ?? 0), 0) / scoredScans.length * 10) / 10
     : 0;
+  const pendingUsers = users.filter((u) => !u.approved);
   const activeUsers = users.filter((u) => u.scan_count > 0).length;
 
   // Species distribution
