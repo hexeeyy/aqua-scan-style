@@ -270,17 +270,7 @@ const AdminPage = () => {
     );
   }
 
-  // Use scanLocations as the primary data source (has location_name)
-  const allScans = scanLocations as Array<{
-    id: string;
-    location_name: string | null;
-    user_id: string;
-    species_name: string | null;
-    freshness_level: string | null;
-    freshness_score: number | null;
-    timestamp: number;
-    created_at: string;
-  }>;
+  // allScans is already derived from scanHistory above
 
   // Stats
   const totalScans = allScans.length;
