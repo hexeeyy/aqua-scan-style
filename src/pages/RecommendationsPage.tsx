@@ -3,6 +3,9 @@ import { ArrowLeft, Clock, CheckCircle, AlertTriangle, XCircle, ChefHat, ShieldA
 import { Button } from "@/components/ui/button";
 import { ResultPanel } from "@/components/ResultPanel";
 import type { MarketDuration, ConsumerRecommendation } from "@/components/MarketDurationCard";
+import { useApprovalStatus } from "@/hooks/useApprovalStatus";
+import { ApprovalGate } from "@/components/ApprovalGate";
+import { useState, useEffect } from "react";
 
 const verdictConfig = {
   buy: { icon: CheckCircle, label: "Safe to Buy", color: "text-success", bg: "bg-success/10 border-success/30", headerBg: "from-[hsl(145,65%,45%)] to-[hsl(160,70%,55%)]" },
@@ -13,6 +16,15 @@ const verdictConfig = {
 const RecommendationsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isApproved, isLoading } = useApprovalStatus();
+  const [showGate, setShowGate] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !isApproved) {
+      setShowGate(true);
+    }
+  }, [isLoading, isApproved]);
+
   const state = location.state as {
     marketDuration: MarketDuration;
     consumerRecommendation: ConsumerRecommendation;
@@ -21,6 +33,18 @@ const RecommendationsPage = () => {
     freshnessScore?: number;
     capturedImage?: string | null;
   } | null;
+
+  if (!isApproved) {
+    return (
+      <ApprovalGate
+        open={showGate}
+        onOpenChange={(open) => {
+          setShowGate(open);
+          if (!open) navigate("/");
+        }}
+      />
+    );
+  }
 
   if (!state) {
     return (
