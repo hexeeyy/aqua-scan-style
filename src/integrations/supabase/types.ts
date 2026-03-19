@@ -14,32 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      locations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          approved: boolean
           created_at: string
           display_name: string | null
           email: string | null
           id: string
+          location_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          approved?: boolean
           created_at?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          location_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          approved?: boolean
           created_at?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          location_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scan_history: {
         Row: {
@@ -172,7 +207,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "super_admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -300,7 +335,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "super_admin", "moderator"],
     },
   },
 } as const
