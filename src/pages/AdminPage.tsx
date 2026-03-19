@@ -682,29 +682,32 @@ const AdminPage = () => {
                         </Button>
                       </td>
                       <td className="p-3 text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-7 px-2 gap-1 text-[11px] font-semibold rounded-lg ${
-                            u.role === "admin"
-                              ? "bg-primary/15 text-primary hover:bg-primary/25"
-                              : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                          } ${u.user_id === user!.id ? "opacity-50 cursor-not-allowed" : ""}`}
-                          onClick={() => toggleRole(u.user_id, u.role)}
+                        <select
+                          className="h-7 px-1.5 text-[11px] font-semibold rounded-lg border border-border/30 bg-background cursor-pointer"
+                          value={u.role}
+                          onChange={(e) => changeRole(u.user_id, e.target.value as AppRoleType)}
                           disabled={u.user_id === user!.id}
-                          title={u.user_id === user!.id ? "Cannot change your own role" : `Click to ${u.role === "admin" ? "demote to user" : "promote to admin"}`}
+                          title={u.user_id === user!.id ? "Cannot change your own role" : "Change user role"}
                         >
-                          {u.role === "admin" ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
-                          {u.role}
-                        </Button>
+                          <option value="user">User</option>
+                          <option value="moderator">Moderator</option>
+                          <option value="admin">Admin</option>
+                          <option value="super_admin">Super Admin</option>
+                        </select>
+                      </td>
+                      <td className="p-3 text-center">
+                        <select
+                          className="h-7 px-1.5 text-[11px] rounded-lg border border-border/30 bg-background cursor-pointer max-w-[100px]"
+                          value={u.location_id ?? ""}
+                          onChange={(e) => assignLocation(u.user_id, e.target.value || null)}
+                        >
+                          <option value="">— None —</option>
+                          {locations.map((loc) => (
+                            <option key={loc.id} value={loc.id}>{loc.name}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="p-3 text-center text-xs font-bold text-primary">{u.scan_count}</td>
-                      <td className="p-3 text-center">
-                        <span className={`text-xs font-bold ${u.avg_freshness >= 70 ? "text-success" : u.avg_freshness >= 40 ? "text-warning" : "text-destructive"}`}>
-                          {u.scan_count > 0 ? `${u.avg_freshness}%` : "—"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center text-xs text-muted-foreground">{u.last_scan ?? "Never"}</td>
                       <td className="p-3 text-center text-xs text-muted-foreground">
                         {new Date(u.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
                       </td>
