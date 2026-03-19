@@ -245,6 +245,24 @@ const AdminPage = () => {
     toast.success(newStatus ? "User approved — access granted" : "User access revoked");
   };
 
+  const removeUser = async (targetUserId: string, displayName: string) => {
+    if (targetUserId === user!.id) {
+      toast.error("You cannot remove yourself");
+      return;
+    }
+    if (!confirm(`Remove "${displayName || "this user"}"? This will delete their profile and revoke all access.`)) return;
+
+    // Delete roles, then profile (scans remain for data integrity)
+    await supabase.from("user_roles").delete().eq("user_id", targetUserId);
+    const { error } = await supabase.from("profiles").delete().eq("user_id", targetUserId);
+    if (error) {
+      toast.error("Failed to remove user");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    toast.success("User removed");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
