@@ -44,6 +44,34 @@ const AdminPage = () => {
   const invalidateScans = useInvalidateScans();
   const queryClient = useQueryClient();
   const [editLocOpen, setEditLocOpen] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+
+  const toggleSelectUser = useCallback((userId: string) => {
+    setSelectedUsers(prev => {
+      const next = new Set(prev);
+      next.has(userId) ? next.delete(userId) : next.add(userId);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback((userIds: string[]) => {
+    setSelectedUsers(prev => prev.size === userIds.length ? new Set() : new Set(userIds));
+  }, []);
+
+  const bulkUpdateApproval = async (approved: boolean) => {
+    const ids = Array.from(selectedUsers);
+    if (ids.length === 0) return;
+    const promises = ids.map(id =>
+      supabase.from("profiles").update({ approved }).eq("user_id", id)
+    );
+    const results = await Promise.all(promises);
+    const failed = results.filter(r => r.error).length;
+    if (failed > 0) toast.error(`${failed} update(s) failed`);
+    else toast.success(`${ids.length} user(s) ${approved ? "approved" : "access revoked"}`);
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    ids.forEach(id => queryClient.invalidateQueries({ queryKey: ["approvalStatus", id] }));
+    setSelectedUsers(new Set());
+  };
 
   // Use the SAME shared hook that Home/History use
   const { data: scanHistory = [], isLoading: scansLoading } = useScanHistory();
