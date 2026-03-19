@@ -143,6 +143,21 @@ const AdminPage = () => {
     toast.success(`${newRole === "admin" ? "Promoted" : "Demoted"} user to ${newRole}`);
   };
 
+  const toggleApproval = async (targetUserId: string, currentApproved: boolean) => {
+    const newStatus = !currentApproved;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ approved: newStatus })
+      .eq("user_id", targetUserId);
+    if (error) {
+      toast.error("Failed to update approval status");
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    queryClient.invalidateQueries({ queryKey: ["approvalStatus", targetUserId] });
+    toast.success(newStatus ? "User approved — access granted" : "User access revoked");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
