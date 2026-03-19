@@ -318,7 +318,38 @@ const AdminPage = () => {
           </Card>
         </div>
 
-        {/* Charts Row */}
+        {/* Pending Approvals Alert */}
+        {pendingUsers.length > 0 && (
+          <Card className="border-warning/30 bg-warning/5 shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center flex-shrink-0">
+                  <UserX className="w-5 h-5 text-warning" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-foreground">{pendingUsers.length} Pending Approval{pendingUsers.length > 1 ? "s" : ""}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {pendingUsers.map(u => u.display_name || u.email).join(", ")}
+                  </p>
+                </div>
+                <div className="flex gap-1.5">
+                  {pendingUsers.map((u) => (
+                    <Button
+                      key={u.user_id}
+                      size="sm"
+                      className="h-7 text-[11px] gap-1"
+                      onClick={() => toggleApproval(u.user_id, false)}
+                    >
+                      <UserCheck className="w-3 h-3" />
+                      Approve
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid md:grid-cols-2 gap-4">
           <Card className="border-border/30 shadow-md">
             <CardHeader className="pb-2">
