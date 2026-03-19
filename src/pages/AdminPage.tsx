@@ -173,29 +173,61 @@ const AdminPage = () => {
     staleTime: 0,
   });
 
-  const toggleRole = async (targetUserId: string, currentRole: "admin" | "user") => {
+  const changeRole = async (targetUserId: string, newRole: AppRoleType) => {
     if (targetUserId === user!.id) {
       toast.error("You cannot change your own role");
       return;
     }
-    const newRole = currentRole === "admin" ? "user" : "admin";
 
-    if (currentRole === "admin") {
+    // Delete all existing non-user roles for this user
+    await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", targetUserId)
+      .neq("role", "user" as any);
+
+    if (newRole !== "user") {
       const { error } = await supabase
         .from("user_roles")
-        .delete()
-        .eq("user_id", targetUserId)
-        .eq("role", "admin");
-      if (error) { toast.error("Failed to update role"); return; }
-    } else {
-      const { error } = await supabase
-        .from("user_roles")
-        .insert({ user_id: targetUserId, role: "admin" });
+        .insert({ user_id: targetUserId, role: newRole as any });
       if (error) { toast.error("Failed to update role"); return; }
     }
 
     queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-    toast.success(`${newRole === "admin" ? "Promoted" : "Demoted"} user to ${newRole}`);
+    queryClient.invalidateQueries({ queryKey: ["isAdmin"] });
+    queryClient.invalidateQueries({ queryKey: ["userRole"] });
+    toast.success(`User role changed to ${newRole.replace("_", " ")}`);
+  };
+
+  const assignLocation = async (targetUserId: string, locationId: string | null) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ location_id: locationId } as any)
+      .eq("user_id", targetUserId);
+    if (error) { toast.error("Failed to assign location"); return; }
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    toast.success("Location assigned");
+  };
+
+  const [newLocationName, setNewLocationName] = useState("");
+  const addLocation = async () => {
+    if (!newLocationName.trim()) return;
+    const { error } = await supabase
+      .from("locations")
+      .insert({ name: newLocationName.trim(), created_by: user!.id } as any);
+    if (error) { toast.error(error.message); return; }
+    setNewLocationName("");
+    queryClient.invalidateQueries({ queryKey: ["locations"] });
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    toast.success("Location added");
+  };
+
+  const deleteLocation = async (locationId: string) => {
+    const { error } = await supabase.from("locations").delete().eq("id", locationId);
+    if (error) { toast.error("Failed to delete location"); return; }
+    queryClient.invalidateQueries({ queryKey: ["locations"] });
+    queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    toast.success("Location deleted");
   };
 
   const toggleApproval = async (targetUserId: string, currentApproved: boolean) => {
