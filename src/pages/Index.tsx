@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
