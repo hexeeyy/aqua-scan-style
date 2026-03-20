@@ -66,10 +66,10 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
         <button onClick={() => navigate("/")} className="flex items-center gap-2 group">
           <img src={Logo} alt="SARI-ONE Logo" className="w-7 h-7 transition-transform duration-300 group-hover:scale-110" />
           <h1 className="text-base font-bold text-white tracking-tight">SARI-ONE</h1>
-          {activeUserCount > 0 && (
+          {onlineCount > 0 && (
             <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/15 border border-white/20 text-[9px] font-semibold text-white/80">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              {activeUserCount}
+              {onlineCount}
             </span>
           )}
         </button>
