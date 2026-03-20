@@ -296,7 +296,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <ApprovalGate open={showApprovalGate} onOpenChange={setShowApprovalGate} />
+      <ApprovalGate open={showApprovalGate} onOpenChange={setShowApprovalGate} freeScansRemaining={freeScansRemaining} freeScanLimit={freeScanLimit} />
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
 
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} onScanClick={handleCameraOpen} />
