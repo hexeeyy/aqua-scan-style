@@ -272,7 +272,7 @@ const Index = () => {
 
   if (isAnalyzing) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center space-y-4">
           <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
           <div>
@@ -301,13 +301,13 @@ const Index = () => {
 
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} onScanClick={handleCameraOpen} />
 
-      <main ref={gsapRef} className="max-w-5xl mx-auto px-3 py-1.5 pb-2 flex-1">
+      <main ref={gsapRef} className="max-w-5xl mx-auto px-3 sm:px-3 py-1.5 pb-2 flex-1">
         {!showResults ? (
           <>
             {/* Hero + Scan */}
-            <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
               <div className="gsap-hero rounded-2xl overflow-hidden shadow-xl hover-lift">
-                <div className="relative h-full min-h-[120px]">
+                <div className="relative h-full min-h-[160px] sm:min-h-[120px]">
                   <img src={heroImage} alt="Fresh fish" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
@@ -341,7 +341,7 @@ const Index = () => {
 
             {/* Dashboard Panels + Charts - single flowing grid */}
             <DashboardDataProvider>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <div className="gsap-panel"><LiveStats /></div>
               <div className="gsap-panel"><SystemOverview /></div>
               <div className="gsap-panel"><FreshnessDistribution /></div>
@@ -386,7 +386,7 @@ const Index = () => {
                 </div>
               ) : (
                 <div className="w-full">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div className="space-y-2">
                         {/* Species ID */}
                         <ResultPanel title="Species Identified" icon={Fish} variant="primary" className="gsap-result">
@@ -562,7 +562,7 @@ const Index = () => {
 
                       {/* Habitat - full width */}
                       {results.habitat && results.commonAreas && (
-                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-2 gsap-result">
+                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-1 sm:col-span-2 gsap-result">
                           <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {results.commonAreas.map((area, i) => (
@@ -574,7 +574,7 @@ const Index = () => {
 
                       {/* Location */}
                       {location && (
-                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-2 gsap-result">
+                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-1 sm:col-span-2 gsap-result">
                           <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
                             <iframe
                               width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
