@@ -25,6 +25,19 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [onlineCount, setOnlineCount] = useState(0);
+
+  // Lightweight presence listener (read-only, piggybacks on existing channel)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel("app-presence-badge");
+    channel
+      .on("presence", { event: "sync" }, () => {
+        setOnlineCount(Object.keys(channel.presenceState()).length);
+      })
+      .subscribe();
+    return () => { channel.unsubscribe(); };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -53,6 +66,12 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
         <button onClick={() => navigate("/")} className="flex items-center gap-2 group">
           <img src={Logo} alt="SARI-ONE Logo" className="w-7 h-7 transition-transform duration-300 group-hover:scale-110" />
           <h1 className="text-base font-bold text-white tracking-tight">SARI-ONE</h1>
+          {onlineCount > 0 && (
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/15 border border-white/20 text-[9px] font-semibold text-white/80">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              {onlineCount}
+            </span>
+          )}
         </button>
 
         {/* Desktop Nav Links — hidden on mobile portrait */}
