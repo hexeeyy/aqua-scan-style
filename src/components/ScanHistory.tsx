@@ -367,6 +367,7 @@ export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
                 )}
 
                 {/* Actions */}
+                {!mockMode && (
                 <div className="flex border-t border-border/30">
                   <button
                     className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
@@ -394,6 +395,7 @@ export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
                     </button>
                   )}
                 </div>
+                )}
               </div>
             ))}
           </div>
