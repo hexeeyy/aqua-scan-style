@@ -93,6 +93,7 @@ const Index = () => {
   const [showApprovalGate, setShowApprovalGate] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { canScan, freeScansRemaining, freeScanLimit } = useApprovalStatus();
   const { location: userLocation, detectLocation: detectUserLocation } = useUserLocation();
