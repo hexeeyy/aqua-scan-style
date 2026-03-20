@@ -20,7 +20,7 @@ const navItems = [
   { label: "About", path: "/about", icon: Users },
 ];
 
-export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarProps) => {
+export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick, activeUserCount = 0 }: NavbarProps) => {
   const { signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
