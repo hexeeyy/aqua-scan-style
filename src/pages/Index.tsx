@@ -562,7 +562,7 @@ const Index = () => {
 
                       {/* Habitat - full width */}
                       {results.habitat && results.commonAreas && (
-                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-2 gsap-result">
+                        <ResultPanel title="Habitat & Collection Areas" icon={MapPin} variant="primary" className="col-span-1 sm:col-span-2 gsap-result">
                           <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{results.habitat}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {results.commonAreas.map((area, i) => (
