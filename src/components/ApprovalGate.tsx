@@ -1,4 +1,4 @@
-import { ShieldAlert, Clock } from "lucide-react";
+import { ShieldAlert, Clock, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +10,13 @@ import {
 interface ApprovalGateProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  freeScansRemaining?: number;
+  freeScanLimit?: number;
 }
 
-export const ApprovalGate = ({ open, onOpenChange }: ApprovalGateProps) => {
+export const ApprovalGate = ({ open, onOpenChange, freeScansRemaining = 0, freeScanLimit = 3 }: ApprovalGateProps) => {
+  const scansUsed = freeScanLimit - freeScansRemaining;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xs text-center">
@@ -23,11 +27,28 @@ export const ApprovalGate = ({ open, onOpenChange }: ApprovalGateProps) => {
               <ShieldAlert className="w-7 h-7 text-primary" />
             </div>
           </div>
-          <DialogTitle className="text-lg">Feature Restricted</DialogTitle>
+          <DialogTitle className="text-lg">Free Scans Used Up</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
-            This feature requires admin approval. You can explore the app freely, but camera scanning and AI analysis are available only after your account is approved.
+            You've used all {freeScanLimit} free scans. To continue scanning, please wait for admin approval of your account.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Usage bar */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium px-1">
+            <span className="flex items-center gap-1">
+              <Camera className="w-3.5 h-3.5" />
+              {scansUsed} / {freeScanLimit} free scans used
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-destructive/80 transition-all duration-500"
+              style={{ width: `${(scansUsed / freeScanLimit) * 100}%` }}
+            />
+          </div>
+        </div>
+
         <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-muted/50 border border-border/30 mx-auto">
           <Clock className="w-4 h-4 text-warning animate-pulse" />
           <span className="text-xs font-semibold text-muted-foreground">
