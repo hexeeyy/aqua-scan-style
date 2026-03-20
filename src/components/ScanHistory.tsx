@@ -47,10 +47,13 @@ export interface ScanRecord {
 
 interface ScanHistoryProps {
   onBack: () => void;
+  mockMode?: boolean;
 }
 
 import { getScansFromDb, getAllScansForAdmin, deleteScanFromDb } from "@/lib/scanHistoryDb";
 import type { ScanRecordWithUser } from "@/lib/scanHistoryDb";
+import { MOCK_SCAN_HISTORY } from "@/lib/mockScanData";
+import { MockDataBanner } from "@/components/MockDataBanner";
 
 // Keep legacy helpers for backward compat
 const STORAGE_KEY = "fishbuddy_scan_history";
@@ -92,12 +95,12 @@ const freshnessBg = (level: FreshnessLevel) => {
   }
 };
 
-export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
+export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
   const { user } = useAuth();
   const { data: scanData, isLoading: loadingDb } = useScanHistory();
   const { data: isAdmin = false } = useIsAdmin();
   const invalidateScans = useInvalidateScans();
-  const history = scanData ?? [];
+  const history = mockMode ? MOCK_SCAN_HISTORY : (scanData ?? []);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -172,7 +175,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                 Compare ({compareIds.length})
               </Button>
             )}
-            {history.length > 0 && (
+            {history.length > 0 && !mockMode && (
               <Button variant="secondary" size="sm" className="rounded-xl text-xs bg-white/20 text-white border-none hover:bg-white/30" onClick={handleExportAll}>
                 <Download className="w-4 h-4 mr-1" />
                 Export All
@@ -183,6 +186,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
       </header>
 
       <main className="max-w-2xl mx-auto px-5 py-6 pb-24">
+        {mockMode && <MockDataBanner />}
         {history.length === 0 ? (
           <div className="text-center py-20 animate-fade-in">
             <Fish className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
@@ -336,7 +340,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                         {Object.entries(record.stats).map(([key, val]) => (
                           <div key={key} className="bg-muted/50 rounded-lg p-2 text-center">
                             <p className="text-[10px] text-muted-foreground capitalize">{key.replace(/([A-Z])/g, " $1")}</p>
-                            <p className="text-xs font-semibold text-foreground">{val}</p>
+                            <p className="text-xs font-semibold text-foreground">{String(val)}</p>
                           </div>
                         ))}
                       </div>
@@ -363,6 +367,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                 )}
 
                 {/* Actions */}
+                {!mockMode && (
                 <div className="flex border-t border-border/30">
                   <button
                     className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
@@ -390,6 +395,7 @@ export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
                     </button>
                   )}
                 </div>
+                )}
               </div>
             ))}
           </div>
