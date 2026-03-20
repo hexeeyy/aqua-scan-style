@@ -175,7 +175,7 @@ export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
                 Compare ({compareIds.length})
               </Button>
             )}
-            {history.length > 0 && (
+            {history.length > 0 && !mockMode && (
               <Button variant="secondary" size="sm" className="rounded-xl text-xs bg-white/20 text-white border-none hover:bg-white/30" onClick={handleExportAll}>
                 <Download className="w-4 h-4 mr-1" />
                 Export All
