@@ -307,7 +307,7 @@ const Index = () => {
             {/* Hero + Scan */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
               <div className="gsap-hero rounded-2xl overflow-hidden shadow-xl hover-lift">
-                <div className="relative h-full min-h-[120px]">
+                <div className="relative h-full min-h-[160px] sm:min-h-[120px]">
                   <img src={heroImage} alt="Fresh fish" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
