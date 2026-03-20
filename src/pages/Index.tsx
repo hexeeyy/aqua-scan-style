@@ -93,7 +93,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isApproved } = useApprovalStatus();
+  const { canScan, freeScansRemaining, freeScanLimit } = useApprovalStatus();
   const { location: userLocation, detectLocation: detectUserLocation } = useUserLocation();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
