@@ -93,12 +93,12 @@ const freshnessBg = (level: FreshnessLevel) => {
   }
 };
 
-export const ScanHistory = ({ onBack }: ScanHistoryProps) => {
+export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
   const { user } = useAuth();
   const { data: scanData, isLoading: loadingDb } = useScanHistory();
   const { data: isAdmin = false } = useIsAdmin();
   const invalidateScans = useInvalidateScans();
-  const history = scanData ?? [];
+  const history = mockMode ? MOCK_SCAN_HISTORY : (scanData ?? []);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
