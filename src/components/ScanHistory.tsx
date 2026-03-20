@@ -52,6 +52,8 @@ interface ScanHistoryProps {
 
 import { getScansFromDb, getAllScansForAdmin, deleteScanFromDb } from "@/lib/scanHistoryDb";
 import type { ScanRecordWithUser } from "@/lib/scanHistoryDb";
+import { MOCK_SCAN_HISTORY } from "@/lib/mockScanData";
+import { MockDataBanner } from "@/components/MockDataBanner";
 
 // Keep legacy helpers for backward compat
 const STORAGE_KEY = "fishbuddy_scan_history";
