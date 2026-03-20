@@ -232,7 +232,10 @@ const Index = () => {
                 longitude: userLocation?.longitude,
                 locationName: userLocation?.locationName,
               })
-              .then((token) => { if (token) setShareToken(token); });
+              .then((token) => {
+                if (token) setShareToken(token);
+                queryClient.invalidateQueries({ queryKey: ["scanCount", user.id] });
+              });
           }
         }
         toast({ title: "Analysis Complete", description: `Detected ${analysisData.species?.name} with ${analysisData.species?.confidence}% confidence` });
