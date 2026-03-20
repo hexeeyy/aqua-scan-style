@@ -272,7 +272,7 @@ const Index = () => {
 
   if (isAnalyzing) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center space-y-4">
           <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
           <div>
