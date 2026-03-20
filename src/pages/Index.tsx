@@ -305,7 +305,7 @@ const Index = () => {
         {!showResults ? (
           <>
             {/* Hero + Scan */}
-            <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
               <div className="gsap-hero rounded-2xl overflow-hidden shadow-xl hover-lift">
                 <div className="relative h-full min-h-[120px]">
                   <img src={heroImage} alt="Fresh fish" className="w-full h-full object-cover" />
