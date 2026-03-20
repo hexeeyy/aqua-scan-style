@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ResultPanel } from "@/components/ResultPanel";
 import type { MarketDuration, ConsumerRecommendation } from "@/components/MarketDurationCard";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
-import { ApprovalGate } from "@/components/ApprovalGate";
-import { useState, useEffect } from "react";
+import { MockDataBanner } from "@/components/MockDataBanner";
+import { MOCK_MARKET_DURATION, MOCK_CONSUMER_RECOMMENDATION } from "@/lib/mockScanData";
 
 const verdictConfig = {
   buy: { icon: CheckCircle, label: "Safe to Buy", color: "text-success", bg: "bg-success/10 border-success/30", headerBg: "from-[hsl(145,65%,45%)] to-[hsl(160,70%,55%)]" },
@@ -17,13 +17,6 @@ const RecommendationsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isApproved, isLoading } = useApprovalStatus();
-  const [showGate, setShowGate] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading && !isApproved) {
-      setShowGate(true);
-    }
-  }, [isLoading, isApproved]);
 
   const state = location.state as {
     marketDuration: MarketDuration;
@@ -34,19 +27,14 @@ const RecommendationsPage = () => {
     capturedImage?: string | null;
   } | null;
 
-  if (!isApproved) {
-    return (
-      <ApprovalGate
-        open={showGate}
-        onOpenChange={(open) => {
-          setShowGate(open);
-          if (!open) navigate("/");
-        }}
-      />
-    );
-  }
+  const isMockMode = !isLoading && !isApproved && !state;
 
-  if (!state) {
+  const marketDuration: MarketDuration = state?.marketDuration ?? MOCK_MARKET_DURATION;
+  const consumerRecommendation: ConsumerRecommendation = state?.consumerRecommendation ?? MOCK_CONSUMER_RECOMMENDATION;
+  const species = state?.species ?? "Tilapia (Sample)";
+  const capturedImage = state?.capturedImage ?? null;
+
+  if (!state && isApproved) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
@@ -57,7 +45,6 @@ const RecommendationsPage = () => {
     );
   }
 
-  const { marketDuration, consumerRecommendation, species, capturedImage } = state;
   const verdict = verdictConfig[consumerRecommendation.verdict];
   const VerdictIcon = verdict.icon;
 
@@ -81,6 +68,8 @@ const RecommendationsPage = () => {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-4 pb-24 space-y-3">
+        {isMockMode && <MockDataBanner />}
+
         {/* Verdict Hero */}
         <div className={`rounded-2xl border-2 ${verdict.bg} p-5 text-center animate-scale-in`}>
           <VerdictIcon className={`w-12 h-12 ${verdict.color} mx-auto mb-2`} />
