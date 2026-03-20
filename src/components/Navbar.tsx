@@ -19,12 +19,25 @@ const navItems = [
   { label: "About", path: "/about", icon: Users },
 ];
 
-export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick, activeUserCount = 0 }: NavbarProps) => {
+export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarProps) => {
   const { signOut, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [onlineCount, setOnlineCount] = useState(0);
+
+  // Lightweight presence listener (read-only, piggybacks on existing channel)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel("app-presence-badge");
+    channel
+      .on("presence", { event: "sync" }, () => {
+        setOnlineCount(Object.keys(channel.presenceState()).length);
+      })
+      .subscribe();
+    return () => { channel.unsubscribe(); };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
