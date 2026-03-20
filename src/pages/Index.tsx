@@ -386,7 +386,7 @@ const Index = () => {
                 </div>
               ) : (
                 <div className="w-full">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div className="space-y-2">
                         {/* Species ID */}
                         <ResultPanel title="Species Identified" icon={Fish} variant="primary" className="gsap-result">
