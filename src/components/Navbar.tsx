@@ -10,7 +10,6 @@ interface NavbarProps {
   isFullscreen: boolean;
   toggleFullscreen: () => void;
   onScanClick?: () => void;
-  activeUserCount?: number;
 }
 
 const navItems = [
