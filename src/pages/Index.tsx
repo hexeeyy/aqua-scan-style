@@ -341,7 +341,7 @@ const Index = () => {
 
             {/* Dashboard Panels + Charts - single flowing grid */}
             <DashboardDataProvider>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <div className="gsap-panel"><LiveStats /></div>
               <div className="gsap-panel"><SystemOverview /></div>
               <div className="gsap-panel"><FreshnessDistribution /></div>
