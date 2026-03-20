@@ -574,7 +574,7 @@ const Index = () => {
 
                       {/* Location */}
                       {location && (
-                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-2 gsap-result">
+                        <ResultPanel title="Scan Location" icon={MapPin} variant="primary" className="col-span-1 sm:col-span-2 gsap-result">
                           <div className="h-32 bg-muted rounded-lg overflow-hidden border border-border/30">
                             <iframe
                               width="100%" height="100%" frameBorder="0" style={{ border: 0 }}
