@@ -340,7 +340,7 @@ export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
                         {Object.entries(record.stats).map(([key, val]) => (
                           <div key={key} className="bg-muted/50 rounded-lg p-2 text-center">
                             <p className="text-[10px] text-muted-foreground capitalize">{key.replace(/([A-Z])/g, " $1")}</p>
-                            <p className="text-xs font-semibold text-foreground">{val}</p>
+                            <p className="text-xs font-semibold text-foreground">{String(val)}</p>
                           </div>
                         ))}
                       </div>
