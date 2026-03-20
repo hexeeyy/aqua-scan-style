@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Camera, Info, Loader2, Volume2, VolumeX, XCircle, MapPin, ShoppingBag, Fish, Thermometer, DollarSign, Apple, Eye, Shield, Target, Activity, BarChart3, Brain, Clock, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -92,8 +93,9 @@ const Index = () => {
   const [showApprovalGate, setShowApprovalGate] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { isApproved } = useApprovalStatus();
+  const { canScan, freeScansRemaining, freeScanLimit } = useApprovalStatus();
   const { location: userLocation, detectLocation: detectUserLocation } = useUserLocation();
   const gsapRef = useGsapDashboard();
   const resultsRef = useGsapResults(showResults);
@@ -167,7 +169,7 @@ const Index = () => {
   }, []);
 
   const handleCameraOpen = () => {
-    if (!isApproved) {
+    if (!canScan) {
       setShowApprovalGate(true);
       return;
     }
@@ -231,7 +233,10 @@ const Index = () => {
                 longitude: userLocation?.longitude,
                 locationName: userLocation?.locationName,
               })
-              .then((token) => { if (token) setShareToken(token); });
+              .then((token) => {
+                if (token) setShareToken(token);
+                queryClient.invalidateQueries({ queryKey: ["scanCount", user.id] });
+              });
           }
         }
         toast({ title: "Analysis Complete", description: `Detected ${analysisData.species?.name} with ${analysisData.species?.confidence}% confidence` });
@@ -296,7 +301,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <ApprovalGate open={showApprovalGate} onOpenChange={setShowApprovalGate} />
+      <ApprovalGate open={showApprovalGate} onOpenChange={setShowApprovalGate} freeScansRemaining={freeScansRemaining} freeScanLimit={freeScanLimit} />
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
 
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} onScanClick={handleCameraOpen} />
