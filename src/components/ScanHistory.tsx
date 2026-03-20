@@ -47,6 +47,7 @@ export interface ScanRecord {
 
 interface ScanHistoryProps {
   onBack: () => void;
+  mockMode?: boolean;
 }
 
 import { getScansFromDb, getAllScansForAdmin, deleteScanFromDb } from "@/lib/scanHistoryDb";
