@@ -167,7 +167,7 @@ const Index = () => {
   }, []);
 
   const handleCameraOpen = () => {
-    if (!isApproved) {
+    if (!canScan) {
       setShowApprovalGate(true);
       return;
     }
