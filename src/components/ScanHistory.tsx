@@ -186,6 +186,7 @@ export const ScanHistory = ({ onBack, mockMode = false }: ScanHistoryProps) => {
       </header>
 
       <main className="max-w-2xl mx-auto px-5 py-6 pb-24">
+        {mockMode && <MockDataBanner />}
         {history.length === 0 ? (
           <div className="text-center py-20 animate-fade-in">
             <Fish className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
