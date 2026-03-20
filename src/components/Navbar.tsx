@@ -124,6 +124,12 @@ export const Navbar = ({ isFullscreen, toggleFullscreen, onScanClick }: NavbarPr
       {/* Mobile dropdown menu */}
       {mobileMenuOpen && (
         <div className="sm:hidden border-t border-white/10 px-3 py-2 space-y-1 animate-fade-in">
+          {onlineCount > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/70 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              {onlineCount} online
+            </div>
+          )}
           {allNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
