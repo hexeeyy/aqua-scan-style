@@ -301,7 +301,7 @@ const Index = () => {
 
       <Navbar isFullscreen={isFullscreen} toggleFullscreen={toggleFullscreen} onScanClick={handleCameraOpen} />
 
-      <main ref={gsapRef} className="max-w-5xl mx-auto px-3 py-1.5 pb-2 flex-1">
+      <main ref={gsapRef} className="max-w-5xl mx-auto px-3 sm:px-3 py-1.5 pb-2 flex-1">
         {!showResults ? (
           <>
             {/* Hero + Scan */}
