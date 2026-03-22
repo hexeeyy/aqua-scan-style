@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Fish, Mail, Lock, ArrowRight } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+
+const authSchema = z.object({
+  email: z.string().trim().email("Please enter a valid email address").max(255, "Email is too long"),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128, "Password is too long"),
+});
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,6 +36,14 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = authSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]?.message || "Invalid input";
+      toast({ title: "Validation Error", description: firstError, variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
 
     try {

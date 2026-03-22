@@ -1,9 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+const ALLOWED_ORIGINS = [
+  'https://sarione.lovable.app',
+  'https://id-preview--23b7ad0b-8481-428a-a23d-80a546cd41a1.lovable.app',
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') ?? '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+    'Vary': 'Origin',
+  };
+}
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
@@ -35,11 +45,15 @@ function checkRateLimit(userId: string): boolean {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  const requestId = crypto.randomUUID().slice(0, 8);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log(`[${requestId}] analyze-fish request received`);
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -387,7 +401,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     );
 
   } catch (error) {
-    console.error('Analysis error:', { type: (error as Error)?.name, msg: (error as Error)?.message, timestamp: new Date().toISOString() });
+    console.error(`[${requestId}] Analysis error:`, { type: (error as Error)?.name, msg: (error as Error)?.message, timestamp: new Date().toISOString() });
     return new Response(
       JSON.stringify({ error: 'An error occurred processing your request.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
