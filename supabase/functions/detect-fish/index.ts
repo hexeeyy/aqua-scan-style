@@ -19,6 +19,22 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
     return null;
   }
 }
+// Simple in-memory rate limiter: max 20 requests per user per 60 seconds
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -36,6 +52,15 @@ serve(async (req) => {
     const jwtPayload = decodeJwtPayload(token);
     if (!jwtPayload) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Rate limit check
+    const userId = jwtPayload.sub as string;
+    if (!checkRateLimit(userId)) {
+      return new Response(
+        JSON.stringify({ fishDetected: false, confidence: 0, quality: "unclear", message: "Too many requests. Please slow down.", species: null, scientificName: null, freshness: "unknown" }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }
+      );
     }
 
     const { image } = await req.json();
