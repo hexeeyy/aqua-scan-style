@@ -168,7 +168,7 @@ Species ID Rules:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status);
+      console.error(`[${requestId}] AI API error:`, response.status);
       
       if (response.status === 429 || response.status === 402) {
         return new Response(
@@ -197,7 +197,7 @@ Species ID Rules:
     );
 
   } catch (error) {
-    console.error('Detection error:', { type: (error as Error)?.name, timestamp: new Date().toISOString() });
+    console.error(`[${requestId}] Detection error:`, { type: (error as Error)?.name, timestamp: new Date().toISOString() });
     return new Response(
       JSON.stringify({ 
         fishDetected: false, confidence: 0, quality: "unclear",

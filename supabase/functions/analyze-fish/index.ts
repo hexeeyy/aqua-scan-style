@@ -401,7 +401,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     );
 
   } catch (error) {
-    console.error('Analysis error:', { type: (error as Error)?.name, msg: (error as Error)?.message, timestamp: new Date().toISOString() });
+    console.error(`[${requestId}] Analysis error:`, { type: (error as Error)?.name, msg: (error as Error)?.message, timestamp: new Date().toISOString() });
     return new Response(
       JSON.stringify({ error: 'An error occurred processing your request.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
