@@ -46,20 +46,20 @@ function checkRateLimit(userId: string): boolean {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
     }
 
     const token = authHeader.replace('Bearer ', '');
     const jwtPayload = decodeJwtPayload(token);
     if (!jwtPayload) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
     }
 
     // Rate limit check
@@ -67,7 +67,7 @@ serve(async (req) => {
     if (!checkRateLimit(userId)) {
       return new Response(
         JSON.stringify({ error: 'Too many requests. Please wait a moment before scanning again.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }
+        { status: 429, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json', 'Retry-After': '60' } }
       );
     }
 
@@ -77,7 +77,7 @@ serve(async (req) => {
     if (!image || typeof image !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Invalid image data' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -85,7 +85,7 @@ serve(async (req) => {
     if (!dataUrlPattern.test(image)) {
       return new Response(
         JSON.stringify({ error: 'Invalid image format. Only JPEG, PNG, and WebP are supported.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -94,7 +94,7 @@ serve(async (req) => {
     if (imageSizeBytes > 5 * 1024 * 1024) {
       return new Response(
         JSON.stringify({ error: 'Image too large. Maximum size is 5MB.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -294,7 +294,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
       if (response.status === 429 || response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Service temporarily unavailable. Please try again later.' }),
-          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 503, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
       
@@ -347,7 +347,7 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
     if (result.isActuallyFish === false) {
       return new Response(
         JSON.stringify(result),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
       );
     }
     
@@ -393,14 +393,14 @@ Be accurate and professional. Confidence should reflect uncertainty (80-95% for 
 
     return new Response(
       JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error('Analysis error:', { type: (error as Error)?.name, msg: (error as Error)?.message, timestamp: new Date().toISOString() });
     return new Response(
       JSON.stringify({ error: 'An error occurred processing your request.' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

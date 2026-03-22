@@ -48,20 +48,20 @@ function checkRateLimit(userId: string): boolean {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
     }
 
     const token = authHeader.replace('Bearer ', '');
     const jwtPayload = decodeJwtPayload(token);
     if (!jwtPayload) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } });
     }
 
     // Rate limit check
@@ -69,7 +69,7 @@ serve(async (req) => {
     if (!checkRateLimit(userId)) {
       return new Response(
         JSON.stringify({ fishDetected: false, confidence: 0, quality: "unclear", message: "Too many requests. Please slow down.", species: null, scientificName: null, freshness: "unknown" }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' } }
+        { status: 429, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json', 'Retry-After': '60' } }
       );
     }
 
@@ -79,7 +79,7 @@ serve(async (req) => {
     if (!image || typeof image !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Invalid image data' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -87,7 +87,7 @@ serve(async (req) => {
     if (!dataUrlPattern.test(image)) {
       return new Response(
         JSON.stringify({ error: 'Invalid image format. Only JPEG, PNG, and WebP are supported.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -96,7 +96,7 @@ serve(async (req) => {
     if (imageSizeBytes > 5 * 1024 * 1024) {
       return new Response(
         JSON.stringify({ error: 'Image too large. Maximum size is 5MB.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -173,7 +173,7 @@ Species ID Rules:
             message: "Detection service temporarily unavailable",
             species: null, scientificName: null, freshness: "unknown"
           }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
       throw new Error('AI service error');
@@ -189,7 +189,7 @@ Species ID Rules:
 
     return new Response(
       JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
@@ -200,7 +200,7 @@ Species ID Rules:
         message: "Detection error",
         species: null, scientificName: null, freshness: "unknown"
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });
