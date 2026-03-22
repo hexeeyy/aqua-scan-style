@@ -47,11 +47,15 @@ function checkRateLimit(userId: string): boolean {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  const requestId = crypto.randomUUID().slice(0, 8);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: getCorsHeaders(req) });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log(`[${requestId}] detect-fish request received`);
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {

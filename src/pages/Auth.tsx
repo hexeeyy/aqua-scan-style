@@ -36,6 +36,14 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validation = authSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]?.message || "Invalid input";
+      toast({ title: "Validation Error", description: firstError, variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
 
     try {
