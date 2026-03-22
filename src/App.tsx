@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useRealtimeScans } from "@/hooks/useScanData";
 import { useCapacityGuard } from "@/hooks/useCapacityGuard";
 import { CapacityWarning } from "@/components/CapacityWarning";
@@ -20,6 +21,7 @@ const AdminPage = lazy(() => import("./pages/AdminPage"));
 const AreaDashboard = lazy(() => import("./pages/AreaDashboard"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PublicScanPage = lazy(() => import("./pages/PublicScanPage"));
 
 const PageLoader = () => (
@@ -47,6 +49,7 @@ const CapacityGuardedApp = () => {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
             <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
@@ -63,17 +66,19 @@ const CapacityGuardedApp = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AuthProvider>
-        <RealtimeProvider>
-          <CapacityGuardedApp />
-        </RealtimeProvider>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthProvider>
+          <RealtimeProvider>
+            <CapacityGuardedApp />
+          </RealtimeProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
