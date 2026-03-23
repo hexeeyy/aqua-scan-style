@@ -1,6 +1,6 @@
 import { Github, Linkedin, Twitter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ursLogo from '@/assets/urs-logo.png';
+import sariLogo from '@/assets/logo.png';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -14,29 +14,22 @@ export const Footer = () => {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
                 <img 
-                  src={ursLogo} 
-                  alt="University of Rizal System Logo" 
+                  src={sariLogo} 
+                  alt="SARI-ONE Logo" 
                   className="w-full h-full object-contain" 
                 />
               </div>
               <div>
-                <h3 className="text-[9px] font-bold text-foreground tracking-tight">University of Rizal System</h3>
-                    <p className="text-[7px] text-muted-foreground">
-                    College of Engineering
-                    </p>
-                    <p className="text-[7px] text-muted-foreground -mt-1">
-                    BS Computer Engineering
-                    </p>
+                <h3 className="text-sm font-bold text-foreground tracking-tight">SARI-ONE</h3>
+                <p className="text-[7px] text-muted-foreground">
+                  Smart Automated Recognition &amp; Identification
+                </p>
               </div>
             </div>
-              <div className="text-[7px] ml-12 text-muted-foreground">
-                <p className="">
-                Innovating for a sustainable
-              </p>
-              <p className="-mt-1">
-                future through technology.
-              </p>
-              </div>
+            <div className="text-[7px] ml-12 text-muted-foreground">
+              <p>Innovating for a sustainable</p>
+              <p className="-mt-1">future through technology.</p>
+            </div>
           </div>
 
          {/* Social Media */}
