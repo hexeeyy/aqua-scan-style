@@ -12,13 +12,11 @@ export const Footer = () => {
           {/* University Info */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src={sariLogo} 
-                  alt="SARI-ONE Logo" 
-                  className="w-full h-full object-contain" 
-                />
-              </div>
+              <img 
+                src={sariLogo} 
+                alt="SARI-ONE Logo" 
+                className="w-10 h-10 object-contain rounded-lg" 
+              />
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight">SARI-ONE</h3>
                 <p className="text-[7px] text-muted-foreground">
