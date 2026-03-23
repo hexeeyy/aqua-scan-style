@@ -1,6 +1,6 @@
 import { Github, Linkedin, Twitter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ursLogo from '@/assets/urs-logo.png';
+import sariLogo from '@/assets/logo.png';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
