@@ -38,7 +38,7 @@ function checkRateLimit(userId: string): boolean {
 }
 
 serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
+  
   const requestId = crypto.randomUUID().slice(0, 8);
 
   if (req.method === "OPTIONS") {
