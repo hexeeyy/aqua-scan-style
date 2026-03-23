@@ -10,7 +10,7 @@ export const Footer = () => {
       <div className="max-w-3xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-2">
           {/* University Info */}
-          <div className="space-y-2">
+          <div className="flex flex-col items-center">
             <div className="flex items-center gap-3">
               <img 
                 src={sariLogo} 
@@ -24,7 +24,7 @@ export const Footer = () => {
                 </p>
               </div>
             </div>
-            <div className="text-[7px] ml-[52px] text-muted-foreground">
+            <div className="text-[7px] text-muted-foreground">
               <p>Innovating for a sustainable</p>
               <p>future through technology.</p>
             </div>
