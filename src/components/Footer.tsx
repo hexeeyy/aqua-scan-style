@@ -24,9 +24,9 @@ export const Footer = () => {
                 </p>
               </div>
             </div>
-            <div className="text-[7px] ml-12 text-muted-foreground">
+            <div className="text-[7px] ml-[52px] text-muted-foreground">
               <p>Innovating for a sustainable</p>
-              <p className="-mt-1">future through technology.</p>
+              <p>future through technology.</p>
             </div>
           </div>
 
