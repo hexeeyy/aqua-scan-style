@@ -3,60 +3,207 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SARI-ONE</title>
+    <title>SARI-ONE | AI Fish Species Classification & Freshness Evaluation</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
     <link rel="preload" as="image" href="/src/assets/logo.png">
-    <meta name="description" content="SARI-ONE — Smart Automated Recognition & Identification. AI-powered fish species classification and freshness evaluation by Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, and Philip Inigo Lenida.">
+    <meta name="description" content="SARI-ONE (Smart Automated Recognition & Identification) is an AI-powered web application for instant fish species classification and freshness evaluation. Built by researchers Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, and Philip Inigo Lenida from the University of Rizal System, College of Engineering — Computer Engineering Department, Morong, Rizal, Philippines.">
     <meta name="author" content="Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, Philip Inigo Lenida" />
-    <meta name="keywords" content="SARI-ONE, fish species classification, freshness evaluation, AI fish scanner, Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, Philip Inigo Lenida, computer engineering, fish freshness, seafood quality, deep learning fish">
+    <meta name="keywords" content="SARI-ONE, sarione, sari one, sari-one fish, fish species classification, fish freshness evaluation, AI fish scanner, fish quality checker, deep learning fish, fish identification app, Philippine fish species, tilapia freshness, bangus freshness, galunggong freshness, Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, Philip Inigo Lenida, University of Rizal System, URS Morong, computer engineering thesis, capstone project, marine biology AI, seafood quality assurance, fish eye clarity, gill color analysis, freshness score, spoilage detection">
     <link rel="canonical" href="https://sarione.tech" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+
+    <!-- Structured Data: WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "SARI-ONE",
-      "alternateName": "Smart Automated Recognition & Identification",
+      "alternateName": ["Smart Automated Recognition & Identification", "sarione", "sari one", "sari-one"],
       "url": "https://sarione.tech",
-      "description": "AI-powered multi-modal system for instant fish species classification and freshness evaluation.",
+      "description": "SARI-ONE is an AI-powered multi-modal system for instant fish species classification and freshness evaluation. It uses deep learning and computer vision to analyze fish images, identify species, and assess freshness quality in real time.",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Web",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "featureList": "Fish Species Classification, Freshness Score Evaluation, Eye Clarity Analysis, Gill Color Assessment, Texture Analysis, Spoilage Countdown, Market Duration Estimation, Nutritional Information, Price Estimation, QR Code Sharing",
+      "screenshot": "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e084d7f7-4d14-49a8-903a-0045b000782d/id-preview-946e7667--23b7ad0b-8481-428a-a23d-80a546cd41a1.lovable.app-1771087592231.png",
       "creator": {
-        "@type": "Organization",
-        "name": "SARI-ONE Team",
+        "@type": "ResearchProject",
+        "name": "SARI-ONE Research Team",
+        "description": "A capstone research project from the University of Rizal System, College of Engineering, Computer Engineering Department. The project aims to develop an accessible AI tool for fish species classification and freshness evaluation to support Filipino consumers and wet market vendors.",
+        "parentOrganization": {
+          "@type": "CollegeOrUniversity",
+          "name": "University of Rizal System",
+          "alternateName": "URS",
+          "department": {
+            "@type": "Organization",
+            "name": "College of Engineering — Computer Engineering Department"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Morong",
+            "addressRegion": "Rizal",
+            "addressCountry": "PH"
+          }
+        },
         "member": [
-          {"@type": "Person", "name": "Mark Hexilon Payno", "jobTitle": "Project Lead, Software & AI Engineer"},
-          {"@type": "Person", "name": "Trisha Tumbagahan", "jobTitle": "Data Scientist & Marine Researcher"},
-          {"@type": "Person", "name": "Yvan Joaquin Aquino", "jobTitle": "Field Researcher & Web Designer"},
-          {"@type": "Person", "name": "Philip Inigo Lenida", "jobTitle": "Field Researcher & Full-Stack Developer"}
+          {
+            "@type": "Person",
+            "name": "Mark Hexilon Payno",
+            "jobTitle": "Project Lead, Software & AI Engineer",
+            "description": "Leads the overall project direction, coordinates the research team, and develops the core deep learning models for fish species classification and freshness regression.",
+            "url": "https://github.com/hexeeyy",
+            "sameAs": ["https://linkedin.com/in/mark-hexilon-payno"]
+          },
+          {
+            "@type": "Person",
+            "name": "Trisha Tumbagahan",
+            "jobTitle": "Data Scientist & Marine Researcher",
+            "description": "Conducts marine biology research to curate comprehensive datasets of local fish species and freshness levels. Performs data preprocessing, model evaluation, and statistical analysis."
+          },
+          {
+            "@type": "Person",
+            "name": "Yvan Joaquin Aquino",
+            "jobTitle": "Field Researcher & Web Designer",
+            "description": "Conducts field research in local wet markets to collect fish samples and images. Designs the user interface for the SARI-ONE web platform."
+          },
+          {
+            "@type": "Person",
+            "name": "Philip Inigo Lenida",
+            "jobTitle": "Field Researcher & Full-Stack Developer",
+            "description": "Assists with field data collection and is responsible for developing the backend infrastructure and frontend integration of the SARI-ONE system."
+          }
         ]
       },
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "PHP"
+        "priceCurrency": "PHP",
+        "availability": "https://schema.org/InStock"
       }
     }
     </script>
 
-    
-    
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e084d7f7-4d14-49a8-903a-0045b000782d/id-preview-946e7667--23b7ad0b-8481-428a-a23d-80a546cd41a1.lovable.app-1771087592231.png">
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SARI-ONE",
+      "url": "https://sarione.tech",
+      "logo": "https://sarione.tech/favicon.ico",
+      "description": "AI-powered fish species classification and freshness evaluation platform.",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "hexilonpayno@gmail.com",
+        "contactType": "technical support"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Morong",
+        "addressRegion": "Rizal",
+        "addressCountry": "PH"
+      },
+      "sameAs": [
+        "https://github.com/hexeeyy",
+        "https://linkedin.com/in/mark-hexilon-payno"
+      ]
+    }
+    </script>
 
+    <!-- Structured Data: FAQPage for SEO snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is SARI-ONE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SARI-ONE (Smart Automated Recognition & Identification) is a free AI-powered web application that instantly classifies fish species and evaluates their freshness using deep learning and computer vision. It was developed by Computer Engineering students from the University of Rizal System."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does SARI-ONE work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Simply take a photo of a fish using your device camera. SARI-ONE's AI model analyzes the image to identify the species, assess freshness based on eye clarity, gill color, and texture, and provides a freshness score, spoilage countdown, nutritional info, and market price estimate."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who created SARI-ONE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SARI-ONE was created by Mark Hexilon Payno (Project Lead & AI Engineer), Trisha Tumbagahan (Data Scientist & Marine Researcher), Yvan Joaquin Aquino (Field Researcher & Web Designer), and Philip Inigo Lenida (Field Researcher & Full-Stack Developer) — all Computer Engineering students from the University of Rizal System, Morong, Rizal, Philippines."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is SARI-ONE free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, SARI-ONE is completely free. Visitors get 3 free scans, and approved registered users get unlimited access to all features including scan history, area dashboards, and real-time statistics."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sarione.tech" />
+    <meta property="og:site_name" content="SARI-ONE" />
+    <meta property="og:locale" content="en_PH" />
+    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e084d7f7-4d14-49a8-903a-0045b000782d/id-preview-946e7667--23b7ad0b-8481-428a-a23d-80a546cd41a1.lovable.app-1771087592231.png">
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:title" content="SARI-ONE | AI Fish Species Classification & Freshness Evaluation">
+    <meta property="og:description" content="Free AI-powered fish scanner built by Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino & Philip Inigo Lenida. Instantly identify fish species and check freshness.">
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
+    <meta name="twitter:site" content="@hexeeyy" />
     <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e084d7f7-4d14-49a8-903a-0045b000782d/id-preview-946e7667--23b7ad0b-8481-428a-a23d-80a546cd41a1.lovable.app-1771087592231.png">
-    <meta property="og:title" content="SARI-ONE">
-  <meta name="twitter:title" content="SARI-ONE">
-  <meta property="og:description" content="AI-powered fish species classification and freshness evaluation by Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, and Philip Inigo Lenida.">
-  <meta name="twitter:description" content="AI-powered fish species classification and freshness evaluation by Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino, and Philip Inigo Lenida.">
-</head>
+    <meta name="twitter:title" content="SARI-ONE | AI Fish Species Classification & Freshness Evaluation">
+    <meta name="twitter:description" content="Free AI-powered fish scanner built by Mark Hexilon Payno, Trisha Tumbagahan, Yvan Joaquin Aquino & Philip Inigo Lenida. Instantly identify fish species and check freshness.">
+  </head>
 
   <body>
+    <!-- SEO: Visible-to-crawlers content for SPA indexing -->
+    <noscript>
+      <h1>SARI-ONE — Smart Automated Recognition & Identification</h1>
+      <p>SARI-ONE is a free AI-powered web application for instant fish species classification and freshness evaluation. Developed by Computer Engineering researchers from the University of Rizal System, Morong, Rizal, Philippines.</p>
+      <h2>Our Mission</h2>
+      <p>To empower Filipino consumers, wet market vendors, and seafood industry stakeholders with accessible, AI-driven tools that ensure fish quality and food safety — reducing waste and protecting public health.</p>
+      <h2>Our Vision</h2>
+      <p>A future where every Filipino can instantly verify fish freshness and species authenticity using nothing but a smartphone — making safe, quality seafood accessible to all.</p>
+      <h2>Research Team</h2>
+      <ul>
+        <li>Mark Hexilon Payno — Project Lead, Software & AI Engineer</li>
+        <li>Trisha Tumbagahan — Data Scientist & Marine Researcher</li>
+        <li>Yvan Joaquin Aquino — Field Researcher & Web Designer</li>
+        <li>Philip Inigo Lenida — Field Researcher & Full-Stack Developer</li>
+      </ul>
+      <h2>Features</h2>
+      <ul>
+        <li>AI-powered fish species identification via camera</li>
+        <li>Freshness scoring with eye clarity, gill color, and texture analysis</li>
+        <li>Spoilage countdown and storage recommendations</li>
+        <li>Nutritional information and market price estimates</li>
+        <li>Scan history and area-based dashboards</li>
+        <li>QR code sharing for scan results</li>
+      </ul>
+      <p>Contact: hexilonpayno@gmail.com | Morong, Rizal, Philippines</p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
