@@ -7,13 +7,16 @@ import teamMark from "@/assets/team-mark.jpg";
 import teamTrisha from "@/assets/team-trisha.jpg";
 import teamYvan from "@/assets/team-yvan.jpg";
 import teamPhilip from "@/assets/team-philip.jpg";
+import teamDaniel from "@/assets/team-daniel.jpg";
+import teamRojz from "@/assets/team-rojz.jpg";
+import teamJulius from "@/assets/team-julius.jpg";
 
 interface Researcher {
   name: string;
   role: string;
   color: string;
-  photo: string;
-  bio: string;
+  photo: string;                                                                                                    
+  bio: string;               
   focus: string;
 }
 
@@ -49,6 +52,30 @@ const researchers: Researcher[] = [
     photo: teamPhilip,
     bio: "Assists with field data collection and is responsible for developing the backend infrastructure and frontend integration of the SARI-ONE system.",
     focus: "Field Data Collection • Backend Development • Frontend Integration",
+  },
+  {
+    name: "Daniel Carpio",
+    role: "Mechanical Engineer & BRITE colleague",
+    color: "from-amber-500 to-orange-600",
+    photo: teamDaniel,
+    bio: "Assists with field data collection and provides mechanical engineering expertise for any hardware components of the SARI-ONE system.",
+    focus: "Field Data Collection • Mechanical Engineering • Backend & Frontend Development",
+  },
+  {
+    name: "Rojz Jaeron Atienza",
+    role: "Civil Engineer & BRITE colleague",
+    color: "from-amber-500 to-orange-600",
+    photo: teamRojz,
+    bio: "Assists with field data collection and provides civil engineering expertise for any infrastructure components of the SARI-ONE system.",
+    focus: "Field Data Collection • Civil Engineering • Infrastructure Development",
+  },
+  {
+    name: "Julius Ray Gatapia",
+    role: "Mechanical Engineer & BRITE colleague",
+    color: "from-amber-500 to-orange-600",
+    photo: teamJulius,
+    bio: "Assists with field data collection and provides mechanical engineering expertise for any hardware components of the SARI-ONE system.",
+    focus: "Field Data Collection • Mechanical Engineering • Hardware Development",
   },
 ];
 
