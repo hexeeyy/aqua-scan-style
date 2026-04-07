@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const FREE_SCAN_LIMIT = 3;
+const FREE_SCAN_LIMIT = 10;
 
 export const useApprovalStatus = () => {
   const { user } = useAuth();
