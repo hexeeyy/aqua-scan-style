@@ -10,6 +10,7 @@ import teamPhilip from "@/assets/team-philip.jpg";
 import teamDaniel from "@/assets/team-daniel.jpg";
 import teamRojz from "@/assets/team-rojz.jpg";
 import teamJulius from "@/assets/team-julius.jpg";
+import teamAdviser from "@/assets/team-adviser.jpg";
 
 interface Researcher {
   name: string;
