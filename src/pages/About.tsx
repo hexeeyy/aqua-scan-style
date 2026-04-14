@@ -10,6 +10,7 @@ import teamPhilip from "@/assets/team-philip.jpg";
 import teamDaniel from "@/assets/team-daniel.jpg";
 import teamRojz from "@/assets/team-rojz.jpg";
 import teamJulius from "@/assets/team-julius.jpg";
+import teamAdviser from "@/assets/team-adviser.jpg";
 
 interface Researcher {
   name: string;
@@ -191,6 +192,24 @@ const About = () => {
             <p className="text-[8px] text-primary/80 pt-2 border-t border-border/50">
               Aligned with UN SDGs 2, 3, 12 &amp; 14 • Focused on Rizal Region &amp; National Impact
             </p>
+        </section>
+
+        {/* Research Adviser */}
+        <section className="about-card glass-effect rounded-xl p-3 border border-border/50 shadow-md">
+          <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-md bg-primary/20 flex items-center justify-center">
+              <GraduationCap className="w-3 h-3 text-primary" />
+            </div>
+            Research Adviser
+          </h3>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/30">
+            <img src={teamAdviser} alt="Paul Arvy Alfonso" className="w-16 h-16 rounded-xl object-cover shadow-md flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold text-foreground leading-tight">Paul Arvy Alfonso</p>
+              <p className="text-[10px] text-primary font-medium">Research Adviser</p>
+              <p className="text-[9px] text-muted-foreground leading-relaxed mt-1">Guides and mentors the SARI-ONE research team, providing expert oversight on project direction, methodology, and academic rigor throughout the capstone development process.</p>
+            </div>
+          </div>
         </section>
 
         {/* Research Team */}
